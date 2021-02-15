@@ -135,7 +135,7 @@ class Freight_Importer {
 		{
 			if ($key == 0) continue;
 			$external_id = $delivery_info['order_id'];
-			if ($external_id and SqlQuerySingleScalar("select count (*) from wp_postmeta where meta_key='external_order_id' and meta_value=$external_id")) {
+			if ($external_id and SqlQuerySingleScalar("select count(*) from wp_postmeta where meta_key='external_order_id' and meta_value=$external_id")) {
 				$duplicate++;
 				continue;
 			}
@@ -152,10 +152,10 @@ class Freight_Importer {
 //			$long_lat = Freight_Mission_Manager::get_lat_long($street . " " . $city);
 			if ((strlen($street) > 1) and (strlen($city) > 1)){ // and (floor($long_lat[0])== 32) and (floor($long_lat[1]) == 34)) {
 				$O->update_status( "wc-processing" );
-				$delivery_info[$key]['status'] = __("processing");
+				$deliveries_info[$key]['status'] ='V';
 				$valid ++;
 			} else {
-				$delivery_info[$key]['status'] = __("waiting");
+				$deliveries_info[$key]['status'] = 'X';
 				$bad_address ++;
 			}
 		}

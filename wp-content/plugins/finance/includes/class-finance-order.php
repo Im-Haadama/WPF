@@ -1039,7 +1039,7 @@ class Finance_Order {
 
 		$client_id     = $this->getCustomerId();
 		$client = new Fresh_Client($client_id);
-		$ref           = $this->getLink($this->order_id);
+		$ref           = $this->getLink($this->order_id, $this->order_id);
 		$address       = self::getAddress();
 		$city = self::getCity();
 		$receiver_name = $this->receiver();

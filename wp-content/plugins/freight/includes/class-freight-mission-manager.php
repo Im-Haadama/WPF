@@ -546,16 +546,16 @@ group by pm.meta_value, p.post_status");
 				$order_id );
 
 			// Check if we need to collect something on the go
-			if ( $site_id == $multisite->getLocalSiteID() and $order_site != "supplies" ) {
-				$order = self::getOrder($order_id);
-				if ($order instanceof Fresh_Order and $supply_points = $order->SuppliersOnTheGo() ) {
-					$order = new Fresh_Order( $order_id );
-					if ( $supply_points = $order->SuppliersOnTheGo( $mission_id ) ) {
-						$supplier = new Fresh_Supplier( $supply_points[0] );
-						$this->AddPrerequisite( $order_id, $supplier->getAddress() );
-					}
-				}
-			}
+//			if ( $site_id == $multisite->getLocalSiteID() and $order_site != "supplies" ) {
+//				$order = self::getOrder($order_id);
+//				if ($order instanceof Fresh_Order and $supply_points = $order->SuppliersOnTheGo() ) {
+//					$order = new Fresh_Order( $order_id );
+//					if ( $supply_points = $order->SuppliersOnTheGo( $mission_id ) ) {
+//						$supplier = new Fresh_Supplier( $supply_points[0] );
+//						$this->AddPrerequisite( $order_id, $supplier->getAddress() );
+//					}
+//				}
+//			}
 		}
 		FreightLog("done");
 	}
@@ -1046,9 +1046,14 @@ group by pm.meta_value, p.post_status");
 
 	static function getOrder($order_id)
 	{
-		if (class_exists("Fresh_Order"))
-			return new Fresh_Order($order_id);
-		new Finance_Order( $order_id );
+//		if (class_exists("Fresh_Order"))
+//			return new Fresh_Order($order_id);
+		try {
+			return new Finance_Order( $order_id );
+		} catch (Exception $e)
+		{
+			return null;
+		}
 	}
 
 	function AddPrerequisite($order_id, $pre_point)

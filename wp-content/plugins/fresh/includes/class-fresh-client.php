@@ -145,7 +145,7 @@ class Fresh_Client extends  Finance_Client {
 		print Core_Html::GuiHeader( 2, "מחירונים" );
 
 		$args = [];
-		$args['post_file'] = Fresh::Post();
+		$args['post_file'] = Flavor::Post();
 		$args['edit'] = true;
 		print Core_Gem::GemTable("client_types", $args);
             // "SELECT rate, dry_rate AS מרווח, type AS 'שם מחירון' FROM im_client_types");

@@ -33,9 +33,19 @@ class Fresh_Client_Views  extends Finance_Client_Views {
 	{
 			//             code                           function                  capablity (not checked, for now).
 		return ( array('finance_balance' => array(array( $this, 'show_balance'), null),
-		               'finance_trans'   => array(array( $this, 'show_trans'), null)));
+		               'finance_trans'   => array(array( $this, 'show_trans'), null),
+			'fresh_siton' => array(array($this, 'fresh_siton'), null)));
 	}
 
+	function fresh_siton()
+	{
+		foreach ( array( 62, 18, 19, 66 ) as $categ ) {
+			$term = get_term( $categ );
+
+			print Core_Html::GuiHeader( 1, $term->name );
+			Fresh_Catalog::show_catalog( 0, "", false, true, true, false, array( $term->term_id ), false );
+		}
+	}
 	static function order_quantity_update()
 	{
 		return Fresh_Order::setQuantity(GetParam("ooid", true), GetParam("quantity"));

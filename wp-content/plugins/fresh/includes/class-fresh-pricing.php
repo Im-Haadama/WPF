@@ -47,9 +47,9 @@ class Fresh_Pricing {
 
 		if (! $configured or $p->is_basket() or $p->is_bundle()) return get_postmeta_field( $prod_id, '_price' );
 
-		if ( strlen( $client_type_id ) < 1 ) {
-			$client_type = "regular";
-		}
+//		if ( strlen( $client_type_id ) < 1 ) {
+//			$client_type = "regular";
+//		}
 		// client type can be:
 		// null - regular price.
 		// string - type name

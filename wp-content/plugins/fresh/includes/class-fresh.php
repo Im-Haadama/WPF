@@ -1065,5 +1065,22 @@ function title_filter($where, $wp_query)
 add_filter( 'loop_shop_columns', 'loop_columns' );
 
 function loop_columns() {
-	return 5;
+	return 4;
 }
+
+//add_filter('the_title', 'modify_title', 10);
+function modify_title( $title ) {
+	if ( is_woocommerce() || is_product_category() ) {
+		if ( mb_strlen( $title ) > 12 ) {
+			$title = mb_substr($title, 0, 12).'...';
+		}
+	}
+	return $title;
+}
+
+//add_filter('wc_add_to_cart_message_html', 'add_to_cart_text', 10, 3);
+//function add_to_cart_text($message, $products, $show_qty )
+//{
+//	MyLog(__FUNCTION__);
+//	 return 'OK';
+//}

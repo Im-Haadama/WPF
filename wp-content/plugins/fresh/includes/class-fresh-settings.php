@@ -100,6 +100,9 @@
 			$menu->AddSubMenu("fresh", "edit_shop_orders",
 				array('page_title' => 'Suppliers', 'function' => array("Fresh_Suppliers" , 'suppliers' )));
 
+			$menu->AddTop("suppliers", __("Suppliers", "e-fresh"), "/wp-admin/admin.php?page=suppliers");
+
+
 			// Needed products
 			$menu->AddSubMenu("fresh", "edit_shop_orders",
 				array('page_title' => 'Needed', 'function' => array("Fresh_Packing" , 'needed_products' )));

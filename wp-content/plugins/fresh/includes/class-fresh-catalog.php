@@ -889,7 +889,7 @@ class Fresh_Catalog {
 				$fields[ CatalogFields::price ] = '<input type="text" value="' . $price . '">';
 			} else {
 				if ( $siton ) {
-					$price = siton_price( $prod_id );
+					$price = Fresh_Pricing::get_price_by_type( $prod_id );
 				} else if ( $buy ) {
 					$price = Fresh_Pricing::get_buy_price( $prod_id );
 				}
