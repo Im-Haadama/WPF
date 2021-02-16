@@ -47,7 +47,7 @@ class Focus_Manager {
 //		SqlQuery("update im_task_templates set last_check = null where id = 77");
 		$table_prefix = GetTablePrefix();
 
-		$last_run = 0; // get_wp_option("focus_create_tasks_last_run");
+		$last_run = get_wp_option("focus_create_tasks_last_run");
 		$run_period = get_wp_option("focus_create_tasks_run_period", 5*60); // every 5 min
 		if ($last_run and ((time() - $last_run) < $run_period)) {
 			if ( $debug ) $this->logger->info("run before " . ( time() - $last_run ) . "seconds");

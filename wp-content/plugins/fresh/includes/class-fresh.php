@@ -618,9 +618,6 @@ class Fresh {
 
 	    wp_enqueue_script('fresh_admin');
 
-	    wp_register_script( 'orders', FRESH_INCLUDES_URL . 'js/orders.js');
-	    wp_enqueue_script('orders');
-
 	    if (defined('WC_VERSION')){
 	    	if (! defineD('WC_URL')) return;
             wp_register_style( 'woocommerce_admin_menu_styles', WC_URL . '/assets/css/menu.css', array(), WC_VERSION );

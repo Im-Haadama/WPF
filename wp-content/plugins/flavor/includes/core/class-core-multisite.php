@@ -206,7 +206,7 @@ class Core_MultiSite {
 		curl_close($ch);
 
 		if ($debug) {
-			print "Trying to get $file<br/>";
+			print "Failed! Trying to get $file<br/>";
 			print "result: <br/>" . $result_text;
 			print "http code: $http_code<br/>";
 		}

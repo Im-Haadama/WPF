@@ -208,7 +208,7 @@ class Finance {
 		$this->salary->init_hooks($this->loader);
 
 		$this->loader->AddAction('multisite_connect', $this, 'multisite_connect');
-		$this->loader->AddAction('multisite_validate', $this, 'multisite_validate');
+		$this->loader->AddAction('multisite_validate_anonymous', $this);
 
 		$this->loader->AddAction("get_open_invoices", $this, 'get_open_invoices');
 		$this->loader->AddAction("get_open_trans", $this, 'get_open_trans');
@@ -695,6 +695,10 @@ class Finance {
 
 	    $file = FINANCE_INCLUDES_URL . 'delivery.js';
 	    wp_enqueue_script( 'delivery', $file, null, $this->version, false );
+
+		wp_register_script( 'orders', FINANCE_INCLUDES_URL . 'js/orders.js');
+		wp_enqueue_script('orders');
+
 	}
 
 	public function run() {
@@ -808,7 +812,7 @@ class Finance {
 		return Core_Db_MultiSite::getInstance()->DoConnectToMaster($server, $user, $password);
 	}
 
-	function multisite_validate()
+	function multisite_validate_anonymous()
 	{
 		print Core_Db_MultiSite::getInstance()->getLocalSiteID();
 	}

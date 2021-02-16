@@ -73,6 +73,9 @@ class Fresh_Supplies {
 		$menu = Core_Admin_Menu::instance();
 		$menu->AddSubMenu("woocommerce", "edit_shop_orders",
 			array('page_title' => 'Supplies', 'function' => array("Fresh_Supplies" , 'main' )));
+
+		$menu->AddTop("supplies", __("Supplies", "e-fresh"), "/wp-admin/admin.php?page=supplies");
+
 	}
 
 	//create_supplies:
@@ -145,9 +148,12 @@ class Fresh_Supplies {
           AND s.status IN (1, 3)" .
 		        " AND (s.picked = 0 or isnull(s.picked))";
 
+
 		if ( $mission_id ) {
 			$sql .= " AND s.mission_id = " . $mission_id;
 		}
+		print $sql;
+
 		// DEBUG $data .= $sql;
 
 		return SqlQueryArrayScalar( $sql );

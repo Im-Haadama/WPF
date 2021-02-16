@@ -48,6 +48,7 @@ class Freight_Importer {
 
 	function import_baldar($file_name, $mission_id)
 	{
+		FreightLog(__FUNCTION__);
 		$the_shipping = null;
 		if (! self::before_import($mission_id, $the_shipping)) return false;
 
@@ -75,6 +76,7 @@ class Freight_Importer {
 				$order_id = $links->nodeValue;
 //				print $order_id . "<br/>";
 			}
+			FreightLog($order_id);
 			$client_name = '';
 
 			//Loop through each <p> tag within the li, then extract the node value
@@ -83,20 +85,27 @@ class Freight_Importer {
 				$word = strtok($order_details, " ");
 				$word_array = [];
 				while ($word) {
+					$word = trim($word, " -");
 //					print "$word ";
-					if ($word != '-' and $word != 'טל' and $word != '.' and $word != "\t")
-						array_unshift($word_array, $word);
+					if (strlen($word) and $word != '-' and $word != 'טל' and $word != '.' and $word != "\t" and $word != 'מ' and $word != 'רגי')
+						$word_array[] = $word;
 
-					$word = strtok (" ");
+					$word = strtok (" -");
 				}
 
-				$phone = $word_array[0]; unset($word_array[0]);	$word_array=array_values($word_array);
-				$word_array=array_values($word_array);
+				$phone = array_pop($word_array);
+				$order_details = implode (" ", $word_array);
 
 				$address = Freight_Mission_Manager::geodecode_address($order_details);
-				$city = $address['city'];
-				$street = $address['address_1'];
-				$address_2 = $address['address_2'];
+				if ($address) {
+					$city      = $address['city'];
+					$street    = $address['address_1'];
+					$address_2 = $address['address_2'];
+				} else {
+					$city = '';
+					$street = '';
+					$address_2 = '';
+				}
 
 				$delivery_info = array(
 					'shipping_first_name' => $client_name,

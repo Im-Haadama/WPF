@@ -210,6 +210,7 @@ charset=utf8;
 
 	function CreateFunctions($version, $force = false)
 	{
+		return;
 		$current = self::CheckInstalled("Finance", "functions");
 		$db_prefix = GetTablePrefix();
 

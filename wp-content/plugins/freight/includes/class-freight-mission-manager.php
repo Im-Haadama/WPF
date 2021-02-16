@@ -510,7 +510,9 @@ group by pm.meta_value, p.post_status");
 //			print "$pickup_address<br/>";
 			// print "adding $pickup_address<br/>";
 			// Add Pickup
-			self::add_stop_point( $pickup_address, $order_id, $site_id );
+//			self::add_stop_point( $pickup_address, $order_id, $order_info, $site_id );
+//			self::add_line_per_station($pickup_address, $pickup_address, $order_info, $order_id);
+
 
 			if ( $order_info[ OrderTableFields::site_name ] == "supplies" ) {
 				array_push( $this->supplies_to_collect, array( $order_id, $order_info[ OrderTableFields::site_id ] ) );
@@ -534,7 +536,7 @@ group by pm.meta_value, p.post_status");
 //				print "Address of order $order_id is not vaild. " . $stop_point . "<br/>";
 				continue;
 			} else
-				self::add_stop_point( $stop_point, $order_id, $site_id );
+				self::add_stop_point( $stop_point, $order_id, $order_info, $site_id );
 //			if (! isset($this->prerequisite[$stop_point])) {
 //				$p = self::order_get_pri($order_id, $site_id);
 //				if (strlen($p)) $this->prerequisite[$stop_point] = $p;
@@ -560,7 +562,7 @@ group by pm.meta_value, p.post_status");
 		FreightLog("done");
 	}
 
-	function add_stop_point( $point, $order_id, $site_id)
+	function add_stop_point( $point, $order_id, $order_info, $site_id)
 	{
 		$point = trim($point);
 		if ( ! in_array( $point, $this->stop_points ) ) {
@@ -600,17 +602,22 @@ group by pm.meta_value, p.post_status");
 
 	static function geodecode_address($text)
 	{
-//		$r = InfoGet("geodecode_city" . $address);
-//
-//		if ($r) {
-//			return $r;
-//		}
-		$s = "https://maps.googleapis.com/maps/api/geocode/json?address=" . urlencode( $text ).
+		FreightLog(__FUNCTION__ . " " . $text);
+		$r = InfoGet("geodecode_city" . $text);
+
+		if ($r) {
+			return unserialize($r);
+		}
+		$url = "https://maps.googleapis.com/maps/api/geocode/json?address=" . urlencode( $text ).
 		     "&key=" . MAPS_KEY . "&language=iw";
 
 		// print $s;
 //		var_dump($address);	print "<br/>";
-		$result = @file_get_contents( $s );
+//		$result = @file_get_contents( $s );
+		$ch = curl_init();
+		curl_setopt( $ch, CURLOPT_URL, $url );
+		curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1 );
+		$result = curl_exec( $ch );
 		if (! $result) return null;
 
 		$j = json_decode( $result );
@@ -635,10 +642,10 @@ group by pm.meta_value, p.post_status");
 				}
 			}
 		}
-//		InfoUpdate("geodecode_city".  $address, $city);
 		$address = array("city" => $city,
-			"address_1" => $street_number . " " . $address_1,
-			"address_2" => $address_2);
+		                 "address_1" => $street_number . " " . $address_1,
+		                 "address_2" => $address_2);
+		InfoUpdate("geodecode_city". $text, serialize($address));
 		return $address;
 	}
 

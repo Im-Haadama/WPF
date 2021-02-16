@@ -34,6 +34,10 @@ class Core_Db_MultiSite extends Core_MultiSite {
 
 		$this->allowed_tables = [];
 		$loaded = false;
+		if ( ! TableExists( "multisite" ) ) {
+			self::install();
+		}
+
 		if (TableExists( "multisite" ) ) {
 			$sql           = "select id, site_name, tools_url, local, display_name, active, master, user, password " .
 			                 " from im_multisite 
@@ -68,6 +72,12 @@ class Core_Db_MultiSite extends Core_MultiSite {
 			$sites_array[1] = array(1, 'local', $_SERVER['REQUEST_SCHEME'] . '://127.0.0.1', 1, '', '');
 		}
 
+		if (! $local_site_id) {
+			$this->master_id = $master_id;
+			$this->sites_array = $sites_array;
+			$this->updateFromMaster();
+		}
+//			die ("Set local site id");
 		Core_MultiSite::__construct( $sites_array, $master_id, $local_site_id );
 	}
 
@@ -195,7 +205,12 @@ class Core_Db_MultiSite extends Core_MultiSite {
 	function UpdateFromRemote( $table, $key = "id", $remote = 0, $query = null, $ignore = null, $debug = false )
 	{
 		MyLog(__FUNCTION__, $table);
+		// 0 - master
+		// number - site id
+		// or $remote http(s) address (for multisite connect).
 		if ( $remote == 0 ) $remote = self::getMaster();
+		else if (is_numeric($remote)) $remote = $this->getSiteURL($remote);
+		else die("failed: How is the master?");
 
 //		if ($this->isMaster()) return true;
 //
@@ -412,9 +427,6 @@ class Core_Db_MultiSite extends Core_MultiSite {
 			}
 
 			$args = array( "post_file" => Finance::getPostFile() );
-			if ( ! TableExists( "multisite" ) ) {
-				self::install();
-			}
 			$args["links"] = array("id" => AddToUrl(array("operation"=>"gem_edit_multisite", "id"=>"%s")));
 
 			$result .= Core_Gem::GemTable( "multisite", $args );
@@ -452,7 +464,7 @@ class Core_Db_MultiSite extends Core_MultiSite {
 	{
 		$http_code = 0;
 		$db_prefix = GetTablePrefix();
-		$url = "$server" . Flavor::getPost() . "?operation=multisite_validate";
+		$url = "$server" . Flavor::getPost() . "?operation=multisite_validate_anonymous";
 		$result = self::DoRun($url, $http_code, $user, $password);
 
 		if (check_for_error($result)) {
@@ -462,7 +474,7 @@ class Core_Db_MultiSite extends Core_MultiSite {
 			return false;
 		}
 		$this->master_id = intval($result);
-		if (! ($this->master_id > 0)) die("master id: $result");
+		if (! ($this->master_id > 0)) die("failed: master id: $result");
 //		print "master= " . $this->master_id . "<br/>";
 		if (! SqlQuerySingleScalar("select count(*) from im_multisite where id = $this->master_id")){
 //			print "inserting master $this->master_id<br/>";

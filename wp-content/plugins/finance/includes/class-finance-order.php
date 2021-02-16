@@ -623,7 +623,6 @@ class Finance_Order {
 	}
 
 	function setStatus( $status, $ids = null ) {
-		FinanceLog(__FUNCTION__ . " $status");
 		if ( $ids and is_array( $ids ) ) {
 			$args = $ids;
 		} else {

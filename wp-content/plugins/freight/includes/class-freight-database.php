@@ -12,6 +12,7 @@ class Freight_Database extends Core_Database {
 
 	function CreateTables( $version, $force )
 	{
+		return;
 		$current = $this->checkInstalled( "tables");
 		$db_prefix = GetTablePrefix();
 
