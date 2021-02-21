@@ -47,7 +47,6 @@ class Focus_Tasklist {
 		$this->project          = $row[6];
 		$this->team             = $row[7];
 		$this->creator          = $row[8];
-		$this->last_check       = $row[9];
 
 		if ( $row[4] ) {
 			$row = SqlQuerySingle( "SELECT repeat_freq, repeat_freq_numbers, timezone " .
@@ -500,5 +499,3 @@ class Focus_Tasklist {
 	}
 
 }
-
-$Tasklist_Status_Names = array("waiting", "started", "done", "canceled", "bad_url", "failed", "done_creator");

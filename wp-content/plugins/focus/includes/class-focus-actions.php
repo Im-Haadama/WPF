@@ -12,8 +12,9 @@ class Focus_Actions
 		$loader->AddAction("task_pri_plus", $this, "PriPlus", 10, 2);
 		$loader->AddAction("task_pri_minus", $this, "PriMinus", 10, 2);
 		$loader->AddAction("team_remove_member", $this, "team_remove_member");
+
 		$loader->AddAction("team_add_member", $this, "team_add_member");
-		$loader->AddAction("team_add_sender", $this, "team_add_sender");
+		$loader->AddAction("team_remove_sender", $this, "team_remove_sender");
 
 		$loader->AddAction( 'company_add_worker', $this, 'company_add_worker' );
 		$loader->AddAction( 'company_remove_worker', $this, 'company_remove_worker' );
@@ -124,6 +125,16 @@ class Focus_Actions
 		$team = new Org_Team($team_id);
 		return $team->AddSender($new);
 	}
+
+	static function team_remove_sender()
+	{
+		//let operation = post_file + "?operation=team_add_member&team_id=" + team_id + "&new_member=" + new_member;
+		$team_id   = GetParam( "team_id", true );
+		$members = GetParam( "ids", true );
+		$team = new Org_Team($team_id);
+		return $team->RemoveSender($members);
+	}
+
 	function company_remove_worker()
 	{
 		$workers = GetParamArray("users", true);

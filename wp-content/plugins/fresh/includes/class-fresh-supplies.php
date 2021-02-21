@@ -152,7 +152,6 @@ class Fresh_Supplies {
 		if ( $mission_id ) {
 			$sql .= " AND s.mission_id = " . $mission_id;
 		}
-		print $sql;
 
 		// DEBUG $data .= $sql;
 

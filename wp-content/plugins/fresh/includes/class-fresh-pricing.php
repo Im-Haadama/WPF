@@ -13,10 +13,8 @@ class Fresh_Pricing {
 //		print "$supplier $price $factor<br/>";
 
 		//		Legacy function:
-		// if ( is_numeric( $factor ) ) return round( $price * ( 100 + $factor ) / 100, 1 );
+		if ( is_numeric( $factor ) ) return round( $price * ( 100 + $factor ) / 100, 1 );
 
-		// New function:
-		if ( is_numeric( $factor ) ) return ceil($price * ( 100 + $factor ) / 100 );
 
 		return 0;
 	}

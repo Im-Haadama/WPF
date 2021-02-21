@@ -29,7 +29,7 @@ abstract class OrderTableFields
 
 class Freight_Mission_Manager 
 {
-	static $multi_site;
+	static Core_MultiSite $multi_site;
 	private $points_per_sites; // 2D array: site_id and order_names;
 	private $lines_per_station;
 	private $prerequisite;
@@ -62,18 +62,20 @@ class Freight_Mission_Manager
 	{
 		self::$multi_site = Core_Db_MultiSite::getInstance();
 
-//		FreightLog(__FUNCTION__);
+		FreightLog(__FUNCTION__);
 		// Try cache
-//		$data = InfoGet("mission_$mission_id");
-//		if ($data) return unserialize($data);
-
-//		FreightLog("no cache");
+		$data = InfoGet("mission_$mission_id");
+		if ( 0 and $data) {
+			FreightLog("using cache");
+			return unserialize($data);
+		}
 
 		// Get from all sites.
 		$n = new Freight_Mission_Manager($mission_id);
-//		FreightLog("getting route");
 		$n->get_route();
-//		FreightLog("done");
+
+		FreightLog("updating cache");
+		InfoUpdate("mission_$mission_id", serialize($n));
 
 		return $n;
 	}
@@ -259,6 +261,7 @@ group by pm.meta_value, p.post_status");
 
 		$edit = GetArg($args, "edit", true);
 		$print = GetArg($args, "print", false);
+		$no_sort = GetParam("no_sort", false, false);
 
 		$multi_site = Core_Db_MultiSite::getInstance();
 		$result = "";
@@ -270,10 +273,14 @@ group by pm.meta_value, p.post_status");
 			        "Set " . Core_Html::GuiHyperlink("here", self::get_url($the_mission));
 		}
 
-		$path = [];
-		FreightLog("before prepare_route");
-		$this->prepare_route( $path);
-		FreightLog("after prepare_route");
+		if ($no_sort) {
+			$path = $this->stop_points;
+		} else {
+			$path = [];
+			FreightLog( "before prepare_route" );
+			$this->prepare_route( $path );
+			FreightLog( "after prepare_route" );
+		}
 
 		$arrive_time = strtotime( $m->getStartTime());
 		$prev           = $m->getStartAddress();
@@ -446,8 +453,6 @@ group by pm.meta_value, p.post_status");
 		}
 		// Collect the points
 		self::collect_points( $rows, $mission_id);
-
-		InfoUpdate("mission_$mission_id", serialize($this));
 	}
 
 	static private function parse_output($output)
@@ -478,16 +483,10 @@ group by pm.meta_value, p.post_status");
 	function collect_points($data_lines, $mission_id) {
 		$debug = false;
 		FreightLog(__FUNCTION__);
-		$multisite         = Core_Db_MultiSite::getInstance();
 		$this->stop_points = array();
 
 		$mission = new Mission( $mission_id );
 
-//		for ( $i = 0; $i < count( $data_lines); $i ++ )
-//		{
-//			$order_info = $data_lines[$i];
-//			print $order_info[OrderTableFields::client_name] . "<br/>";
-//		}
 		for ( $i = 1; $i < count( $data_lines ); $i ++ ) {
 			$order_info = $data_lines[ $i ];
 
@@ -500,6 +499,7 @@ group by pm.meta_value, p.post_status");
 			// Collect information about pickup points.
 			if ( ! isset( $this->points_per_sites[ $site_id ] ) ) {
 				$this->points_per_sites[ $site_id ] = array();
+				$this->add_stop_point(self::$multi_site->getAddress($site_id), 0, null , $site_id);
 			}
 			array_push( $this->points_per_sites[ $site_id ], $order_id );
 
@@ -546,18 +546,6 @@ group by pm.meta_value, p.post_status");
 				$stop_point,
 				$order_info,
 				$order_id );
-
-			// Check if we need to collect something on the go
-//			if ( $site_id == $multisite->getLocalSiteID() and $order_site != "supplies" ) {
-//				$order = self::getOrder($order_id);
-//				if ($order instanceof Fresh_Order and $supply_points = $order->SuppliersOnTheGo() ) {
-//					$order = new Fresh_Order( $order_id );
-//					if ( $supply_points = $order->SuppliersOnTheGo( $mission_id ) ) {
-//						$supplier = new Fresh_Supplier( $supply_points[0] );
-//						$this->AddPrerequisite( $order_id, $supplier->getAddress() );
-//					}
-//				}
-//			}
 		}
 		FreightLog("done");
 	}
@@ -908,7 +896,7 @@ group by pm.meta_value, p.post_status");
 		     urlencode( $b ) . "&key=" . MAPS_KEY . "&language=iw";
 
 		// print $s;
-		$result = file_get_contents( $s );
+		$result = GetContent( $s );
 //	debug_time1("google end");
 
 		$j = json_decode( $result );
@@ -989,7 +977,7 @@ group by pm.meta_value, p.post_status");
 
 //			if (get_post_meta($order_id, "delivered")) continue;
 			if ( ! $is_group ) {
-				$data .= $o->PrintHtml( $selectable );
+				$data .= $o->PrintHtml( $selectable, $mission_id );
 				continue;
 			} else {
 				if ( $order_user != $prev_user ) {

@@ -37,21 +37,15 @@ class Focus_Manager {
 		self::create_tasks();
 	}
 
-	function create_tasks( $freqs = null, $verbose = false, $default_owner = 1 )
+	function create_tasks( $freqs = null, $default_owner = 1 )
 	{
-		$debug = 1;
-		if ($debug == 2) $verbose = 1;
-
-
 		// For Debug:
-//		SqlQuery("update im_task_templates set last_check = null where id = 77");
+		// SqlQuery("update im_task_templates set last_check = null where id = XXX");
 		$table_prefix = GetTablePrefix();
 
 		$last_run = get_wp_option("focus_create_tasks_last_run");
 		$run_period = get_wp_option("focus_create_tasks_run_period", 5*60); // every 5 min
 		if ($last_run and ((time() - $last_run) < $run_period)) {
-			if ( $debug ) $this->logger->info("run before " . ( time() - $last_run ) . "seconds");
-
 			return true;
 		}
 
@@ -70,8 +64,6 @@ class Focus_Manager {
 		$verbose_table = array( array( "template_id", "freq", "query", "active", "result", "priority", "new task" ));
 
 		foreach ( $freqs as $freq ) {
-			if ($debug) $output .= "Handling " . $freq . PHP_EOL;
-
 			$sql = "SELECT id" .
 			       " FROM ${table_prefix}task_templates " .
 			       " where repeat_freq = '" . $freq . "' and ((last_check is null) or (last_check < " . QuoteText(date('Y-m-j')) . ") or repeat_freq like 'c%')";
@@ -87,8 +79,6 @@ class Focus_Manager {
 				array_push( $verbose_table, $verbose_line);
 			}
 		}
-		if ( $verbose ) $output .= Core_Html::gui_table_args( $verbose_table);
-
 		$this->logger->info($output);
 		return true;
 	}

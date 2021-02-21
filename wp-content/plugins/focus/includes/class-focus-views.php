@@ -9,6 +9,7 @@ class Focus_Views {
 		$loader->AddFilter( 'data_save_new_projects', $this, 'DataSaveNewDefault', 11, 1 );
 		$loader->AddFilter( 'data_save_new_working_teams', $this, 'DataSaveNewTeam', 11, 1 );
 		$loader->AddFilter( 'data_save_new_tasklist', $this, 'DataSaveNewTaskList', 11, 1 );
+		$loader->AddFilter( 'data_save_new_task_templates', $this, 'DataSaveNewTaskTemplate', 11, 1 );
 		$loader->AddFilter("data_save_new_after_company", $this, null, 10, 2);
 		$loader->AddFilter("data_save_new_after_projects", $this, null, 10, 2);
 
@@ -151,7 +152,7 @@ class Focus_Views {
 	}
 
 	static function Args( $table_name = null, $action = null, $narrow = false ) {
-		$ignore_list = ["st_main", "page_number", "new"];
+		$ignore_list = ["st_main", "page_number", "new", "page_id"];
 		$args        = array(
 			"page_number"  => GetParam( "page_number", false, 1 ),
 			"post_file"    => self::getPost(),
@@ -173,7 +174,7 @@ class Focus_Views {
 				$args["query"] .= " and $param=" . QuoteText($value);
 			}
 		}
-		if (trim($args["query"]) == "1") unset ($args["query"]);
+		if (isset($args["query"]) and trim($args["query"]) == "1") unset ($args["query"]);
 
 		if ( $table_name )
 			switch ( $table_name ) {
@@ -277,13 +278,13 @@ class Focus_Views {
 				case "projects":
 					// Todo: if col is hidden, set default.
 					$args["links"]            = array( "ID" => AddToUrl( array( "operation" => "focus_edit_project&id=%s" ) ) );
-					$args["fields"]           = array(
-						"ID",
-						"project_name",
-						"project_contact",
-						"project_contact_email",
-						"project_priority"
-					);
+//					$args["fields"]           = array(
+//						"ID",
+//						"project_name",
+//						"project_contact",
+//						"project_contact_email",
+//						"project_priority"
+//					);
 					$args["mandatory_fields"] = array( "project_name" );
 					$args["selectors"]        = array( "project_priority" => "Focus_Views::gui_select_priority" );
 					//$args["values"] = array("manager" => get_user_id());
@@ -648,7 +649,7 @@ class Focus_Views {
 
 		switch ( $selected_tab ) {
 			case "my_work":
-				$tabs[0][2] = self::my_work( $args, "Active tasks assigned to me", false, $user_id );
+				$tabs[0][2] = self::my_work( $args, "Active tasks assigned to me or my teams", false, $user_id );
 				if (! $this->result_count) $tabs[0][2] = self::my_work( $args, "Active tasks assigned to my teams", true, $user_id );
 				break;
 			case "my_team_work":
@@ -721,6 +722,7 @@ class Focus_Views {
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		if (! isset($args["query"])) $args["query"] = $worker->myWorkQuery( $include_team, $status ); ///self::ActiveQuery( );
 		///
+		///
 		FocusLog( $args["query"] );
 		if ( isset( $args["period"] ) ) {
 			$period        = $args["period"];
@@ -734,8 +736,8 @@ class Focus_Views {
 		if ( $this->result_count ) {
 			$result .= $table;
 			$result .= self::task_filters();
-
 		} else {
+
 			if ( ! $include_team ) {
 				return self::my_work( $args, "Active tasks assigned to my teams", true, $user_id );
 			}
@@ -1184,7 +1186,7 @@ class Focus_Views {
 		$team_ids       = $worker->GetAllTeams();
 		$found_personal = false;
 		$prefix         = __( "Personal team" );
-		foreach ( $team_ids as $team_id ) {
+		if ($team_ids) foreach ( $team_ids as $team_id ) {
 			$t = new Org_Team( $team_id );
 			if ( strstr( $t->getName(), $prefix ) ) {
 				$found_personal = true;
@@ -1198,6 +1200,7 @@ class Focus_Views {
 		if ( ! ( $worker->GetAllProjects() ) ) {
 			print "It seems you have no projects. let's create your first project.<br/>";
 			$args              = self::Args( "projects" );
+
 			$args["post_file"] = Focus::getPost();
 			try {
 				print Core_Gem::GemAddRow( "projects", "Please enter details for you first project", $args );
@@ -1745,6 +1748,14 @@ class Focus_Views {
         }
         return $row;
     }
+
+	static function DataSaveNewTaskTemplate($row){
+		if(!isset($row["created"])){
+			$row["created"] = date("Y/m/d G:i" );
+			FocusLog($row["created"]);
+		}
+		return $row;
+	}
 
 	function data_save_new_after_company($row, $new_company_id)
 	{

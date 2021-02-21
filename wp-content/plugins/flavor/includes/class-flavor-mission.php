@@ -48,7 +48,7 @@ class Flavor_Mission {
 		}
 
 		$header = "";
-		$week = GetParam("week", false, date('Y-m-d', strtotime('last saturday')));
+		$week = GetParam("week", false, first_day_of_week());
 		if ($week)
 			$header .= __("Missions of week") . " " . $week;
 

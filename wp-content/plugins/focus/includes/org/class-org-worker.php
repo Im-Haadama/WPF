@@ -33,10 +33,32 @@ class Org_Worker extends Core_users
 //			if (strstr(, "Personal"))
 	}
 
+	function back()
+	{
+		$users = SqlQueryArrayScalar("select user_id from wp_usermeta where meta_key = 'teams'");
+
+		foreach ($users as $user_id)
+		{
+			$u = new Org_Worker($user_id);
+			print $u->getName() . "<br/>";
+			$teams = CommaArrayExplode(get_usermeta($user_id, 'teams'));
+			foreach($teams as $team_id)
+			{
+				$t = new Org_Team($team_id);
+				$t->AddWorker($user_id);
+			}
+			print "<br/>";
+		}
+
+	}
     function GetAllTeams()
     {
 	    if ($this->teams)
 		    return $this->teams;
+
+	    $data = get_usermeta($this->id, 'teams');
+	    $this->teams = @unserialize($data);
+
 
 	    $db_prefix = GetTablePrefix();
 	    $worker_id = $this->getId();
@@ -48,7 +70,7 @@ class Org_Worker extends Core_users
 
         if (! $this->teams) {
             // Add personal team and return it.
-	        $this->teams = Org_Team::Create($this->id, __("Personal team") . " " . EscapeString($this->getName()));
+	        $this->teams = array(Org_Team::Create($this->id, __("Personal team") . " " . EscapeString($this->getName())));
         }
         return $this->teams;
     }

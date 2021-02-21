@@ -322,16 +322,16 @@ function AppendUrl( $url, $addition ) {
 	 */
 	function GetContent( $url ) {
 //		print "url: $url<br/>";
-//		$handle = curl_init();
-//		curl_setopt( $handle, CURLOPT_URL, $url );
-//		curl_setopt( $handle, CURLOPT_RETURNTRANSFER, true );
+		$handle = curl_init();
+		curl_setopt( $handle, CURLOPT_URL, $url );
+		curl_setopt( $handle, CURLOPT_RETURNTRANSFER, true );
 //
 //		var_dump($handle);
-//		$data = curl_exec( $handle );
+		$data = curl_exec( $handle );
 //
 //		curl_close( $handle );
 
-		$data = file_get_contents($url);
+//		$data = file_get_contents($url);
 		return $data;
 	}
 
@@ -900,4 +900,14 @@ function dd($var)
 {
 	print_r($var);
 	die(1);
+}
+
+function first_day_of_week()
+{
+	$first_day = get_wp_option("start_of_week");
+	if (! $first_day) { // Israel
+		if (! date('w')) return date('Y-m-d', strtotime('today'));
+		return date('Y-m-d', strtotime("last sunday"));
+	}
+	return date('Y-m-d', strtotime("last monday"));
 }

@@ -58,52 +58,21 @@ class Org_Team {
 	function AllMembers()
 	{
         $db_prefix = GetTablePrefix();
-        $result = SqlQueryArrayScalar("Select id2 from ${db_prefix}links where id1=$this->id and type1=" . FlavorDbObjects::team . " and type2 = " . FlavorDbObjects::users);
+		$type1 = FlavorDbObjects::users;
+		$type2 = FlavorDbObjects::team;
 
-        if (! $result) { // try the old data.
-	        $result = SqlQueryArrayScalar( "select user_id from wp_usermeta where meta_key = 'teams' and meta_value like '%:" . $this->id . ":%'");
-        }
-
-        return $result;
-        /*
-//		$sql = SqlQuerySingleScalar("select )
-		// return sql_query_array_scalar("select id from im_working_teams where manager = " . $user_id);
-		$backward =
-		if ($backward)
-		{
-//			SqlQuery("delete from wp_usermeta where meta_key = 'teams' and )
-			foreach ($backward as $user)
-				self::AddWorker($user_id);
-		}
-		return ;
-        */
+		$team_id = $this->id;
+		return SqlQueryArrayScalar("Select id1 from ${db_prefix}links where id2=$team_id and type1=$type1 and type2=$type2");
 	}
 
 	function RemoveMember($members)
 	{
+		$db_prefix = GetTablePrefix();
+		$type1 = FlavorDbObjects::users;
+		$type2 = FlavorDbObjects::team;
+
 		$team_id = $this->id;
-		if (is_array($members)){
-			foreach ($members as $member)
-				if (! self::RemoveMember($member)) return false;
-			return true;
-		}
-		$member = $members;
-		$current = get_user_meta($member, 'teams');
-		$teams = CommaArrayExplode($current);
-
-		$idx = array_search($team_id, $teams);
-		if ($idx === false) {
-			print "not member" . Core_Html::Br();
-			return false;
-		}
-
-		unset ($teams[$idx]);
-
-//	debug_var($teams);
-		$new =  ':' . implode(':', $teams) . ':';
-//	debug_var($new);
-//	die(1);
-		return update_usermeta($member, 'teams', $new);
+		return SqlQuery("delete from ${db_prefix}links where id1 in (" . CommaImplode($members) . ") and id2=$team_id and type1=$type1 and type2 = $type2");
 	}
 
 	function Delete($team_id)
@@ -142,13 +111,15 @@ class Org_Team {
 	 * @param $team_id
 	 * @param $user_id
 	 */
-	function AddWorker($user_id)
+	function AddWorker($worker_id)
 	{
-		$current = get_user_meta($user_id, 'teams');
-		if (strstr($current ,":" . $this->id . ":")) return true; // Already in.
-		if (!$current or strlen($current) < 1) $current = ":";
+		$db_prefix = GetTablePrefix();
+		$team_id = $this->id;
 
-		return update_usermeta($user_id, 'teams', $current . ":" . $this->id . ":");
+		$type1 = FlavorDbObjects::users;
+		$type2 = FlavorDbObjects::team;
+		$sql = "insert into ${db_prefix}links (type1, type2, id1, id2) values($type1, $type2, $worker_id, $team_id)";
+		return SqlQuery($sql);
 	}
 
 	function GetWorkers()
@@ -175,6 +146,19 @@ class Org_Team {
 		$type2 = FlavorDbObjects::sender;
 		return SqlQuery("insert into ${db_prefix}links (type1, type2, id1, id2) values($type1, $type2, $worker_id, $team_id)");
 	}
+
+	function RemoveSender($worker_id)
+	{
+		$db_prefix = GetTablePrefix();
+
+		$team_id = $this->getId();
+		$type1 = FlavorDbObjects::team;
+		$type2 = FlavorDbObjects::sender;
+		$sql = "delete from ${db_prefix}links where type1=$type1 and type2=$type2 and id1=$team_id and id2=$worker_id";
+//		print $sql;
+		return SqlQuery($sql);
+	}
+
 
 	function Senders($include_name = false)
 	{

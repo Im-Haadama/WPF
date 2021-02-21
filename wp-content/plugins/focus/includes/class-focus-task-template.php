@@ -26,6 +26,7 @@ class Focus_Task_Template {
 	private $working_hours;
 	private $is_active;
 	private $timezone;
+	private $date_created;
 
 	/**
 	 * Focus_Task_Template constructor.
@@ -52,7 +53,7 @@ class Focus_Task_Template {
 		$this->last_check = $row['last_check'];
 		$this->working_hours = $row['working_hours'];
 		$this->is_active = $row['is_active'];
-		$this->last_check = $row['timezone'];
+		$this->created = $row['created'];
 	}
 
 	/**
@@ -338,8 +339,6 @@ class Focus_Task_Template {
 		$db_prefix = GetTablePrefix();
 		$verbose_line = array();
 
-		$this->last_check = strtotime('now');
-
 		array_push( $verbose_line, $id );
 		array_push( $verbose_line, $this->check_frequency() );
 		array_push( $verbose_line, $this->check_query());
@@ -364,6 +363,11 @@ class Focus_Task_Template {
 		 $this->priority = 10; // SqlQuerySingleScalar( "SELECT project_priority FROM ${db_prefix}projects WHERE id = " . $project_id );
 		array_push( $verbose_line, $this->priority);
 
+		if (! $this->creator)
+		{
+			$this->creator = 1;
+		}
+
 		$sql = "INSERT INTO ${db_prefix}tasklist " .
 		       "(task_description, task_template, status, date, project_id, priority, team, creator) VALUES ( " .
 		       "'$this->task_description', $id, " . enumTasklist::waiting . ", NOW(), " . $this->project_id . ",  " .
@@ -387,7 +391,8 @@ class Focus_Task_Template {
 		if (substr($this->repeat_freq, 0, 1) == 'c') return "1 c passed";
 
 		// Check from day after last run till today
-		$check_date = ($this->last_run ? strtotime($this->last_run . ' +1 day') : strtotime('now'));
+		$check_date = self::get_check_date();
+
 		$now = strtotime(date('y-m-d'));
 
 		$result .= "Now= " . date('y-m-d') . " Checking from " . date('y-m-d', $check_date) . "<br/>";
@@ -403,17 +408,25 @@ class Focus_Task_Template {
 		return "0 " . $result;
 	}
 
+	function get_check_date()
+	{
+		$rc = strtotime('2020-01-01');
+		if ($this->last_check) $rc = strtotime($this->last_check . ' +1 day');
+		else if ($this->created) $rc = strtotime ($this->created);
+		return $rc;
+	}
+
 	function check_query(  ) {
 		require_once( ABSPATH . 'vendor/simple_html_dom.php' );
 
-		if ( strlen( $this->query ) == 0 ) {
+		if ( strlen( $this->condition_query ) == 0 ) {
 			return "1 empty query passed<br/>";
 		}
-		if ( ! ( strlen( $this->query ) > 5 ) ) {
-			return "0 short or bad query. " . $this->query . " failed";
+		if ( ! ( strlen( $this->condition_query ) > 5 ) ) {
+			return "0 short or bad query. " . $this->condition_query . " failed";
 		}
 
-		return strip_tags( \Dom\file_get_html( $this->query ));
+		return strip_tags( \Dom\file_get_html( $this->condition_query ));
 	}
 
 	function check_active(  ) {

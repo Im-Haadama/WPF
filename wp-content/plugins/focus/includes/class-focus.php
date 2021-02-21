@@ -16,7 +16,7 @@ class Focus {
 	 *
 	 * @var string
 	 */
-	public $version = '1.6.3';
+	public $version = '1.6.5';
 
 	/**
 	 * @var
@@ -494,3 +494,4 @@ class enumTasklist {
 		failed = 5,
 		done_creator = 6;
 }
+$Tasklist_Status_Names = array("waiting", "started", "done", "canceled", "bad_url", "failed", "done_creator");

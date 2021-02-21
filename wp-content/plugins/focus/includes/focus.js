@@ -114,6 +114,15 @@ function team_add_member(post_file, team_id)
 
 }
 
+function team_remove_sender(post_file, team_id)
+{
+    let ids = get_selected("workers");
+    let operation = post_file + "?operation=team_remove_sender&team_id=" + team_id +
+        "&ids=" + ids;
+
+    execute_url(operation, location_reload);
+}
+
 function team_add_sender(post_file, team_id)
 {
     let new_sender = get_value_by_name("new_sender");

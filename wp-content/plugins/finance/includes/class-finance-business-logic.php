@@ -332,7 +332,7 @@ class Finance_Business_Logic {
 			// info: Id, CCode, Amount, ACode, Fild1, Fild2, Fild3
 			if (($transaction_info['CCode'] != 0)) {
 				FinanceLog(__FUNCTION__, $transaction_info['CCode']);
-				$this->message .= "Got error " . $this->paying->ErrorMessage($transaction_info['CCode']) . "\n";
+				$this->error_message .= "Got error " . $this->paying->ErrorMessage($transaction_info['CCode']) . "\n";
 				if ($debug) var_dump($credit_data);
 				return false;
 			}

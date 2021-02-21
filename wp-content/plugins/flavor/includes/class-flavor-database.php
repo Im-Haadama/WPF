@@ -24,15 +24,23 @@ class Flavor_Database extends Core_Database {
 	{
 		$current   = $this->checkInstalled(  "functions" );
 
-		if ( $current == $version and ! $force ) return true;
-
 		SqlQuery("drop function FIRST_DAY_OF_WEEK");
 
-		SqlQuery("create function FIRST_DAY_OF_WEEK(day date) returns date
+		$first_day = get_wp_option("start_of_week");
+
+		if (!$first_day) { // Israel
+			SqlQuery("create function FIRST_DAY_OF_WEEK(day date) returns date
 BEGIN
-    RETURN SUBDATE(day, WEEKDAY(day) + 2);
+	if (WEEKDAY(day) = 6) then return day;
+	end if; 
+    RETURN SUBDATE(day, WEEKDAY(day) + 1);
 END;
 ");
+		}
+
+
+
+		if ( $current == $version and ! $force ) return true;
 
 
 		SqlQuery("create function supplier_last_pricelist_date(_supplier_id int) returns date

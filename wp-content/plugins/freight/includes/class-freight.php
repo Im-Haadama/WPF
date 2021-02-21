@@ -164,9 +164,12 @@ class Freight {
 
 	function mission_dispatch_wrap($id)
 	{
+		FreightLog(__FUNCTION__);
 		$m = Freight_Mission_Manager::get_mission_manager($id);
 
+		FreightLog("before");
 		print $m->dispatcher();
+		FreightLog("after");
 	}
 
 	function mission_actions($actions)

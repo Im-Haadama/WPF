@@ -10,7 +10,9 @@ abstract class Core_Multisite_Fields {
 	const site_id_idx = 0;
 	const site_name_idx = 1;
 	const site_url_idx = 2;
-	const api_key = 3;
+	const user=3;
+	const password=4;
+	const pickup_address = 5;
 }
 
 class Core_MultiSite {
@@ -216,5 +218,10 @@ class Core_MultiSite {
 
 	function Execute( $request, $site, $debug = false ) {
 		return $this->Run($request, $site, true, $debug);
+	}
+
+	function getAddress($site_id)
+	{
+		return $this->sites_array[$site_id][Core_Multisite_Fields::pickup_address];
 	}
 }

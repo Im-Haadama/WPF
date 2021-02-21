@@ -43,7 +43,6 @@ class Finance_Delivery
 
 		// Show link to delivery note
 		$loader->AddAction('woocommerce_order_actions_start', __CLASS__,  'show_delivery_link');
-//		MyLog(__FUNCTION__);
 	}
 
 	/**
@@ -123,7 +122,7 @@ class Finance_Delivery
 			}
 		} else {
 			$date_format = 'Y-m-j';
-			$date        = GetParam( "week", false, date( $date_format, strtotime( "last sunday" ) ) );
+			$date        = GetParam( "week", false, first_day_of_week() );
 			$report      .= Core_Html::GuiHeader( 1, __( "Deliveries of week" ) . " " . $date );
 			$report      .= Core_Html::GuiHyperlink( "last week", AddParamToUrl( GetUrl(), "week", date( $date_format, strtotime( $date . " -1 week" ) ) ) ) . " ";
 			$report      .= Core_Html::GuiHyperlink( "next week", AddParamToUrl( GetUrl(), "week", date( $date_format, strtotime( $date . " +1 week" ) ) ) );
@@ -460,24 +459,24 @@ class Finance_Delivery
 
 	static private function do_create_delivery($edit = false)
 	{
-		MyLog(__FUNCTION__ . " e=$edit");
+		FinanceLog(__FUNCTION__ . " e=$edit");
 		$json_params = file_get_contents("php://input");
 		$data =null;
 //		if (! $json_params) $json_params = '[["18669","322",0],["%D7%A1%D7%9C%20%D7%A4%D7%99%D7%A8%D7%95%D7%AA","1","100",0,"1121","1",0],["%D7%A1%D7%9C%20%D7%99%D7%A8%D7%A7%D7%95%D7%AA%20%D7%9E%D7%A9%D7%A4%D7%97%D7%AA%D7%99","1","140",0,"1118","1",0],["%D7%91%D7%99%D7%99%D7%92%D7%9C%D7%94%20%D7%9B%D7%95%D7%A1%D7%9E%D7%99%D7%9F%20-%20%D7%9E%D7%90%D7%A4%D7%99%D7%99%D7%AA%20%D7%94%D7%A8%D7%9E%D7%9F","4","14",8.14,"448","4",1],["%D7%9E%D7%A9%D7%9C%D7%95%D7%97","1","10.00",1.45,"0","1",1],["%D7%93%D7%91%D7%A9%20%D7%94%D7%91%D7%A9%D7%9F%20(250%20%D7%92%D7%A8%D7%9D)%20-%20%D7%90%D7%91%D7%95%D7%A7%D7%93%D7%95","1","16",2.32,"17465","1",1]]';
 		$data = json_decode( $json_params );
 		if (! $data) {
-			MyLog("no post data");
+//			FinanceLog("no post data");
+//			$data = array(array(12110, 15.9, 0, 0), array("בננה", 1, 0, 0, 1606, 1, 0));
 			print "no post data";
 			return false;
 		}
 		$order_id = $data[0][0];
 		if (! ($order_id > 0)) {
-			$message = "Bad order id $order_id";
-			MyLog($message);
+			$message = "Failed: bad order id $order_id";
+			FinanceLog($message);
 			print $message;
 			return false;
 		}
-		MyLog($order_id);
 		$total = $data[0][1];
 		$vat = $data[0][2];
 		$fee = $data[0][3];
@@ -487,10 +486,11 @@ class Finance_Delivery
 		$lines = count($data) - 1;
 
 		if ($edit) {
-			MyLog("Edit");
 			if (! $d->DeleteLines()) return false;
 		}
-		$d->CreateOrUpdateDelivery( $order_id, $total, $vat, $lines, $edit, $fee );
+		$del_id = $d->CreateOrUpdateDelivery( $order_id, $total, $vat, $lines, $edit, $fee );
+
+		FinanceLog("created id $del_id");
 
 		for ($i = 1; $i < count($data); $i ++)
 		{
@@ -507,7 +507,6 @@ class Finance_Delivery
 				else
 					$prod_id = 0;
 			}
-			// FinanceLog("INPUT: $prod_name $prod_id $has_vat");
 			$prod_data = array(
 			'product_name' => $prod_name,
 			'quantity' => $q,
@@ -520,6 +519,11 @@ class Finance_Delivery
 
 			// $product_name, $quantity, $quantity_ordered, $vat, $price, $line_price, $prod_id )
 			$d->AddDeliveryLine( $prod_data );
+		}
+
+		if ( ! $d->getOrder()->setStatus( 'wc-awaiting-shipment' ) ) {
+			FinanceLog( "can't update order status" );
+			return 0;
 		}
 
 		return $d->delivery_id;
@@ -553,9 +557,6 @@ class Finance_Delivery
 		       . $price . ', '
 		       . round( $line_price, 2 ) . ', '
 		       . $prod_id . ", $has_vat )";
-
-//		FinanceLog( "$delivery_id: $product_name $quantity $quantity_ordered $vat $price $line_price $prod_id $has_vat", __FILE__);
-//		FinanceLog($sql);
 
 		return SqlQuery( $sql );
 	}
@@ -592,6 +593,7 @@ class Finance_Delivery
 		}
 
 		if ( ! ( $delivery_id > 0 ) ) {
+			FinanceLog("Failed: no delivery id");
 			die ( "Error no delivery id!" );
 		}
 
@@ -607,9 +609,6 @@ class Finance_Delivery
 			Finance::add_transaction( $this->getUserId(), $date, $total, $fee, $delivery_id, 3 );
 		}
 		// $order = new WC_Order( $order_id );
-		if ( ! self::getOrder()->setStatus( 'wc-awaiting-shipment' ) ) {
-			printbr( "can't update order status" );
-		}
 
 		// Return the new delivery id!
 		$this->delivery_id = $delivery_id;
@@ -626,7 +625,7 @@ class Finance_Delivery
 	private function DeleteLines() {
 		$db_prefix = GetTablePrefix("delivery_lines");
 		$sql = "DELETE FROM ${db_prefix}delivery_lines WHERE delivery_id = " . $this->delivery_id;
-		MyLog($sql);
+		FinanceLog($sql);
 
 		return SqlQuery( $sql );
 	}
@@ -634,7 +633,7 @@ class Finance_Delivery
 	private function DeleteLine($id) {
 		$db_prefix = GetTablePrefix("delivery_lines");
 		$sql = "DELETE FROM ${db_prefix}delivery_lines WHERE id = " . $id;
-		MyLog($sql);
+		FinanceLog($sql);
 
 		return SqlQuery( $sql );
 	}
@@ -642,7 +641,7 @@ class Finance_Delivery
 	// Action to update delivery
 	static public function save_wrap()
 	{
-		MyLog(__FUNCTION__);
+		FinanceLog(__FUNCTION__);
 		$send_email = GetParam("send_email");
 		$del_id =  self::do_create_delivery(false);
 		if ($del_id and $send_email) {
@@ -659,10 +658,10 @@ class Finance_Delivery
 			print "no id supplied";
 			die (1);
 		}
-		MyLog(__FUNCTION__ . " $delivery_id");
+		FinanceLog(__FUNCTION__ . " $delivery_id");
 		$d = new Finance_Delivery( $order_id, $delivery_id );
 		if (! $d->delivery_id) {
-			MyLog("no delivery for order $order_id");
+			FinanceLog("no delivery for order $order_id");
 			print "no delivery for order $order_id";
 			return false;
 		}
@@ -678,10 +677,10 @@ class Finance_Delivery
 			print "failed: no id supplied";
 			die (1);
 		}
-		MyLog(__FUNCTION__ . " $delivery_id");
+		FinanceLog(__FUNCTION__ . " $delivery_id");
 		$d = new Finance_Delivery( $order_id, $delivery_id );
 		if (! $d->delivery_id) {
-			MyLog("no delivery for order $order_id");
+			FinanceLog("no delivery for order $order_id");
 			print "no delivery for order $order_id";
 			return false;
 		}
@@ -728,7 +727,6 @@ class Finance_Delivery
 
 	public function order_complete($force = false)
 	{
-		FreightLog(__FUNCTION__ . $this->getId());
 		$order_id = $this->order_id;
 		$O = new Finance_Delivery($order_id);
 
@@ -739,7 +737,7 @@ class Finance_Delivery
 			$fee = $order->getShippingFee();
 			// Check if there is delivery fee.
 			if (! $fee) {
-				MyLog("No delivery fee for order $order_id");
+				FinanceLog("No delivery fee for order $order_id");
 				Flavor::instance()->add_admin_notice("No delivery fee for order $order_id");
 			}
 			$del_id = $O->CreateDeliveryFromOrder($order_id, 1);
@@ -793,7 +791,7 @@ class Finance_Delivery
 			$total += $fee;
 			$vat += Israel_Shop::vatFromTotal($fee);
 			$lines ++;
-			MyLog("fee vat: $vat $fee " . Israel_Shop::vatFromTotal($fee));
+			FinanceLog("fee vat: $vat $fee " . Israel_Shop::vatFromTotal($fee));
 		}
 
 		$delivery_id = $this->CreateOrUpdateDelivery($order_id, $total, $vat, $lines, false, $fee);
@@ -879,13 +877,9 @@ class Finance_Delivery
 			die ( "can't get client id from order " . $this->OrderId() );
 		}
 
-		MyLog( __FILE__, "client_id = " . $client_id );
-
 		$sql = "SELECT dlines FROM im_delivery WHERE id = " . $this->delivery_id;
 
 		$dlines = SqlQuerySingleScalar( $sql );
-
-		MyLog( __FILE__, "dlines = " . $dlines );
 
 		$del_user = $this->getOrder()->getOrderInfo( '_billing_first_name' );
 		$message  = Core_Html::HeaderText();
@@ -921,7 +915,7 @@ class Finance_Delivery
 </html>";
 
 		$user_info = get_userdata( $client_id );
-		MyLog( $user_info->user_email );
+		FinanceLog( $user_info->user_email );
 		$to = $user_info->user_email;
 		// print "To: " . $to . "<br/>";
 		if ( $more_email ) {

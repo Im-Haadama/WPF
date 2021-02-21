@@ -172,6 +172,7 @@ class Core_Hook_Handler {
 
 	public function DoAction($action, $params)
 	{
+		if ($this->debug) FinanceLog($action);
 		if (! isset($this->actions[$action]))
 			print "Failed: no handler for $action";
 		else {
@@ -179,5 +180,10 @@ class Core_Hook_Handler {
 //			var_dump($params);
 			do_action( $action, $params );
 		}
+	}
+
+	public function DebugOn()
+	{
+		$this->debug = true;
 	}
 }

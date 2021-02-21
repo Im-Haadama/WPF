@@ -344,7 +344,7 @@ class Finance_Order {
 	public static function CalculateNeeded( &$needed_products, $user_id = 0, &$user_table = null, $debug_product = null) {
 		$db_prefix = GetTablePrefix("delivery_lines");
 
-		$include_shipment = false;
+		$include_shipment = true;
 		/// print "user id " . $user_id . "<br/>";
 		$debug_product = 0; // 141;
 		if ( ! $user_id ) {
@@ -386,7 +386,7 @@ class Finance_Order {
 			$sql .= " and order_user(id) = " . $user_id;
 		}
 
-		// print $sql;
+//		 print $sql;
 		$result = SqlQuery( $sql );
 
 		// Loop open orders.
@@ -629,20 +629,25 @@ class Finance_Order {
 			$args = array( $this->order_id );
 		}
 		foreach ( $args as $id ) {
-			$order = new WC_Order( $id );
-			FinanceLog( __METHOD__, $id . " changed to " . $status );
-			// var_dump($order);
-			switch ( $status ) {
-				case 'wc-completed':
-					$order->payment_complete();
-					$order->update_status( $status );
-					break;
-				default:
-					$order->update_status( $status );
+			try {
+				$order = new WC_Order( $id );
+				// var_dump($order);
+				switch ( $status ) {
+					case 'wc-completed':
+						$order->payment_complete();
+						$order->update_status( $status );
+						break;
+					default:
+						FinanceLog("updating");
+						$order->update_status( $status );
+						FinanceLog("done");
+				}
+			} catch (Exception $e) {
+				FinanceLog("Exception " . $e->getMessage());
+				return false;
 			}
 			// var_dump($order);
 		}
-
 		return true;
 	}
 
@@ -1029,7 +1034,7 @@ class Finance_Order {
 		return true;
 	}
 
-	function PrintHtml( $selectable = false ) {
+	function PrintHtml( $selectable = false, $mission_id = null ) {
 		$fields = array();
 
 		if ( $selectable ) array_push( $fields, Core_Html::GuiCheckbox( "chk_" . $this->order_id, false, array("class"=>"deliveries", "checkbox_class" => "deliveries") ) );
@@ -1071,8 +1076,32 @@ class Finance_Order {
 
 		array_push($fields, $this->GetDriverComments());
 
-		if ($ext_id = GetMetaField($this->order_id, 'external_order_id'))
-			array_push($fields, $ext_id);
+		array_push($fields, GetMetaField($this->order_id, 'external_order_id'));
+
+		$supplier_address = '';
+		if (class_exists('Fresh_Order')) {
+			$order  =  new Fresh_Order($this->order_id);
+			if ($supply_points = $order->SuppliersOnTheGo()) {
+				$supplier         = new Fresh_Supplier( $supply_points[0] );
+				$supplier_address = $supplier->getAddress();
+			}
+		}
+		array_push($fields, $supplier_address);
+
+		// Check if we need to collect something on the go
+//			if ( $site_id == $multisite->getLocalSiteID() and $order_site != "supplies" ) {
+//				$order = self::getOrder($order_id);
+//		array_push($fields, )
+//		if ($supply_points = $this->SuppliersOnTheGo($mission_id) ) {
+//					$order = new Fresh_Order( $order_id );
+//						$supplier = new Fresh_Supplier( $supply_points[0] );
+//						$this->AddPrerequisite( $order_id, $supplier->getAddress() );
+//					}
+//				}
+//			}
+
+
+		// array_push($fields, )
 
 		return  "<tr> " . self::delivery_table_line( 1, $fields ) . "</tr>";
 	}

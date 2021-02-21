@@ -747,8 +747,6 @@ class Finance {
 		$sql = "INSERT INTO im_business_info (" . $fields . ") "
 		       . "VALUES (" . $values . " )";
 
-		MyLog( $sql, __FILE__ );
-
 		SqlQuery( $sql );
 
 		return SqlInsertId();
@@ -842,9 +840,8 @@ function payment_list() {
 
 /*-- End payment gateway--*/
 
-function FinanceLog($message, $print = false)
+function FinanceLog($message)
 {
-	if ($print) print $message;
 	MyLog($message, '', 'finance.log');
 }
 

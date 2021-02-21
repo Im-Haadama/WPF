@@ -49,7 +49,7 @@ class Focus_Database extends Core_Database
 				SqlQuery( "ALTER TABLE im_projects add project_contact varchar(50)" );
 			case '1.6':
 				SqlQuery( "ALTER TABLE im_working_rates add add_break bool" );
-			case '1.6.1':
+			case '1.6.3':
 				SqlQuery( "create table im_tasklist_times
 				(
 					id int auto_increment
@@ -59,6 +59,8 @@ class Focus_Database extends Core_Database
 					action varchar(200),
 					time datetime
 				)" );
+			case '1.6.4':
+				SqlQuery( "ALTER TABLE ${db_prefix}task_templates ADD `created` DATE;");
 		}
 		return self::UpdateInstalled("tables", $version );
 	}

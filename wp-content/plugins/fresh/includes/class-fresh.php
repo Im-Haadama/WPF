@@ -211,6 +211,7 @@ class Fresh {
 		Fresh_Accounting::instance()->init_hooks($loader);
 
 		add_action('wp_enqueue_scripts', array($this, 'remove_add'), 2222);
+
 	}
 
 //	static function init_my_account_links( $menu_links ){

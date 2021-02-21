@@ -166,6 +166,7 @@ and curdate() > order_mission_date(id)" );
 
 		foreach ( $ids as $id ) {
 			$order = new Finance_Order( $id );
+			if ($order->getStatus() == 'wc-processing') continue;
 			FinanceLog("adding $id");
 			$order->delivered( $message );
 			$result .= "Order $id $message\n";

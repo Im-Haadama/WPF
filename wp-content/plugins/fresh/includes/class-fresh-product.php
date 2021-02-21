@@ -115,7 +115,6 @@ class Fresh_Product  extends Finance_Product {
 		// print $sql;
 		$result = SqlQueryArray( $sql );
 
-		// var_dump($result);
 		return $result;
 	}
 

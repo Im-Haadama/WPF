@@ -39,7 +39,7 @@ class Core_Db_MultiSite extends Core_MultiSite {
 		}
 
 		if (TableExists( "multisite" ) ) {
-			$sql           = "select id, site_name, tools_url, local, display_name, active, master, user, password " .
+			$sql           = "select id, site_name, tools_url, local, display_name, active, master, user, password, pickup_address " .
 			                 " from im_multisite 
 			                 where active = 1";
 			$results       = SqlQueryArray( $sql );
@@ -55,7 +55,7 @@ class Core_Db_MultiSite extends Core_MultiSite {
 					if ( $row[6] ) {
 						$master_id = $row[0];
 					}     // master
-					$line               = array( $id, $row[1], $row[2], $row[7], $row[8] );
+					$line               = array( $id, $row[1], $row[2], $row[7], $row[8], $row[9] );
 					$sites_array[ $id ] = $line;
 					// array_push($sites_array, $line);
 				}
