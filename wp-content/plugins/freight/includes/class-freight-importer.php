@@ -145,6 +145,8 @@ class Freight_Importer {
 			if ($key == 0) continue;
 			$external_id = $delivery_info['order_id'];
 			if ($external_id and SqlQuerySingleScalar("select count(*) from wp_postmeta where meta_key='external_order_id' and meta_value=$external_id")) {
+				$deliveries_info[$key]['order_id'] = SqlQuerySingleScalar("select post_id from wp_postmeta where meta_key='external_order_id' and meta_value=$external_id");
+				$deliveries_info[$key]['status'] = 'D';
 				$duplicate++;
 				continue;
 			}
