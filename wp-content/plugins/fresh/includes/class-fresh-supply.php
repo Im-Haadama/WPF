@@ -308,7 +308,6 @@ class Fresh_Supply {
 //		return $status_names[ $status - 1 ];
 //	}
 
-
 	public function GetProduct($line_id)
 	{
 		return SqlQuerySingleScalar( "select product_id from im_supplies_lines where id = " . $line_id);
@@ -374,6 +373,8 @@ class Fresh_Supply {
 		$data .= $this->HtmlLines( $args );
 		$data .= "<br/>";
 		if ($edit) $data .= $this->Operation();
+
+		$data .= Core_Html::GuiHyperlink("Download", Flavor::getPost() . "?operation=supply_download&id=" .  $this-> getID());
 
 		return $data;
 	}
@@ -817,5 +818,31 @@ class Fresh_Supply {
 		}
 
 		return $row_text;
+	}
+
+	function getCSV()
+	{
+		$sql = 'select product_id, quantity, id'
+		       . ' from im_supplies_lines where status = 1 and supply_id = ' . $this->ID;
+
+		$rows_data = SqlQueryAssoc($sql);
+		$result = array(array("prod_name", "quantity", "price", "line_total"));
+
+		foreach ($rows_data as $line_id => $row)
+		{
+			if (in_array($line_id, array("header"))) continue;
+
+			$prod_id = $row['product_id'];
+
+			if (! $prod_id) { print "bad id: $prod_id<br/>"; continue; }
+			$p = new Fresh_Product($prod_id);
+			$buy_price = $p->getBuyPrice($this->SupplierID);
+			$q=$row['quantity'];
+
+			array_push($result, array($p->getName(), $q, $buy_price, $buy_price * $q));
+		}
+
+		return array2csv($result);
+
 	}
 }

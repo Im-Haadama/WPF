@@ -956,7 +956,7 @@ class Core_Html {
 				// If prepare return null - remove it from table.
 				if (! $rows[$key]) {
 					unset( $rows[ $key ] );
-					$args['count'] --;
+					if (isset($args['count'])) $args['count'] --;
 				}
 			}
 		}

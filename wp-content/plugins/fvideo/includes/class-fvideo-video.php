@@ -34,10 +34,10 @@ class FVideo_Video {
 	{
 		$tracker = 'wss://tracker.openwebtorrent.com';
 
-		print $this->get_video();
 		$torrent_abs_path = FVideo_Torrent_Folder . $this->id . '.torrent';
-		if (1 or ! file_exists($torrent_abs_path)) {
+		if (0 or ! file_exists($torrent_abs_path)) {
 			$video          = $this->get_video();
+			print "v=$video<br/>";
 			$filename_parts = explode( '/', $video );
 			$file_name      = end( $filename_parts );
 
@@ -64,7 +64,7 @@ class FVideo_Video {
 				return null;
 			}
 		}
-		$result = get_site_url() . "/wp-content/uploads/torrents/" .  $this->id . '.torrent?tr='  .$tracker;
+		$result = get_site_url() . "/wp-content/uploads/torrents/" .  $this->id . '.torrent'; // ?tr='  .$tracker;
 //		print $result;
 		return $result;
 //		return 'https://site.weact.live/wp-content/uploads/videos/Trump.torrent?tr=wss://tracker.webtorrent.io';

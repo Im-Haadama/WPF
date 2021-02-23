@@ -31,6 +31,7 @@ class Fresh_Supplies {
 		$loader->AddAction('got_supply', $this, 'got_supply_wrap');
 		$loader->AddAction('supplies_merge', $this, 'supplies_merge');
 		$loader->AddAction('supplies_send', $this, 'supplies_send');
+		$loader->AddAction('supply_download', $this);
 
 		Core_Gem::getInstance()->AddTable("supplies");
 	}
@@ -65,7 +66,7 @@ class Fresh_Supplies {
 //			$categ_group = GetParam( "categ_group" );
 		$Supply      = new Fresh_Supply( $id );
 			// print header_text(true);
-		return $Supply->Html( $internal, true );
+		print $Supply->Html( $internal, true );
 	}
 
 	public function admin_menu()
@@ -91,8 +92,9 @@ class Fresh_Supplies {
 
 		$operation = GetParam("operation", false, null);
 		$args = [];
+		$args["id"] = GetParam("id", false);
 		if ($operation) {
-			print apply_filters($operation, $args);
+			Core_Hook_Handler::instance()->DoAction($operation, $args);
 			return;
 		}
 		$tabs = [];
@@ -357,8 +359,10 @@ class Fresh_Supplies {
 			// print "pl=" . $pricelist_id . "<br/>";
 			if ($pricelist_id)
 				$pricelist->Update($pricelist_id, $price);
-			else
-				$result .= "can't find pricelist for " . get_product_name($prod_id) . " " . $prod_id;
+			else {
+				$p = new Fresh_Product($prod_id);
+				$result .= "can't find pricelist for " . $p->getName() . " " . $prod_id;
+			}
 		}
 		if (! strlen($result)) return true;
 		return $result;
@@ -497,4 +501,21 @@ WHERE status = 1 AND supply_id IN (" . $supply_id . ", " . rtrim( implode( ",", 
 		return true;
 	}
 
+	function supply_download($params)
+	{
+		$id = GetArg($params, "id");
+		$s = new Fresh_Supply($id);
+		$date = $s->getDate();
+
+		$file_name = "supply_${id}_${date}.csv";
+		$file = $s->getCSV();
+
+		header("Content-Disposition: attachment; filename=\"" . $file_name . "\"");
+//		header("Content-Type: application/octet-stream");
+		header("Content-Length: " . strlen($file));
+		header("Connection: close");
+
+		print $file;
+
+	}
 }

@@ -127,7 +127,7 @@ class Freight_Actions {
 		$id = GetParam("id", true);
 		print Core_Html::HeaderText();
 		// The route stops.
-		$args = array("print" => true, "edit" => false);
+		$args = array("print" => true, "edit" => false, "sort"=>true);
 		$m = Freight_Mission_Manager::get_mission_manager($id);
 		print $m->dispatcher($args);
 

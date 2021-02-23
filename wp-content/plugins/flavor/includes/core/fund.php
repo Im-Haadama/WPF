@@ -94,3 +94,13 @@ function debug_trace($deep = 2)
 	}
 	return $result;
 }
+
+function array2csv($array){
+	$result = "";
+	foreach ($array as $row) {
+		foreach ($row as $cell)
+			$result .= str_replace(array(',', "<br/>", PHP_EOL, "\r"), ' ', $cell) . ",";
+		$result .=  PHP_EOL;
+	}
+	return $result;
+}

@@ -257,15 +257,16 @@ class FVideo {
 	{
 	    FVideoLog(__FUNCTION__);
 		$video_id = get_the_ID();
-		FVideoLog(StringVar($video_id));
 		$v = new FVideo_Video($video_id);
 		$torrent_url = $v->get_torrent();
-		$result = '<div id="video"></div>';
+		print "tor=$torrent_url<br/>";
+
 		if (! $torrent_url) return "Sorry, video not found";
 
 		$result = "<div id='video''></div>
     <script>
     var client = new WebTorrent();
+	client.on('error', (err) => { alert (err); });
 
     var torrentId = \"$torrent_url\";
     client.add(torrentId, function (torrent) {
@@ -539,3 +540,7 @@ function FVideoLog($message, $print = false)
 	if ($print) print $message;
 	MyLog($message, '', 'fVideo.log');
 }
+
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);

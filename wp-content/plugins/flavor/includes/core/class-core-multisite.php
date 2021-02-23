@@ -20,6 +20,14 @@ class Core_MultiSite {
 	protected $master_id;
 	protected $local_site_id;
 	private $http_codes;
+	private $results;
+
+	/**
+	 * @return mixed
+	 */
+	public function getResults($site_id) {
+		return $this->results[$site_id] ?? null;
+	}
 
 	/// GETTERS
 
@@ -121,6 +129,7 @@ class Core_MultiSite {
 	/// Execute is for single call.
 	/// GetAll will Run on all defined severs.
 	function GetAll( $func, $verbose = false, $debug = false, $strip = false ) {
+		$this->results = array();
 		$debug = GetParam("debug", false, $debug);
 		$output = "";
 		if ( $debug ) {
@@ -133,6 +142,7 @@ class Core_MultiSite {
 
 		foreach ( $this->sites_array as $site_id => $site ) {
 			$result = $this->Run( $func, $site_id, $first, $debug );
+			$this->results[$site_id] = $result;
 			if (! $result) {
 				$output .= "Can't get from " . Core_Html::GuiHyperlink($this->getSiteName($site_id), $this->getSiteURL($site_id) . '/' . $func) .
 				           " http code: " . $this->http_codes[$site_id] . Core_Html::Br();
@@ -222,6 +232,8 @@ class Core_MultiSite {
 
 	function getAddress($site_id)
 	{
-		return $this->sites_array[$site_id][Core_Multisite_Fields::pickup_address];
+		if (isset($this->sites_array[$site_id][Core_Multisite_Fields::pickup_address]))
+			return $this->sites_array[$site_id][Core_Multisite_Fields::pickup_address];
+		return '';
 	}
 }
