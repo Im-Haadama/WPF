@@ -321,18 +321,11 @@ function AppendUrl( $url, $addition ) {
 	 * @return bool|string
 	 */
 	function GetContent( $url ) {
-//		print "url: $url<br/>";
 		$handle = curl_init();
 		curl_setopt( $handle, CURLOPT_URL, $url );
 		curl_setopt( $handle, CURLOPT_RETURNTRANSFER, true );
-//
-//		var_dump($handle);
-		$data = curl_exec( $handle );
-//
-//		curl_close( $handle );
 
-//		$data = file_get_contents($url);
-		return $data;
+		return curl_exec( $handle );
 	}
 
 /**
@@ -840,7 +833,7 @@ function israelpost_get_city_postcode( $city )
 	$city=trim($city);
 	$url = "http://www.israelpost.co.il/zip_data.nsf/SearchZip?OpenAgent&Location=" . urlencode( $city ) . "&POB=1";
 
-	$data = file_get_contents( $url );
+	$data = GetContent( $url );
 
 	$value = array();
 	if ( preg_match( "/RES[0-9]*/", $data, $value ) ) {

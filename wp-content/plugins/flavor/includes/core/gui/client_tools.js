@@ -398,23 +398,44 @@ function show_modal(div, blur_div)
         blur_div.className = "is-blurred";
 }
 function moveNextRow() {
-    let me = document.getElementById(event.target.id);
     if (event.which === 13) {
-        let next_row = me.parentElement.nextElementSibling;
-        if (null === next_row) return;
-        if (undefined !== next_row) {
-            let td = next_row.cells[me.cellIndex];
-            if (undefined !== td) {
-                let input = td.firstElementChild;
-                if (undefined !== input) {
-                    input.focus();
-                    input.select();
-                }
-
-            }
-            // event.stopPropagation();
-        }
+        doMoveNextRow();
     }
+}
+
+function doMoveNextRow()
+{
+    let me = document.getElementById(event.target.id);
+    let next_row = me; // .parentElement.nextElementSibling;
+    let level = 0;
+    let cell_index = undefined;
+    do {
+        next_row = next_row.parentElement;
+        if (undefined === cell_index) cell_index = next_row.cellIndex;
+        level ++;
+    } while ('TR' !== next_row.tagName);
+    next_row = next_row.nextElementSibling;
+    if ((next_row.tagName !== 'TR')) return; // Can't find next row
+
+    let input = next_row.cells[cell_index];
+    for (let l = 1; l < level; l++)
+        input = input.firstElementChild;
+
+    input.focus();
+    input.select();
+
+    // if (undefined !== next_row) {
+    //     let td = next_row.cells[me.cellIndex];
+    //     if (undefined !== td) {
+    //         let input = td.firstElementChild;
+    //         if (undefined !== input) {
+    //             input.focus();
+    //             input.select();
+    //         }
+    //     }
+        // event.stopPropagation();
+    // }
+
 }
 
 function next_page(xmlhttp, page) {

@@ -338,11 +338,6 @@ class Core_Fund {
 	function load_style( $style_file ) {
 		return '<link rel="stylesheet" type="text/css" href="' . $style_file . '">';
 
-//	$text = "<style>";
-//	$text .= file_get_contents( $style_file );
-//	$text .= "</style>";
-//
-//	return $text;
 	}
 
 }

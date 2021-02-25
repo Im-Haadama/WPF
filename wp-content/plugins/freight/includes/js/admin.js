@@ -64,6 +64,7 @@ function update_order_pri(post_file, obj)
 {
     let new_pri = obj.value;
     do_update_order_pri(post_file, obj, new_pri);
+    doMoveNextRow();
 }
 
 function do_update_order_pri(post_file, obj, new_pri)
@@ -175,3 +176,4 @@ function freight_import(post_file, div)
         '<input type="submit" value="טען" name="submit"></form></div>';
 
 }
+

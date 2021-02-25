@@ -64,7 +64,7 @@ class Freight_Mission_Manager
 
 		FreightLog(__FUNCTION__);
 		// Try cache
-		$data = null; // InfoGet("mission_$mission_id");
+		$data = InfoGet("mission_$mission_id");
 		if ( $data) {
 			FreightLog("using cache");
 			return unserialize($data);
@@ -320,8 +320,8 @@ group by pm.meta_value, p.post_status");
 						$user_name = $order_info[ OrderTableFields::client_name ];
 						$pri_input = Core_Html::GuiInput( "pri" . $order_id . "_" . $site_id, $order_pri, array( "size"   => 5,
 						                                                                                         "events" => 'onchange="update_order_pri(\'' . self::getPost() . '\',this)"'
-							) ) .
-			 	             Core_Html::GuiButton( "btn_reset_reset", "R", array( "action" => "reset_path('" . self::getPost() . "'," . ( $i + 1 ) . ")" ) );
+							) );
+						// Core_Html::GuiButton( "btn_reset_reset", "R", array( "action" => "reset_path('" . self::getPost() . "'," . ( $i + 1 ) . ")" ) );
 						$type      = "orders";
 						if ( $site == "supplies" ) {
 							$type = "supplies";
@@ -380,9 +380,8 @@ group by pm.meta_value, p.post_status");
 						array_push( $path_info, $new_row);
 					}
 				} else {
-					array_push($path_info, array(__("pickup"), '', '', $path[$i], '','','','','','', $total_distance));
-//					var_dump($lines_per_station[$path[$i]]);
-//					print "no lines per station $path[$i]<br/>";
+					// TODO - check order when pickup
+					array_push($path_info, array(__("pickup"), '', $path[$i], '','','','','','', $total_distance));
 				}
 
 				$prev = $path[ $i];
@@ -582,7 +581,7 @@ group by pm.meta_value, p.post_status");
 	static function geodecode_address($text)
 	{
 		FreightLog(__FUNCTION__ . " " . $text);
-		$r = InfoGet("geodecode_city" . $text);
+		$r = null; // InfoGet("geodecode_city" . $text);
 
 		if ($r) {
 			return unserialize($r);
@@ -590,13 +589,12 @@ group by pm.meta_value, p.post_status");
 		$url = "https://maps.googleapis.com/maps/api/geocode/json?address=" . urlencode( $text ).
 		     "&key=" . MAPS_KEY . "&language=iw";
 
-		// print $s;
-//		var_dump($address);	print "<br/>";
-//		$result = @file_get_contents( $s );
-		$ch = curl_init();
-		curl_setopt( $ch, CURLOPT_URL, $url );
-		curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1 );
-		$result = curl_exec( $ch );
+//		$ch = curl_init();
+//		curl_setopt( $ch, CURLOPT_URL, $url );
+//		curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1 );
+//		$result = curl_exec( $ch );
+
+		$result = GetContent($url);
 		if (! $result) return null;
 
 		$j = json_decode( $result );
@@ -621,6 +619,8 @@ group by pm.meta_value, p.post_status");
 				}
 			}
 		}
+		if (strlen($city) < 2) return null;
+
 		$address = array("city" => $city,
 		                 "address_1" => $street_number . " " . $address_1,
 		                 "address_2" => $address_2);
@@ -632,14 +632,14 @@ group by pm.meta_value, p.post_status");
 	{
 		$r = InfoGet("lat_long" . $address);
 
-		if ($r) {
+		if ($r and strlen($r) > 1) {
 			return array(strtok($r, ":"), strtok(null));
 		}
 		$s = "https://maps.googleapis.com/maps/api/geocode/json?address=" . urlencode( $address ).
 		     "&key=" . MAPS_KEY; // . "&language=iw";
 
 		// print $s;
-		$result = file_get_contents( $s );
+		$result = GetContent( $s );
 
 		$j = json_decode( $result );
 		$lat = $j->results[0]->geometry->location->lat;
@@ -740,11 +740,11 @@ group by pm.meta_value, p.post_status");
 		$candidates = $rest;
 		// Remove points that does not meet preq.
 		foreach ( $candidates as $key => $candidate ) {
-			$location = $this->point_orders[ $candidate ];
+			$order_id = $this->point_orders[ $candidate ];
 
-			if (isset($this->prerequisite[$location]))
-				if (isset($this->prerequisite[$location])) {
-					$diff = array_diff($this->prerequisite[$location], $path, array($candidate));
+			if (isset($this->prerequisite[$order_id]))
+				if (isset($this->prerequisite[$order_id])) {
+					$diff = array_diff($this->prerequisite[$order_id], $path, array($candidate));
 					if (count($diff))
 						unset( $candidates[ $key ] );
 				}
@@ -892,6 +892,7 @@ group by pm.meta_value, p.post_status");
 
 	static function order_get_pri($order_id, $site_id, $default = 100)
 	{
+		if ($order_id == "loading") return 0;
 		if (! ($order_id > 0))
 		{
 			return "bad order_id $order_id";

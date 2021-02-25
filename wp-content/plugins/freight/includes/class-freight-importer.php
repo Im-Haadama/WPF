@@ -53,7 +53,7 @@ class Freight_Importer {
 		if (! self::before_import($mission_id, $the_shipping)) return false;
 
 		// http://84.228.229.231/smartphone/TasksList.aspx#
-		$html = file_get_contents($file_name);
+		$html = GetContent($file_name);
 		$html = str_replace("charset=windows-1255", "", $html);
 
 		// Create a new DOM Document
