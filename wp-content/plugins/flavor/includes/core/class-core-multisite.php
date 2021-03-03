@@ -230,7 +230,7 @@ class Core_MultiSite {
 		return $this->Run($request, $site, true, $debug);
 	}
 
-	function getAddress($site_id)
+	function getSiteAddress($site_id)
 	{
 		if (isset($this->sites_array[$site_id][Core_Multisite_Fields::pickup_address]))
 			return $this->sites_array[$site_id][Core_Multisite_Fields::pickup_address];

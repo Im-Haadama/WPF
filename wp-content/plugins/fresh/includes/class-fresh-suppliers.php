@@ -13,6 +13,7 @@ class Fresh_Suppliers {
 		$loader->AddAction('pricelist_delete', $this, 'delete');
 		$loader->AddAction("pricelist_before_import", $this, 'supplier_pricelist_before_import');
 		$loader->AddAction("pricelist_update_price" , $this, 'pricelist_update_price');
+		$loader->AddAction("plan_supply", $this);
 
 		add_filter("supplier_price_list_check_valid", array($this, 'supplier_price_list_check_valid'), 10, 2);
 	}
@@ -66,6 +67,13 @@ class Fresh_Suppliers {
 				"product_name" => "", "price"=>Core_Html::GuiInput("price_new_row", "", array("size"=>3)));
 
 		$this->gem->AddVirtualTable( "pricelist", $args );
+
+		$args["prepare_plug"] = "Fresh_Suppliers::supply_plan_line";
+		$args["extra_header"] = array("מלאי", "הזמנות חודש", "מכירות חודש", "הזמנות 6 חודשים", "מכירות 6 חודשים");
+		$args["class"] = "sortable";
+
+		$this->gem->AddVirtualTable( "supplier_products", $args );
+
 //		if (get_user_id() == 1) print '============================== ADD<br/>';
 
 		// load classes
@@ -128,7 +136,9 @@ class Fresh_Suppliers {
 			$args = self::Args("suppliers");
 			$args["operation"] = $operation;
 			$id = GetParam("id", false);
-			$result = apply_filters( $operation, $result, $id, $args );
+			Core_Hook_Handler::instance()->DoAction($operation, $args);
+			return;
+//			$result = apply_filters( $operation, $result, $id, $args );
 //			MyLog($result);
 		}
 
@@ -177,7 +187,8 @@ class Fresh_Suppliers {
 		$args["fields"] = array("id", "supplier_name", "supplier_description");
 		// $args["links"] = array("id"=> AddToUrl(array( "operation" => "show_supplier", "id" => "%s")));
 		$args["header_fields"] = array("supplier_name" => "Name", "supplier_description" => "Description");
-		$args["actions"] = array(array("Show products", AddToUrl(array("operation" => "gem_v_show", "table"=>"pricelist", "supplier_id" => "%s"))));
+		$args["actions"] = array(array("Show products", AddToUrl(array("operation" => "gem_v_show", "table"=>"pricelist", "supplier_id" => "%s"))),
+			array("Plan supply", AddToUrl(array("operation" => "plan_supply", "supplier_id"=>"%s"))));
 		$args["order"] = "supplier_last_pricelist_date(id) desc";
 		$args["title"] = "Suppliers";
 //		$result .= "page number: " . $args["page_number"] . "<br/>";
@@ -343,7 +354,7 @@ class Fresh_Suppliers {
 		$s = new Fresh_Supplier($supplier_id);
 		$result .= Core_Html::GuiHeader(1, __("Supplier pricelist") . " " . $s->getSupplierName());
 
-		return $result;
+		print $result;
 	}
 
 	static function pricelist_functions($result)
@@ -356,7 +367,7 @@ class Fresh_Suppliers {
 //			$result .= Core_html::GuiButton("btn_remove_map", "Remove Map", array("action" => "pricelist_remove_map('". Fresh::getPost() ."')"));
 			$result .= self::draftable_products();
 		}
-		return $result;
+		print $result;
 	}
 
 	function add_pricelist_item()
@@ -382,5 +393,51 @@ class Fresh_Suppliers {
 		$item = new Fresh_Pricelist_Item($pricelist_id);
 		return $item->setPrice($new_price);
 	}
-}
 
+	function plan_supply($args)
+	{
+		$result = Core_Html::GuiHeader(1, "Plan a supply");
+
+//		array("operation" => "gem_v_show", "table"=>"pricelist", "supplier_id" => "%s"))
+		$instance = Core_Gem::getInstance();
+		$args["id"] = GetParam("supplier_id");
+
+		$result .= $instance->GemVirtualTable("supplier_products", $args);
+
+		print $result;
+	}
+
+	static public function supply_plan_line($row, $edit = true) {
+		$create_info = GetParam( "create_products", false, false );
+		$supplier_id = GetParam( "supplier_id", true );
+
+		$pl_id = $row["id"];
+		if (! ($pl_id > 0)) return $row; // New row
+
+		$item = new Fresh_Pricelist_Item( $pl_id );
+		$catalog = new Fresh_Catalog();
+		$linked_prods = $catalog->GetProdID( $item->getId());
+
+		if (! $linked_prods) {
+			$row["inventory"] = '';
+			$row["buy1"] = '';
+			$row["sell1"] = '';
+			$row["buy6"] = '';
+			$row["sell6"] = '';
+			return $row;
+		}
+
+		$P = new Fresh_Product($linked_prods[0]);
+		$row["inventory"] = $P->getStock();
+		$data = $P->SellingInfo("1 month");
+		foreach ($data as $key => $value)
+			$row[$key. "1"] = $value;
+
+		$data = $P->SellingInfo("6 month");
+		foreach ($data as $key => $value)
+			$row[$key. "6"] = $value;
+
+//		$row = $item->AddProdInfo( $row, $edit, $create_info, $supplier_id );
+		return $row;
+	}
+}

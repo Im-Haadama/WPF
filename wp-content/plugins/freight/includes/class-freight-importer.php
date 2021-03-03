@@ -126,12 +126,14 @@ class Freight_Importer {
 
 	function end_of_import($deliveries_info, $mission_id, $the_shipping)
 	{
-		print Core_Html::GuiHeader(1, "imported data");
+		$result = Core_Html::GuiHeader(1, "imported data");
 		array_unshift($deliveries_info, array("first name", "last name", "address 1", "address 2", "city", "zip", "phone", "order_id","raw data", "baldar id"));
 //		unset($deliveries_info[0]);
 		self::create_orders($mission_id,$the_shipping,$deliveries_info);
 		$args = array("links" => array("order_id" => "/wp-admin/post.php?post=%d&action=edit"));
-		print Core_Gem::GemArray($deliveries_info, $args, "imported_orders");
+		$result .= Core_Gem::GemArray($deliveries_info, $args, "imported_orders");
+		InfoUpdate("import_result.". time(), $result);
+		print $result;
 	}
 
 	function create_orders($mission_id, $the_shipping, &$deliveries_info)
@@ -146,7 +148,7 @@ class Freight_Importer {
 			$external_id = $delivery_info['order_id'];
 			if ($external_id and SqlQuerySingleScalar("select count(*) from wp_postmeta where meta_key='external_order_id' and meta_value=$external_id")) {
 				$deliveries_info[$key]['order_id'] = SqlQuerySingleScalar("select post_id from wp_postmeta where meta_key='external_order_id' and meta_value=$external_id");
-				$deliveries_info[$key]['status'] = 'D';
+				$deliveries_info[$key]['status'] = 'D' . $external_id;
 				$duplicate++;
 				continue;
 			}
@@ -174,6 +176,8 @@ class Freight_Importer {
 		print $valid . " new orders in processing<br/>";
 		if ($bad_address) print $bad_address . " orders to fix address (remain waiting for payment<Br/>";
 		if ($duplicate) print $duplicate . " duplicate<br/>";
+
+		// So next time all points would be read.
 		Freight_Mission_Manager::clean($mission_id);
 	}
 

@@ -112,7 +112,7 @@ class Focus_Views {
 //		print "op=$operation";
 		if ($operation) {
 			$table_name = self::TableFromOperation( $operation );
-			$args = self::Args( $table_name, null,  $narrow );
+			$args = self::Args( $table_name, $operation,  $narrow );
 //			ob_start();
 			Core_Hook_Handler::instance()->DoAction($operation, $args);
 			return;
@@ -249,7 +249,7 @@ class Focus_Views {
 						"team"             => "Team"
 					);
 
-					if (! $narrow)
+					if ((! $narrow)  || ($action == "gem_add_tasklist"))
 					$args["fields"]        = array(
 						"id",
 						"task_title",

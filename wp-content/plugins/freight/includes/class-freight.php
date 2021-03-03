@@ -148,6 +148,7 @@ class Freight {
 		$loader->AddFilter("mission_actions", $this);
 		$loader->AddAction("mission_dispatch", $this);
 		$loader->AddAction("mission_markers", $this);
+		$loader->AddAction("mission_driver", $this);
 		// get local deliveries
 
 		GetSqlConn(ReconnectDb());
@@ -176,7 +177,8 @@ class Freight {
 	{
 		$actions['Plan'] = Core_Html::GuiHyperlink("Plan", "/wp-content/plugins/freight/plan.php?id=%d");
 		$actions['Dispatch'] = Core_Html::GuiHyperlink("Dispatch", AddToUrl("operation", "mission_dispatch&id=%d"));
-		$actions['clean'] = Core_Html::GuiHyperlink("Clean", AddToUrl("operation", "mission_clean&id=%d"));
+		$actions['Clean'] = Core_Html::GuiHyperlink("Clean", AddToUrl("operation", "mission_clean&id=%d"));
+		$actions['Driver'] = Core_Html::GuiHyperlink("Driver", Flavor::getPost("mission_driver&id=%d"));
 
 		return $actions;
 	}
@@ -543,6 +545,21 @@ class Freight {
 	{
 		new Freight_Settings();
 	}
+
+	function mission_driver()
+	{
+		$args = [];
+		$args["viewport"] = true;
+		$result = Core_Html::HeaderText($args);
+		$mission_id = GetParam("id", true);
+		$current_point = GetParam("current_point", false, 0);
+		$m = Freight_Mission_Manager::get_mission_manager($mission_id);
+
+		$result .= $m->driver_page($current_point);
+
+		print $result;
+	}
+
 }
 
 function FreightLog($message, $print = false)
@@ -550,7 +567,4 @@ function FreightLog($message, $print = false)
 	if ($print) print $message;
 	MyLog($message, '', 'freight.log');
 }
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
 

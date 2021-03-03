@@ -197,6 +197,11 @@ function SqlBind($table_name, &$stmt, $_values)
  */
 function SqlQuery( $sql, $report_error = true, $set_encoding = true )
 {
+	if (! is_string($sql)) {
+		SqlError("bad sql");
+		print_r($sql);
+		return null;
+	}
 	try {
 		$conn = GetSqlConn();
 	} catch ( Exception $e ) {

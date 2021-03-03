@@ -71,13 +71,13 @@ class Finance_Yaad {
 	 *
 	 * @return array
 	 */
-	function CreditPay($credit_info, string $user_name, int $user_id, float $amount, string $subject, int $payment_number = 1) : ?array
+	function CreditPay($credit_info, string $user_name, int $user_id, float $amount, string $payment_subject, int $payment_number = 1) : ?array
 	{
-		FinanceLog(__FUNCTION__ . " " . $credit_info['card_number'] . " $amount ");
+		FinanceLog(__FUNCTION__ . " " . $credit_info['card_number'] . " $amount $payment_subject");
 		// General
 		$params = array();
 		self::SetPayInfo($params);
-		self::SetTransactionInfo($params, $user_name, $user_id, $amount, $subject, $payment_number);
+		self::SetTransactionInfo($params, $user_name, $user_id, $amount, $payment_subject, $payment_number);
 		$params["CC"]     = $credit_info['card_number'];
 		$params["Tmonth"] = $credit_info['exp_date_month'];
 		$params["Tyear"]  = $credit_info['exp_date_year'];
@@ -89,10 +89,10 @@ class Finance_Yaad {
 		return $rc;
 	}
 
-	public function TokenPay( string $token, array $credit_info, string $user_name, int $user_id, float $amount, string $delivery_info, int $payment_number = 1) {
+	public function TokenPay( string $token, array $credit_info, string $user_name, int $user_id, float $amount, string $payment_subject, int $payment_number = 1) {
 		$params = array();
 		self::SetPayInfo($params);
-		self::SetTransactionInfo($params, $user_name, $credit_info['id_number'], $amount, $delivery_info, $payment_number);
+		self::SetTransactionInfo($params, $user_name, $credit_info['id_number'], $amount, $payment_subject, $payment_number);
 		$params["Token"] = "True";
 		$params["CC"] = $token;
 		$params["Tmonth"] = $credit_info['exp_date_month'];
@@ -183,8 +183,8 @@ class Finance_Yaad {
 		$params["Coin"] = 1;
 	}
 
-	private function SetTransactionInfo(&$params, String $user_name, string $user_id_number, float $amount, string $delivery_numbers, int $num_of_payments = 1) {
-		$params['Info']       = urlencode( "delivery " . $delivery_numbers );
+	private function SetTransactionInfo(&$params, String $user_name, string $user_id_number, float $amount, string $payment_subject, int $num_of_payments = 1) {
+		$params['Info']       = urlencode(  $payment_subject );
 		$params["Amount"]     = $amount;
 		$params["Tash"]       = $num_of_payments;
 		if ($num_of_payments > 1)

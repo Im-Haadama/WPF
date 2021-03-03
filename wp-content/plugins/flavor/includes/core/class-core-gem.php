@@ -296,7 +296,7 @@ class Core_Gem {
 
 		$result .= Core_Html::GuiHyperlink("download as CSV", Flavor::getPost() . "?operation=gem_v_csv&table=" . $v_table . '&'. $v_key . '=' . $args["id"]) ;
 
-		return $result;
+		print $result;
 	}
 
 	static function v_show_wrapper($operation, $id, $args)

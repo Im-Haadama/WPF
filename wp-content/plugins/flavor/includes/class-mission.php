@@ -284,7 +284,7 @@ class Mission {
 		$sql  = 'SELECT posts.id, order_user(posts.id) '
 		        . ' FROM `wp_posts` posts'
 		        . ' WHERE ' .
-		        " `post_status` in ('wc-awaiting-shipment', 'wc-processing') and " .
+//		        " `post_status` in ('wc-awaiting-shipment', 'wc-processing') and " .
 		        " id in (select post_id from wp_postmeta " .
 		        " WHERE meta_key = 'mission_id' " .
 		        " AND meta_value = " . $this->id . ") ";

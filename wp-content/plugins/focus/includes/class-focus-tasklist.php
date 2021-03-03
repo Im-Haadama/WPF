@@ -225,8 +225,9 @@ class Focus_Tasklist {
 
 	static function task_cancelled($task_id) {
 		$t = new Focus_Tasklist($task_id);
-		if ($t->creator() == get_current_user())
+		if ($t->creator() == get_user_id()) {
 			return $t->cancel();
+		}
 
 		return $t->remove_assignment();
 	}

@@ -2053,6 +2053,10 @@ class Core_Html {
 		$text .= '>';
 		$text .= '<head>';
 		$text .= '<meta http-equiv="content-type" content="text/html; charset=utf-8">';
+		if (GetArg($args, "viewport"))
+		{
+			$text .= '<meta name="viewport" content="initial-scale=1.0, minimum-scale=1.0, user-scalable=no" />';
+		}
 		$text .= '<title>';
 		if ( defined( $business_info ) ) {
 			$text .= $business_info;

@@ -342,7 +342,7 @@ if (class_exists("WC_Payment_Gateway")) {
 
 	}
 
-	function RemoveRawInfo($row_id)
+	static function RemoveRawInfo($row_id)
 	{
 		global $wpdb;
 		FinanceLog(__FUNCTION__ . ": $row_id");

@@ -414,6 +414,16 @@ class Fresh_Product  extends Finance_Product {
 		return $result;
 	}
 
+	public function sellingInfo($time_period)
+	{
+		$sql = "select sum(quantity) as sum_q, sum(quantity_ordered) as sum_o
+		from im_delivery_lines where 
+		prod_id = $this->id
+		and delivery_id in (select id from im_delivery
+		           where date > CURDATE() - INTERVAL $time_period)";
+		return SqlQuerySingleAssoc($sql);
+
+	}
 }
 
 class Fresh_ProductIterator implements  Iterator {
@@ -544,5 +554,4 @@ class Fresh_ProductIterator implements  Iterator {
 		// TODO: Implement rewind() method.
 		$this->position = 0;
 	}
-
 }

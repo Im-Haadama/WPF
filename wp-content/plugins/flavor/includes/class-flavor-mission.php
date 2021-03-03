@@ -68,6 +68,17 @@ class Flavor_Mission {
 		$result .= self::show_missions($week ? " first_day_of_week(date) = '$week'" : null, $multi->isMaster());
 		$result .= "<br/>" . Core_Html::GuiHyperlink("last week", AddToUrl("week", date('Y-m-d', strtotime("$week -1 week"))));
 
+		$result .= Core_Html::GuiHeader(1, "last imports");
+		$last_imports = SqlQueryArray("select id, info_key from im_info where info_key like 'import_result%' order by 1 desc limit 5");
+
+		foreach ($last_imports as $import)
+		{
+			$id = $import[0];
+			$time = substr($import[1], 14);
+			$result .= Core_Html::GuiHyperlink(date('Y-m-d h:i', $time), AddToUrl(array("operation" => "show_import", "id"=>$id))) . "<br/>";
+		}
+
+
 		print $result;
 	}
 

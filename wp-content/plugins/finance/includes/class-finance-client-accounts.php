@@ -83,7 +83,7 @@ class Finance_Client_Accounts
 
 		if ( ! $del_ids or ! count($del_ids) ) {
 			print "לא נבחרו תעודות משלוח";
-			MyLog("no del ids");
+			FinanceLog("no del ids");
 
 			return false;
 		}

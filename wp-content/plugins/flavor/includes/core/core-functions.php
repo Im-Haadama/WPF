@@ -316,16 +316,20 @@ function AppendUrl( $url, $addition ) {
 	}
 
 	/**
-	 * @param $url
+	 * @param $url_or_file
 	 *
 	 * @return bool|string
 	 */
-	function GetContent( $url ) {
-		$handle = curl_init();
-		curl_setopt( $handle, CURLOPT_URL, $url );
-		curl_setopt( $handle, CURLOPT_RETURNTRANSFER, true );
+	function GetContent( $url_or_file ) {
+		if (strstr($url_or_file, 'http')) {
+			$handle = curl_init();
+			curl_setopt( $handle, CURLOPT_URL, $url_or_file );
+			curl_setopt( $handle, CURLOPT_RETURNTRANSFER, true );
 
-		return curl_exec( $handle );
+			return curl_exec( $handle );
+		} else {
+			return file_get_contents($url_or_file);
+		}
 	}
 
 /**

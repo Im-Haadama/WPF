@@ -34,6 +34,7 @@ class Freight_Actions {
 		$loader->AddAction("freight_do_import_baldar", $this);
 
 		$loader->AddAction("mission_clean", $this);
+		$loader->AddAction("show_import", $this);
 	}
 
 	static function order_save_pri()
@@ -44,7 +45,7 @@ class Freight_Actions {
 
 		//			print info_get("mission_order_priority_" . $site_id . '_' .$order_id);
 		// TEMP: Remove duplicates.
-		Core_Options::info_remove("mission_order_priority_" . $site_id . '_' .$order_id);
+		InfoDelete("mission_order_priority_" . $site_id . '_' .$order_id);
 
 		if ($pri > 0)
 			return InfoUpdate("mission_order_priority_" . $site_id . '_' .$order_id, $pri);
@@ -196,7 +197,6 @@ class Freight_Actions {
 		if (! $file_name and !isset($_FILES["fileToUpload"]["tmp_name"])) {
 			$file_name = '/var/www/html/21-1-2021.html';
 			// print "No file selected";
-			// return;
 		}
 
 		if (! $file_name) $file_name = $_FILES["fileToUpload"]["tmp_name"];
@@ -204,7 +204,14 @@ class Freight_Actions {
 		$importer = new Freight_Importer();
 		$importer->import_baldar( $file_name, $mission_id );
 	}
+
+	function show_import()
+	{
+		$id = GetParam("id", true);
+		$info = SqlQuerySingleAssoc("select * from im_info where id = $id");
+		if (substr($info['info_key'], 0, 13) != 'import_result') die("bad key");
+
+		print Core_Html::GuiHeader(1, "Import date: " . date('Y-m-d h:i', substr($info['info_key'], 14)));
+		print $info['info_data'];
+	}
 }
-
-
-

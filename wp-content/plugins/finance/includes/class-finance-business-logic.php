@@ -241,8 +241,6 @@ class Finance_Business_Logic {
 		$amount = GetArg($args, "amount");
 		$payment_number = GetArg($args, "payment_number");
 
-		FinanceLog(__FUNCTION__ . " $customer_id");
-
 		if (! $this->Paying_Connect()) return false;
 
 		$sql = 'select 
@@ -302,7 +300,6 @@ class Finance_Business_Logic {
 	{
 //		print __FUNCTION__;
 		FinanceLog(__FUNCTION__ . " " . $user->getName() . " " . $amount);
-		$debug = false;
 
 		if (0 == $amount)
 			return true;
@@ -311,7 +308,7 @@ class Finance_Business_Logic {
 
 		if ($token) {
 			FinanceLog("trying to pay with token user " . $user->getName());
-			$transaction_info = $this->paying->TokenPay( $token, $credit_data, $user->getName(), $user->getUserId(), $amount, CommaImplode($account_line_ids), $payment_number );
+			$transaction_info = $this->paying->TokenPay( $token, $credit_data, $user->getName(), $user->getUserId(), $amount, self::payment_subject($account_line_ids), $payment_number );
 			$transaction_id = $transaction_info['Id'];
 			if (! $transaction_id or ($transaction_info['CCode'] != 0)) {
 				$message = "Failed: " . $user->getName() . ": Got error " . $this->paying->ErrorMessage($transaction_info['CCode']) . "\n";
@@ -325,18 +322,15 @@ class Finance_Business_Logic {
 			if ($paid) E_Fresh_Payment_Gateway::RemoveRawInfo($credit_data['id']);
 		} else {
 			FinanceLog("trying to pay with credit info " . $user->getName());
-			if ($debug) print "trying to pay with credit info<br/>";
 			// First pay. Use local store credit info, create token and delete local info.
-			$transaction_info = $this->paying->CreditPay($credit_data, $user->getName(), $user->getUserId(), $amount, CommaImplode($account_line_ids), $payment_number);
+			$transaction_info = $this->paying->CreditPay($credit_data, $user->getName(), $user->getUserId(), $amount, self::payment_subject($account_line_ids), $payment_number);
 			FinanceLog("back");
 			// info: Id, CCode, Amount, ACode, Fild1, Fild2, Fild3
 			if (($transaction_info['CCode'] != 0)) {
-				FinanceLog(__FUNCTION__, $transaction_info['CCode']);
+				FinanceLog(__FUNCTION__ . $transaction_info['CCode']);
 				$this->error_message .= "Got error " . $this->paying->ErrorMessage($transaction_info['CCode']) . "\n";
-				if ($debug) var_dump($credit_data);
 				return false;
 			}
-			if ($debug) var_dump($transaction_info);
 			$transaction_id = $transaction_info['Id'];
 			if (! $transaction_id){
 				print "No transaction id";
@@ -345,23 +339,20 @@ class Finance_Business_Logic {
 			$paid = $transaction_info['Amount'];
 			if ($transaction_id) {
 				print $user->getName() . " " . __("Paid") . " $amount. $payment_number " . __("payments") . "\n";
-				if ($debug) print "pay successful $transaction_id<br/>";
 
 				// Create token and save it.
 				$token_info = self::GetToken( $transaction_id );
 				if (isset($token_info['Token'])){
-					if ($debug) print "Got token " . $token_info['Token'] . "<br/>";
 					delete_user_meta($user->getUserId(), 'credit_token');
 					add_user_meta($user->getUserId(), 'credit_token', $token_info['Token']);
 
-					self::RemoveRawInfo($credit_data['id']);
+					E_Fresh_Payment_Gateway::RemoveRawInfo($credit_data['id']);
 				}
 			}
 		}
 		if ($paid) {
 			// Create invoice receipt. Update balance.
 			FinanceLog("b4 create_receipt_from_account_ids");
-			$subject = "delivery " . CommaImplode($account_line_ids);
 			Finance_Client_Accounts::create_receipt_from_account_ids( 0, 0, 0, $paid, $user->getUserId(), date('Y-m-d'), $account_line_ids );
 
 			return true;
@@ -375,4 +366,20 @@ class Finance_Business_Logic {
 		Finance_Yaad::ClearToken($client_id);
 	}
 
+	function payment_subject($accoount_ids)
+	{
+		$sql = "select transaction_ref from im_client_accounts where id in (" . CommaImplode($accoount_ids). ")";
+		FinanceLog($sql);
+		$ids = SqlQueryArrayScalar($sql);
+		FinanceLog(__FUNCTION__ . CommaImplode($ids));
+		if (! $ids) die("Failed: deliveries not found");
+
+		$sql = "select order_id from im_delivery where id in (" . CommaImplode($ids). ")";
+		FinanceLog($sql);
+		$order_ids = SqlQueryArrayScalar($sql);
+		FinanceLog(__FUNCTION__ . CommaImplode($order_ids));
+		if (! $order_ids) die ("Failed: orders not found");
+
+		return __("orders") . " " . CommaImplode($order_ids);
+	}
 }
