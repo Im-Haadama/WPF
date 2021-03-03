@@ -141,4 +141,13 @@ class Fresh_Category {
 		}
 		return true;
 	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getId() {
+		return $this->id;
+	}
+
+
 }

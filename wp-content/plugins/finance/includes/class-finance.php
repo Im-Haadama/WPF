@@ -40,7 +40,7 @@ class Finance {
 	 *
 	 * @var string
 	 */
-	public $version = '1.7.17';
+	public $version = '1.7.19';
 
 	private $plugin_name;
 
@@ -731,7 +731,7 @@ class Finance {
 		// print $date . "<br/>";
 		$sunday = self::Sunday( $date );
 		if ( ! $part_id ) {
-			die ( "no supplier" );
+			return false;
 		}
 
 		$fields = "part_id, date, week, amount, delivery_fee, ref, project_id, net_amount, document_type ";

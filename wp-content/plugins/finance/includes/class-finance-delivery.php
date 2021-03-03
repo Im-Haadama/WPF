@@ -167,11 +167,14 @@ class Finance_Delivery
 	static function delivery_show_create() {
 		$order_id = GetParam( "order_id", true );
 		$delivery        = new Finance_Delivery( $order_id );
+		if ($delivery->getId()) {
+			// Already have delivery
+			return $delivery->Show();
+		}
 		$user_id = $delivery->getUserId();
 		$vat = apply_filters("finance_vat", 0);
 
 		return $delivery->ShowCreate(array("user_id" => $user_id, "vat" => $vat));
-
 	}
 
 	static function delivery_show_edit()
@@ -301,7 +304,7 @@ class Finance_Delivery
 				$html .= Core_Html::GuiButton( "btn_delete", "Delete Lines", "delete_items('delivery_lines', '" . $post_file . "', 'delivery_delete_lines')" );
 
 				$html .= "<div>" . Core_html::GuiCheckbox("chk_send_email", true) . ETranslate("Send email") .
-				         Core_Html::GuiButton( "btn_save", "Save", "delivery_save_or_edit('" . Flavor::getPost() . "', 'delivery_edit')" ) ."</div>";
+				         Core_Html::GuiButton( "btn_do", "Save", "delivery_save_or_edit('" . Flavor::getPost() . "', 'delivery_edit')" ) ."</div>";
 
 			}
 			$html .= '<datalist id="products"></datalist>';
@@ -450,7 +453,7 @@ class Finance_Delivery
 
 		$html .= Core_Html::GuiLabel("order_id", $this->order_id, array("hidden"=>true));
 		$html .= Core_Html::GuiButton("btn_add_line", "Add Line", "delivery_add_line('". Flavor::getPost() . "', $user_id, $vat, 0)");
-		$html .= Core_Html::GuiDiv(null, Core_Html::GuiButton("btn_add", "Create", "delivery_save_or_edit('" . Flavor::getPost() . "', 'delivery_save')")) .
+		$html .= Core_Html::GuiDiv(null, Core_Html::GuiButton("btn_do", "Create", "delivery_save_or_edit('" . Flavor::getPost() . "', 'delivery_save')")) .
 		         '<datalist id="products"></datalist>';
 		$html .= Core_Html::GuiDiv(null, Core_Html::GuiLabel(null, "Send to customer") . Core_Html::GuiCheckbox("chk_send_email", 1));
 
@@ -558,6 +561,7 @@ class Finance_Delivery
 		       . round( $line_price, 2 ) . ', '
 		       . $prod_id . ", $has_vat )";
 
+		FinanceLog($sql);
 		return SqlQuery( $sql );
 	}
 

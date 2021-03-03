@@ -1,4 +1,5 @@
 <?php
+
 class Fresh_Packing {
 	protected static $_instance = null;
 
@@ -265,6 +266,7 @@ class Fresh_Packing {
 	function init_hooks($loader) {
 		$loader->AddAction("mission_labels", $this);
 		$loader->AddFilter("mission_actions", $this);
+		$loader->AddAction("packing_download", $this);
 
 		$loader->AddAction('inventory_save', $this);
 	}
@@ -582,8 +584,10 @@ class Fresh_Packing {
 		print Core_Html::GuiTabs("packing", $category_pages, $args);
 	}
 
-	static function PackingTable(Fresh_Category $term)
+	static function PackingTable(Fresh_Category $term, $args = null)
 	{
+		$download_url = !GetArg($args, "printing", false);
+
 		$Table = new Core_Sparse_Table(array("name" => "סיכום הזמנות"), true);
 
 		$sql  = "SELECT id, post_status FROM wp_posts " .
@@ -610,7 +614,9 @@ class Fresh_Packing {
 				$Table->AddItem($order_id, $prod_id, $prod_q, $p->getName());
 			}
 		}
-		return $Table->GetTable();
+		$result = $Table->GetTable($args);
+		if ($download_url) $result .= Core_Html::GuiHyperlink("download", Flavor::getPost("packing_download") . '&category=' . $term->getId());
+		return $result;
 	}
 
 	function mission_actions($actions)
@@ -626,6 +632,18 @@ class Fresh_Packing {
 		require FRESH_INCLUDES . "label.php";
 	}
 
+	function packing_download()
+	{
+		$term_id = GetParam("category", true);
+
+		$term = new Fresh_Category($term_id);
+
+		print Core_Html::HeaderText();
+		$args = array("transpose"=>true, "print"=>true);
+
+		print self::PackingTable($term,  $args);
+		// print
+	}
 }
 /*
  *

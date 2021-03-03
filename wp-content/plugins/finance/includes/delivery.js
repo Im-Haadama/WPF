@@ -79,7 +79,7 @@ function delivery_delete(post_file)
 }
 
 function delivery_save_or_edit(post_file, operation) {
-    document.getElementById('btn_add').disabled = true;
+    document.getElementById('btn_do').disabled = true;
 
     var table = document.getElementById('del_table');
     var total = get_value_by_name("total");
@@ -135,7 +135,7 @@ function delivery_save_or_edit(post_file, operation) {
     data.unshift([order_id, total, vat, fee]);
 
     // alert (JSON.stringify(data));
-    execute_url_post(request, JSON.stringify(data), action_back);
+    execute_url_post(request, JSON.stringify(data), action_reload);
 }
 // 	    <?php if ( $edit ) {  print "is_edit = true;"; } ?>
 //

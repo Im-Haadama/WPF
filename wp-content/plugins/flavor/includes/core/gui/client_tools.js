@@ -298,6 +298,14 @@ function action_back(xmlhttp)
     }
 }
 
+function action_reload(xmlhttp)
+{
+    if (check_result(xmlhttp)) {
+        location.reload();
+    }
+}
+
+
 function show_menu(menu_name)
 {
     document.getElementById(menu_name).classList.toggle("show");

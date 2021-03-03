@@ -59,7 +59,7 @@ class Core_Sparse_Table {
 		}
 	}
 
-	public function GetTable()
+	public function GetTable($args)
 	{
 		$table = [];
 		$table["header"] = [];
@@ -83,7 +83,8 @@ class Core_Sparse_Table {
 		}
 		if ($this->add_totals)
 			$table["total"]["name"] = 'סה"כ';
-		$args = array("class" => "widefat", "line_styles" => array('background: #DDD','background: #EEE', 'background: #FFF') );
+		$args["class"] = "widefat";
+		$args["line_styles"] = array('background: #DDD','background: #EEE', 'background: #FFF');
 
 		if (($this->add_totals and count($table) > 2) or (! $this->add_totals and count($table) >1 ))
 			return Core_Html::gui_table_args($table, "table", $args);
