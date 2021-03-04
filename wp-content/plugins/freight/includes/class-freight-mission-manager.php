@@ -80,7 +80,7 @@ class Freight_Mission_Manager
 		$n = new Freight_Mission_Manager($mission_id);
 		if (! $n->get_route())
 		{
-			print "<br/><h1>No orders found</h1>";
+			print "<br/><h1>Failed: No orders found</h1>";
 			return $n;
 		}
 		$n->save();
@@ -229,12 +229,18 @@ group by pm.meta_value, p.post_status");
 		print $result;
 	}
 
-	function markers($the_mission)
+	function markers()
 	{
 		$output = "";
 		$output .='<?xml version="1.0" encoding="UTF-8"?>' . PHP_EOL .
 		'<markers>' . PHP_EOL;
-		$points = $this->prepare_route(false);
+		$points = $this->prepare_route(true);
+		if (! $points)
+		{
+			print 'Failed: no points';
+			return null;
+		}
+
 		foreach ($points as $orders)
 		{
 //			$point = $points[0];
@@ -428,13 +434,12 @@ group by pm.meta_value, p.post_status");
 		$mission = new Mission($this->mission_id);
 
 //		$this->get_route($mission_id, $debug);
-
 		// Build the path
 		if ($build or !$this->path) {
 			$this->path = array($mission->getStartAddress());
 			self::find_route_1( array_diff( $this->stop_points, array( $mission->getStartAddress() ) ), // Remove start address if appears in points.
 				false, $mission->getEndAddress() );
-			return null;
+			// return null;
 		}
 		return $this->lines_per_point;
 	}
@@ -750,16 +755,16 @@ group by pm.meta_value, p.post_status");
 
 		$candidates = $rest;
 		// Remove points that does not meet preq.
-		foreach ( $candidates as $key => $candidate ) {
-			$order_id = $this->point_orders[ $candidate ][OrderTableFields::order_id];
-
-			if (isset($this->prerequisite[$order_id]))
-				if (isset($this->prerequisite[$order_id])) {
-					$diff = array_diff($this->prerequisite[$order_id], $path, array($candidate));
-					if (count($diff))
-						unset( $candidates[ $key ] );
-				}
-		}
+//		foreach ( $candidates as $key => $candidate ) {
+//			$order_id = $this->point_orders[ $candidate ][OrderTableFields::order_id];
+//
+//			if (isset($this->prerequisite[$order_id]))
+//				if (isset($this->prerequisite[$order_id])) {
+//					$diff = array_diff($this->prerequisite[$order_id], $path, array($candidate));
+//					if (count($diff))
+//						unset( $candidates[ $key ] );
+//				}
+//		}
 
 		// If just 1 candidate remains go there. and recurse to continue.
 		if ( sizeof( $candidates ) == 1 ) {
