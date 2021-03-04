@@ -79,6 +79,13 @@ class Finance_Order {
 		return $rows;
 	}
 
+	public function productIter()
+	{
+		$i = new Fresh_ProductIterator();
+		$i->setArray($this->getItems());
+		return $i;
+	}
+
 	public function getMission()
 	{
 		return $this->mission_id;

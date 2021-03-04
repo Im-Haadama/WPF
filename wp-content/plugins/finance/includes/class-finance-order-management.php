@@ -1,5 +1,6 @@
 <?php
 
+my_show_errors();
 class Finance_Order_Management {
 	static private $_instance;
 
@@ -115,15 +116,21 @@ class Finance_Order_Management {
 		}
 		foreach ( $missions as $mission ) {
 //			print "mid=$mission<b<!---->r/>";
-			$m = new Mission($mission);
-			print Core_Html::GuiHyperlink(  $m->getMissionName(), AddParamToUrl(Fresh::getPost(), array("operation" => "mission_print", "mission_id" => $mission )));
-			print "<br/>";
+			try {
+				$m = new Mission($mission);
+				print Core_Html::GuiHyperlink(  $m->getMissionName(), AddParamToUrl(Fresh::getPost(), array("operation" => "mission_print", "mission_id" => $mission )));
+				print "<br/>";
+			} catch (Exception $exception) {
+				print $exception->getMessage() ."<br/>";
+			}
 		}
 //			printCore_Html::GuiHyperlink( "אספקות", "print.php?operation=supplies" );
 	}
 
 	function mission_print( $mission_id_filter = null )
 	{
+		$baskets = array();
+
 		$sql = 'SELECT posts.id as id, order_user(id) as user_id' // , order_is_group(id) as is_grouped
 		       . ' FROM `wp_posts` posts'
 		       . " WHERE post_status LIKE '%wc-processing%' order by 1";
@@ -149,9 +156,15 @@ class Finance_Order_Management {
 
 			$mission_id = $o->getMission();
 			if ( $mission_id ) {
-				$mission = Mission::getMission( $mission_id );
-				$start   = $mission->getStartAddress();
-				$end     = $mission->getEndAddress();
+				try {
+					$mission = Mission::getMission( $mission_id );
+					$start   = $mission->getStartAddress();
+					$end     = $mission->getEndAddress();
+				} catch (Exception $e)
+				{
+					print "Mission $mission_id for order $id not found<br/>";
+					continue;
+				}
 			}
 			if ( isset( $mission_id_filter ) and $mission_id != $mission_id_filter ) {
 				continue;
@@ -171,6 +184,7 @@ class Finance_Order_Management {
 
 		// find_route_1( $start, $orders, $path_orders, false, $end );
 		foreach ( $orders as $order_id ) {
+			self::collect_baskets($baskets, $order_id);
 			update_post_meta( $order_id, "printed", 1 );
 			$O       = new Fresh_Order( $order_id );
 			$user_id = $O->getCustomerId();
@@ -184,6 +198,30 @@ class Finance_Order_Management {
 				$D = new Finance_Delivery( $order_id );
 				print $D->ShowCreate(array("packing"=>true));
 //				PrintDeliveries( Finance_DocumentType::delivery, Finance_DocumentOperation::collect, 0);
+			}
+		}
+		foreach($baskets as $basket_id)
+		{
+			$b = new Fresh_Basket($basket_id);
+			print Core_Html::GuiHeader(2, $b->getName());
+			print $b->get_basket_content();
+		}
+
+	}
+
+	private function collect_baskets(&$baskets, $order_id)
+	{
+		$o = new Fresh_Order($order_id);
+		$iter = $o->productIter();
+
+		foreach ($iter as $product)
+		{
+			$prod_id = $product->get_product_id();
+			$p = new Fresh_Product($prod_id);
+			if ($p->is_basket())
+			{
+				if (! in_array($prod_id, $baskets))
+					array_push($baskets, $prod_id);
 			}
 		}
 	}
@@ -262,6 +300,4 @@ class Finance_Order_Management {
 				break;
 		}
 	}
-
-
 }

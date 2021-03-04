@@ -26,7 +26,7 @@ class Finance_Client {
 		$sql = "UPDATE im_client_accounts SET transaction_amount = " . $total .
 		       " WHERE transaction_ref = " . $delivery_id . " and client_id = " . $this->user_id;
 
-		MyLog( $sql, "account_update_transaction" );
+		FinanceLog( $sql, "account_update_transaction" );
 		SqlQuery( $sql );
 	}
 
@@ -146,7 +146,6 @@ class Finance_Client {
 
 	function set_default_display_name( ) {
 		$user = get_user_by( "id", $this->user_id );
-//		MyLog(__FUNCTION__, $this->user_id);
 
 		if (! $user) return "user $this->user_id not found";
 		$name = $user->user_firstname . " " . $user->user_lastname;;
@@ -183,7 +182,6 @@ class Finance_Client {
 	}
 
 	public function balance() {
-		//    MyLog(__FUNCTION__, $this->user_id);
 		$sql = 'select sum(transaction_amount) '
 		       . ' from im_client_accounts '
 		       . ' where client_id = ' . $this->user_id;

@@ -282,7 +282,7 @@ class Finance_Business_Logic {
 
 		$credit_data = SqlQuerySingleAssoc("select * from im_payment_info where user_id = $customer_id");
 		if (! $credit_data) {
-			print "failed: no credit info for user $customer_id";
+			print "failed: no credit info for user " . $user->getName();
 			return false;
 		}
 
