@@ -1,5 +1,4 @@
 <?php
-
 class Fresh_Packing {
 	protected static $_instance = null;
 
@@ -269,6 +268,10 @@ class Fresh_Packing {
 		$loader->AddAction("packing_download", $this);
 
 		$loader->AddAction('inventory_save', $this);
+		Flavor::AddTop("packing", "Packing", "/wp-admin/admin.php?page=packing");
+		Flavor::AddTop("packing_printing", "Printing", "/wp-admin/admin.php?page=printing", "packing");
+
+
 	}
 
 	static function inventory_save()

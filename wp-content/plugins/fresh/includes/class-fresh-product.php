@@ -427,6 +427,15 @@ class Fresh_Product  extends Finance_Product {
 }
 
 class Fresh_ProductIterator implements  Iterator {
+	/**
+	 * @param mixed $array
+	 */
+	public function setArray( $array ): void {
+		// Change from assoc to indexed
+		$this->array = [];
+		foreach ($array as $item)
+			$this->array[] = $item;
+	}
 	private $position = 0;
 
 	private $array;
@@ -509,7 +518,7 @@ class Fresh_ProductIterator implements  Iterator {
 	 * @return void Any returned value is ignored.
 	 * @since 5.0.0
 	 */
-	public function next() {
+	public function next()  {
 		// TODO: Implement next() method.
 		$c = $this->position;
 		if ( ! is_countable( $this->array ) )
@@ -542,6 +551,7 @@ class Fresh_ProductIterator implements  Iterator {
 	 */
 	public function valid() {
 		// TODO: Implement valid() method.
+		return $this->position < count($this->array);
 	}
 
 	/**
