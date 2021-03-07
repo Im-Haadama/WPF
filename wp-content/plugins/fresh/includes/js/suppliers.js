@@ -24,3 +24,23 @@ function pricelist_update_price(post_file, pricelist_id)
     let url = post_file + '?operation=pricelist_update_price&pricelist_id=' + pricelist_id + '&price=' + price;
     execute_url(url, fail_message);
 }
+
+function pricelist_filter()
+{
+    let table = document.getElementById("supplier_price_list");
+    for (let i = 1; i < table.rows.length; i++)
+    {
+        let colored = false;
+        for (let j=1; j < table.rows[i].cells.length; j++) {
+            if ((null != table.rows[i].cells[j].firstElementChild) &&
+                (table.rows[i].cells[j].firstElementChild.style.backgroundColor != '') &&
+                (table.rows[i].cells[j].firstElementChild.style.backgroundColor != 'white')){
+                colored = true;
+                continue;
+            }
+        }
+        if (! colored)
+            table.rows[i].style.display = 'none';
+
+    }
+}

@@ -348,17 +348,20 @@ class Fresh_Suppliers {
 		return $result;
 	}
 
-	static function pricelist_header($result)
+	static function pricelist_header($args)
 	{
+		$result = "";
 		$supplier_id = GetParam("supplier_id");
 		$s = new Fresh_Supplier($supplier_id);
 		$result .= Core_Html::GuiHeader(1, __("Supplier pricelist") . " " . $s->getSupplierName());
+		$result .= Core_Html::GuiButton("btn_filter", __("Filter"), "pricelist_filter()");
 
 		print $result;
 	}
 
-	static function pricelist_functions($result)
+	static function pricelist_functions($args)
 	{
+		$result = "";
 		$table_name = GetParam("table", false, null);
 //		$id = GetParam("id", false, 0);
 		if ("pricelist" == $table_name){
