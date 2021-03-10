@@ -830,7 +830,8 @@ class Fresh_Supply {
 
 		foreach ($rows_data as $line_id => $row)
 		{
-			if (in_array($line_id, array("header"))) continue;
+//			var_dump($line_id);
+//			if (in_array($line_id, array("header"))) continue;
 
 			$prod_id = $row['product_id'];
 

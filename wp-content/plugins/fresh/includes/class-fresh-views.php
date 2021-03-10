@@ -2,10 +2,11 @@
 
 class Fresh_Views {
 
-	static function init_hooks()
+	static function init_hooks($loader)
 	{
 //		add_action( 'product_cat_add_form_fields', array(__CLASS__, 'add_category_data') );
 		add_action( 'product_cat_edit_form_fields', array(__CLASS__, 'edit_category_data'), 11);
+		$loader->AddAction("needed_products_print", Fresh_Packing::instance(), 'needed_products_print');
 
 	}
 

@@ -25,7 +25,7 @@ class Fresh {
 	 *
 	 * @var string
 	 */
-	public $version = '1.4';
+	public $version = '1.4.2';
 
 	private $plugin_name;
 
@@ -206,8 +206,8 @@ class Fresh {
 		Fresh_Client::init_hooks();
 		Fresh_Delivery::init_hooks($this->loader);
 		Fresh_Client_Views::instance()->init_hooks($this->loader);
-		Fresh_Bundles::instance()->init_hooks($loader);
-		Fresh_Views::init_hooks();
+		Fresh_Bundles::instance()->init_hooks($this->loader);
+		Fresh_Views::init_hooks($this->loader);
 		Fresh_Accounting::instance()->init_hooks($loader);
 
 		add_action('wp_enqueue_scripts', array($this, 'remove_add'), 2222);

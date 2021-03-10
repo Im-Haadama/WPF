@@ -13,6 +13,8 @@ class Fresh_Packing {
 		$result = "";
 
 		$filter_in_stock = GetParam("stock_filter", false, 0);
+		$result .= Flavor::getPost("needed_products_print", true);
+		
 		$result                .= Core_Html::GuiHeader( 1, "Needed products" );
 		if ($filter_in_stock)
 			$result .= Core_Html::GuiHyperlink("unfiltered", AddToUrl("stock_filter", 0));
@@ -20,9 +22,14 @@ class Fresh_Packing {
 			$result .= Core_Html::GuiHyperlink("filter in-stock", AddToUrl("stock_filter", 1));
 		$result                .= Fresh_Order::GetAllComments();
 		$args["tabs_load_all"] = true;
-		$result                 .=  self::NeededProducts(false, false, $filter_in_stock );
+		$result                 .=  self::NeededProducts(array("filter_in_stock" => $filter_in_stock) );
 
 		print $result;
+	}
+	
+	static function needed_products_print()
+	{
+		print self::NeededProducts(array("print" => true));
 	}
 
 	function supplier_tabs($needed_prod_by_supplier)
@@ -30,14 +37,19 @@ class Fresh_Packing {
 		$supplier_tabs   = [];
 	}
 
-	static function get_total_orders_supplier( $supplier_id, $needed_products, $filter_zero = false, $filter_stock = false, $history = false, $debug = false)
+	static function get_total_orders_supplier( $supplier_id, $needed_products, $args)
 	{
+		$filter_zero = GetArg($args, "filter_zero", false);
+		$filter_stock = GetArg($args, "filter_stock", false);
+		$debug = false;
+		$print = GetArg($args, "print", false);
+
 		if ($debug) print __FUNCTION__ . $supplier_id . "<br/>";
 
 		$post_file = Fresh::getPost();
 		$result            = "";
-		// InfoUpdate("inventory", 1);
-		$inventory_managed = InfoGet( "inventory" );
+		$inventory_managed = (InfoGet( "inventory" ) and !$print);
+
 		if ($supplier_id) $supplier          = new Fresh_Supplier( $supplier_id );
 		else		$supplier = null;
 
@@ -55,47 +67,36 @@ class Fresh_Packing {
 
 			$row = array();
 
-//			if ( $filter_stock and $P->getStockManaged() and $P->getStock() > $quantity_array[0] ) continue;
 			if ( $filter_stock and ($P->getStock() >= $quantity_array[0] )) continue;
 
 			if ( $P->isDraft() ) $row[] = "טיוטא";
 			else $row[] = Core_Html::GuiCheckbox( "chk" . $prod_id, 0, array("checkbox_class" => $checkbox_class ));
 			$row[] = $P->getName();
-//			$row[] = Core_Html::GuiHyperlink( isset( $quantity_array[0] ) ? round( $quantity_array[0], 1 ) : 0,
-//				"get-orders-per-item.php?prod_id=" . $prod_id . ( $history ? "&history" : "" ) );
-//			$row[] = (isset( $quantity_array[0] ) ? round( $quantity_array[0], 1 ) : 0);
+			if (! $print) {
+				$quantity = isset( $quantity_array[0] ) ? $quantity_array[0] : 0;
+				$row[]    = $quantity;
 
-			// Units. disabbled for now.
-			//		if ( isset( $quantity_array[1] ) ) {
-//			$line .= "<td>" . $quantity_array[1] . "</td>";
-//		} else {
-//			$line .= "<td></td>";
-//		}
-			$quantity = isset( $quantity_array[0] ) ? $quantity_array[0] : 0;
-			$row[] = $quantity;
+				if ( $inventory_managed ) {
+					$q_inv = $P->getStock();
+					$row[] = Core_Html::GuiInput( "inv_" . $prod_id, $q_inv, array( "events" => "onchange=\"inventory_change('$post_file', " . $prod_id . ")\" onkeyup=\"moveNext('$post_file'," . $prod_id . ")\"" ) );
 
-			$p     = new Fresh_Product( $prod_id );
-			if ( $inventory_managed ) {
-				$q_inv = $p->getStock();
-				$row[] = Core_Html::GuiInput( "inv_" . $prod_id, $q_inv, array("events" => "onchange=\"inventory_change('$post_file', " . $prod_id . ")\" onkeyup=\"moveNext('$post_file'," . $prod_id . ")\""));
+					$numeric_quantity = ceil( $quantity - $q_inv );
 
-				$numeric_quantity = ceil( $quantity - $q_inv );
+					$row[] = Core_Html::GuiInput( "qua_" . $prod_id, $numeric_quantity,
+						"onchange=\"line_selected('" . $prod_id . "')\"" );
+				} else {
+					$row[] = Core_Html::GuiInput( "qua_" . $prod_id, $quantity,
+						"onchange=\"line_selected('" . $prod_id . "')\"" );
 
-				$row[] = Core_Html::GuiInput( "qua_" . $prod_id, $numeric_quantity,
-					"onchange=\"line_selected('" . $prod_id . "')\"" );
-			} else {
-				$row[] = Core_Html::GuiInput( "qua_" . $prod_id, $quantity,
-					"onchange=\"line_selected('" . $prod_id . "')\"" );
-
+				}
 			}
-
-			$row [] = self::orders_per_item( $prod_id, 1, true, ! $p->is_basket(), true );
+			$row [] = self::orders_per_item( $prod_id, 1, array("short"=>true, "include_basket" => ! $P->is_basket(), "include_bundle" => true ));
 
 			if ($debug) var_dump($row);
 
 			if ( ! $filter_zero or ( $numeric_quantity > 0 ) ) {
 				if ($debug) print "Adding to data lines<br/>";
-				array_push( $data_lines, array( $p->getName(), $row ) );
+				array_push( $data_lines, array( $P->getName(), $row ) );
 			}
 		}
 
@@ -149,8 +150,12 @@ class Fresh_Packing {
 		return $result;
 	}
 
-	static function NeededProducts( $filter_zero = false, $history = false, $filter_stock = false, $limit_to_supplier_id = null )
+	static function NeededProducts($args, $limit_to_supplier_id = null)
 	{
+		$filter_stock = GetArg($args,"filter_stock", false);
+
+		$print = GetArg($args,"print", false);
+		
 		$debug_product = null; $debug_supplier = null;
 
 		$result          = "";
@@ -204,7 +209,7 @@ class Fresh_Packing {
 				return null;
 			}
 
-			$result .= self::get_total_orders_supplier( $limit_to_supplier_id, $supplier_needed[ $limit_to_supplier_id ], $filter_zero, $filter_stock, $history ) .
+			$result .= self::get_total_orders_supplier( $limit_to_supplier_id, $supplier_needed[ $limit_to_supplier_id ], $args)  .
 			       Core_Html::GuiButton( "btn_create_supply_" . $supplier_id, "createSupply(" . $supplier_id . ")", "צור אספקה" );
 		} else {
 			if (! $supplier_needed) return "Nothing needed";
@@ -227,7 +232,7 @@ class Fresh_Packing {
 					}
 
 					$tab_content =
-						self::get_total_orders_supplier( $supplier->getId(), $supplier_needed[ $supplier->getId() ], $filter_zero, $filter_stock, $history, $supplier_id == $debug_supplier );
+						self::get_total_orders_supplier( $supplier->getId(), $supplier_needed[ $supplier->getId() ], $args );
 
 					if ($supplier->getId() == $debug_supplier) {
 						$result .= "supplier tab: $tab_content<br/>";
@@ -238,7 +243,7 @@ class Fresh_Packing {
 						$tab_content .= Core_Html::GuiHyperlink( "Supply " . $supply_id, Fresh_Supply::getLink($supply_id ) ). "<br/>";
 					}
 
-					$tab_content .= Core_Html::GuiButton( "btn_create_supply_" . $supplier->getId(), "Create a supply", array( "action" => "needed_create_supplies('" . Fresh::getPost() . "', " .$supplier->getId() . ")" ) );
+					if (! $print) $tab_content .= Core_Html::GuiButton( "btn_create_supply_" . $supplier->getId(), "Create a supply", array( "action" => "needed_create_supplies('" . Fresh::getPost() . "', " .$supplier->getId() . ")" ) );
 
 					$supplier_tabs[ $supplier->getId() ] =
 						array(
@@ -253,13 +258,28 @@ class Fresh_Packing {
 		array_push($supplier_tabs,
 			array('missing',
 				'Missing supplier info',
-				self::get_total_orders_supplier(0, $supplier_needed["missing"])));
+				self::get_total_orders_supplier(0, $supplier_needed["missing"], $args)));
 
 		$args["selected_tab"] = 0; // array_key_first( $totals );
 		$args["tabs_load_all"] = true;
 		$result               .= Core_Html::GuiTabs( "products", $supplier_tabs, $args );
+		if ($print){
+			print self::do_print_tabs($supplier_tabs);
+			return;
+		}
 
 		return $result;
+	}
+
+	static function do_print_tabs($tabs)
+	{
+		$result = Core_Html::HeaderText();
+		foreach ($tabs as $key => $tab)
+		{
+			$s = new Fresh_Supplier($key);
+			$result .= $tab[2];
+		}
+		print $result;
 	}
 
 	function init_hooks($loader) {
@@ -284,9 +304,14 @@ class Fresh_Packing {
 		return $p->setStock($q);
 	}
 
-	static function orders_per_item( $prod_id, $multiply, $short = false, $include_basket = false, $include_bundle = false, $just_total = false, $month = null )
+	static function orders_per_item( $prod_id, $multiply, $args)
 	{
-		$debug = false; // ($prod_id == 288);
+		$short = GetArg($args, "short", false);
+		$include_basket = GetArg($args, "include_basket", false);
+		$include_bundle = GetArg($args, "include_basket", false);
+		$just_total = GetArg($args, "just_total", false);
+		$month = GetArg($args, "month", null );
+
 		$prod = new Fresh_Product($prod_id);
 		$sql = 'select woi.order_item_id, order_id'
 		       . ' from wp_woocommerce_order_items woi join wp_woocommerce_order_itemmeta woim'
@@ -303,14 +328,9 @@ class Fresh_Packing {
 			        " and post_status = 'wc-completed')";
 		}
 
-
 		$baskets = null;
 		if ( $include_basket ) {
 			$baskets = $prod->get_baskets();
-
-//			$sql1    = "select basket_id from im_baskets where product_id = $prod_id";
-//			$baskets = SqlQueryArrayScalar( $sql1 );
-			if ($debug) var_dump($baskets);
 		}
 		$bundles = null;
 		if ( $include_bundle ) {
@@ -329,8 +349,6 @@ class Fresh_Packing {
 		}
 		$sql .= ")";
 
-		if ($debug) var_dump($sql);
-
 		$result         = SqlQuery( $sql );
 		$lines          = "";
 		$total_quantity = 0;
@@ -338,7 +356,6 @@ class Fresh_Packing {
 		while ( $row = mysqli_fetch_row( $result ) ) {
 			$order_item_id = $row[0];
 			$order_id      = $row[1];
-			if ($debug) var_dump ($order_id);
 			$o = new Fresh_Order($order_id);
 			$quantity      = Finance_Delivery::get_order_itemmeta( $order_item_id, '_qty' );
 
@@ -351,7 +368,6 @@ class Fresh_Packing {
 			}
 			else if ( $p->is_basket() ) {
 				$b        = new Fresh_Basket( $pid );
-				if ($debug) var_dump($b->get_basket_content($prod_id));
 
 				$quantity *= $b->GetQuantity( $prod_id );
 			}
@@ -361,10 +377,10 @@ class Fresh_Packing {
 			$total_quantity += $quantity;
 
 			if ( $short ) {
-					$lines .= $quantity . " " . $last_name . ", ";
+					$lines .= round($quantity, 1) . " " . $last_name . ", ";
 			} else {
 					$line  = "<tr>" . "<td> " . $o->getLink($order_id) . "</td>";
-					$line  .= "<td>" . $quantity * $multiply . "</td><td>" . $first_name . "</td><td>" . $last_name . "</td></tr>";
+					$line  .= "<td>" . round($quantity * $multiply, 1) . "</td><td>" . $first_name . "</td><td>" . $last_name . "</td></tr>";
 					$lines .= $line;
 			}
 		}
