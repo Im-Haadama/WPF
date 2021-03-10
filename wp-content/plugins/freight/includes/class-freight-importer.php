@@ -163,7 +163,7 @@ class Freight_Importer {
 			$city = $delivery_info['shipping_city'];
 //			print "<br/>Created order  " . $O->GetID() . " client $client_name $order_id";
 //			$long_lat = Freight_Mission_Manager::get_lat_long($street . " " . $city);
-			if ((strlen($street) > 1) and (strlen($city) > 1)){ // and (floor($long_lat[0])== 32) and (floor($long_lat[1]) == 34)) {
+			if (self::check_import($delivery_info['raw_info'], $city, $street)){ // and (floor($long_lat[0])== 32) and (floor($long_lat[1]) == 34)) {
 				$O->update_status( "wc-processing" );
 				$deliveries_info[$key]['status'] ='V';
 				$valid ++;
@@ -200,6 +200,14 @@ class Freight_Importer {
 		return true;
 	}
 
+	function check_import($raw_info, $city, $street)
+	{
+		return (strlen($street) > 1)
+		       and (strlen($city) > 1) and
+		           strstr($raw_info, $city) and
+		           strstr($raw_info, $street);
+
+	}
 }
 
 function baldar_fix($src)
