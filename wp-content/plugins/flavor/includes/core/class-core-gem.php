@@ -270,10 +270,9 @@ class Core_Gem {
 		die (0);
 	}
 
-	static function v_show_wrap($result = null)
+	static function v_show_wrap($args)
 	{
-		if (! $result)
-			$result = "";
+		$result = "";
 		$v_table = GetParam("table", true);
 
 		$args = self::getInstance()->object_types[$v_table];

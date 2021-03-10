@@ -414,19 +414,20 @@ function moveNextRow() {
 function doMoveNextRow()
 {
     let me = document.getElementById(event.target.id);
-    let next_row = me; // .parentElement.nextElementSibling;
+    let cursor = me; // .parentElement.nextElementSibling;
     let level = 0;
     let cell_index = undefined;
     do {
-        next_row = next_row.parentElement;
-        if (undefined === cell_index) cell_index = next_row.cellIndex;
+        if (undefined === cell_index) cell_index = cursor.cellIndex;
+        cursor = cursor.parentElement;
         level ++;
-    } while ('TR' !== next_row.tagName);
-    next_row = next_row.nextElementSibling;
+    } while ('TR' !== cursor.tagName);
+    let next_row = cursor.nextElementSibling;
+    if (undefined == next_row) return;
     if ((next_row.tagName !== 'TR')) return; // Can't find next row
 
     let input = next_row.cells[cell_index];
-    for (let l = 1; l < level; l++)
+    for (let l = 0; l < level; l++)
         input = input.firstElementChild;
 
     input.focus();

@@ -24,12 +24,14 @@ class Flavor_Database extends Core_Database {
 	{
 		$current   = $this->checkInstalled(  "functions" );
 
+		if ( $current == $version and ! $force ) return true;
+
 		SqlQuery("drop function FIRST_DAY_OF_WEEK");
 
 		$first_day = get_wp_option("start_of_week");
 
 		if (!$first_day) { // Israel
-			SqlQuery("create function FIRST_DAY_OF_WEEK(day date) returns date
+			SqlQuery("create function FIRST_DAY_OF_WEEK(day date) returns date 
 BEGIN
 	if (WEEKDAY(day) = 6) then return day;
 	end if; 
@@ -38,12 +40,9 @@ END;
 ");
 		}
 
-
-
-		if ( $current == $version and ! $force ) return true;
-
-
-		SqlQuery("create function supplier_last_pricelist_date(_supplier_id int) returns date
+		SqlQuery("create function supplier_last_pricelist_date(_supplier_id int)
+		returns date
+		DETERMINISTIC
 		BEGIN
 		declare _date date;
 		SELECT info_data into _date
@@ -65,7 +64,8 @@ END;
 //		SqlQuery( "create index ${db_prefix}links_index1 on ${db_prefix}links (type1, type2, id1);" );
 //		SqlQuery( "create index ${db_prefix}links_index2 on ${db_prefix}links (type1, type2, id2);" );
 
-		if (! $current) return $this->CreateTablesFresh($version);
+//		if (! $current) return
+			$this->CreateTablesFresh($version);
 
 		if ( $current == $version and ! $force ) {
 			return true;
@@ -104,13 +104,15 @@ END;
 " );
 
 		if (! TableExists("mission_types"))
-			SqlQuery("create table ${db_prefix}mission_types
-(
-	id int auto_increment,
-	week_day int,
+			SqlQuery("create table ${db_prefix}mission_types (
+  id int auto_increment
 		primary key,
-	mission_name varchar(20) null)
-	charset = utf8");
+  `mission_name` varchar(20) CHARACTER SET utf8 DEFAULT NULL,
+  `week_day` int(11) NOT NULL,
+  `default_price` float DEFAULT NULL,
+  `start_address` varchar(200) CHARACTER SET utf8 DEFAULT NULL,
+  `end_address` varchar(200) CHARACTER SET utf8 DEFAULT NULL
+) DEFAULT CHARSET=utf8");
 
 		if (!TableExists("links")) {
 			SqlQuery( "create table ${db_prefix}links

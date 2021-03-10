@@ -20,7 +20,7 @@ class Flavor {
 	 *
 	 * @var string
 	 */
-	public $version = '1.6.6';
+	public $version = '1.6.8';
 
 	/**
 	 * @var
@@ -653,13 +653,14 @@ class Flavor {
 		return $sections;
 	}
 
-	static function getPost($action = null)
+	static function getPost($action = null, $link = false)
 	{
 //		return plugin_dir_url(dirname(__FILE__)) . "post.php"; // Physical file.
 		$result = "/wp-content/plugins/flavor/post.php";
 		if ($action)
 			$result .= "?operation=$action&nonce=" . wp_create_nonce($action);
 
+		if ($link and $action) return Core_Html::GuiHyperlink($action, $result);
 		return $result;
 	}
 
