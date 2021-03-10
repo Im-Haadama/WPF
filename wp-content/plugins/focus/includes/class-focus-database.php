@@ -165,7 +165,7 @@ charset=utf8;
 	ID int auto_increment
 		primary key,
 	project_name varchar(20) not null,
-	project_contact varchar(20) not null,
+	project_contact varchar(20) null,
 	company int null,
 	project_priority int null,
 	is_active bit null,
@@ -196,7 +196,8 @@ charset=utf8;
 	owner int null,
 	task_type int null,
 	is_active bit default b'1' not null,
-	team int default 1 not null
+	team int default 1 not null,
+	created datetime
 )
 engine=InnoDB;
 
@@ -230,14 +231,15 @@ engine=InnoDB;
 
 	function CreateFunctions($version, $force = false)
 	{
+		FocusLog(__FUNCTION__);
 		$current = $this->checkInstalled( "functions");
 		$db_prefix = GetTablePrefix();
 
-		if ($current == $version and ! $force) return true;
+//		if ($current == $version and ! $force) return true;
 
 		SqlQuery("drop function preq_done");
 		SqlQuery("CREATE FUNCTION preq_done(_task_id int)
-	 RETURNS varchar(200)
+	 RETURNS varchar(200)	 
 BEGIN 
 	declare _preq varchar(200);
 	declare _status int;
@@ -246,7 +248,6 @@ BEGIN
 	select preq into _preq
 	from im_tasklist
 	where id = _task_id;
-	
 	while (length(_preq)) do
 		set _comma_pos = locate(',', _preq);
 		if (_comma_pos != 0) then

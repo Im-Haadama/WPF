@@ -333,11 +333,14 @@ class Focus_Task_Template {
 //	}
 
 
-	function create_if_needed(&$output)
+	function create_if_needed()
 	{
-		$debug = ($id = 77);
+		$debug = ($this->id == 143);
 		$db_prefix = GetTablePrefix();
 		$verbose_line = array();
+		$output = "";
+
+		$id = $this->id;
 
 		array_push( $verbose_line, $id );
 		array_push( $verbose_line, $this->check_frequency() );
@@ -354,6 +357,7 @@ class Focus_Task_Template {
 			array_push( $verbose_line, "skipped" );
 			// array_push( $verbose_table, $verbose_line);
 			$output .= CommaImplode($verbose_line) . "Template " . $id . Core_Html::Br();
+			FocusLog($output);
 			return;
 		}
 
@@ -378,7 +382,7 @@ class Focus_Task_Template {
 		array_push( $verbose_line, SqlInsertId() );
 
 		$output .= "Template " . $id . " " . CommaImplode($verbose_line) . Core_Html::Br();
-		SqlQuery("update im_task_templates set last_check = now()");
+		SqlQuery("update im_task_templates set last_check = now() where id = " . $this->id);
 		if ($debug) FocusLog($output);
 	}
 

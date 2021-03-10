@@ -130,7 +130,6 @@ class Focus {
 	 * @since 2.3
 	 */
 	private function init_hooks() {
-		self::install();
 		// register_activation_hook( WC_PLUGIN_FILE, array( 'Focus_Install', 'install' ) );
 //		register_shutdown_function( array( $this, 'log_errors' ) );
 		AddAction( 'after_setup_theme', array( $this, 'setup_environment' ) );
@@ -154,6 +153,7 @@ class Focus {
 
 //		Focus_Project::init();
 
+		// Create default pages
         Core_Pages::CreateIfNeeded("focus", "/focus", "focus_main");
         Core_Pages::CreateIfNeeded("project", "/project", "focus_project");
         Core_Pages::CreateIfNeeded("task", "/task", "focus_task");
@@ -194,10 +194,19 @@ class Focus {
 		}
 	}
 
-	private function install()
+	function install()
 	{
+		FocusLog(__FUNCTION__);
 		$this->database = new Focus_Database("Focus");
 		$this->database->install($this->version);
+		// Give the administrator the capability
+		if (is_admin_user()) {
+			FocusLog("Creating role");
+			Flavor_Roles::instance()->addRole("focus_user", array("show_tasks"));
+			FocusLog("Adding role to admin");
+			$u = new Core_Users(get_user_id());
+			$u->add_role("focus_user");
+		}
 	}
 	/**
 	 * Define WC Constants.

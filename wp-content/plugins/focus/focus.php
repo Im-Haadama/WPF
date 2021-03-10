@@ -43,3 +43,10 @@ function run_focus() {
 }
 
 run_focus();
+
+register_activation_hook( __FILE__, 'focus_activate' );
+
+function focus_activate()
+{
+	Focus::instance()->install();
+}

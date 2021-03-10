@@ -41,7 +41,7 @@ class Org_Worker extends Core_users
 		{
 			$u = new Org_Worker($user_id);
 			print $u->getName() . "<br/>";
-			$teams = CommaArrayExplode(get_usermeta($user_id, 'teams'));
+			$teams = CommaArrayExplode(get_user_meta($user_id, 'teams'));
 			foreach($teams as $team_id)
 			{
 				$t = new Org_Team($team_id);
@@ -56,7 +56,7 @@ class Org_Worker extends Core_users
 	    if ($this->teams)
 		    return $this->teams;
 
-	    $data = get_usermeta($this->id, 'teams');
+	    $data = get_user_meta($this->id, 'teams');
 	    $this->teams = @unserialize($data);
 
 

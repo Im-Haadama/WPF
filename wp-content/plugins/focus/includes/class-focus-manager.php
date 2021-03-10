@@ -45,9 +45,9 @@ class Focus_Manager {
 
 		$last_run = get_wp_option("focus_create_tasks_last_run");
 		$run_period = get_wp_option("focus_create_tasks_run_period", 5*60); // every 5 min
-		if ($last_run and ((time() - $last_run) < $run_period)) {
-			return true;
-		}
+//		if ($last_run and ((time() - $last_run) < $run_period)) {
+//			return true;
+//		}
 
 		update_wp_option("focus_create_tasks_last_run", time()); // Immediate update so won't be activated in parallel
 
@@ -55,8 +55,6 @@ class Focus_Manager {
 			$this->logger->fatal("no table");
 			return false;
 		}
-		$output = "Creating tasks freqs";
-		$this->logger->Info($output);
 
 		if ( ! $freqs ) $freqs = SqlQueryArrayScalar( "select DISTINCT repeat_freq from ${table_prefix}task_templates" );
 
@@ -79,7 +77,6 @@ class Focus_Manager {
 				array_push( $verbose_table, $verbose_line);
 			}
 		}
-		$this->logger->info($output);
 		return true;
 	}
 
