@@ -32,12 +32,27 @@ class FVideo_Video {
 
 	public function get_torrent()
 	{
-		$tracker = 'wss://tracker.openwebtorrent.com';
+		$file_name = basename($this->get_video()) . '.torrent';
+		return "https://site.weact.live" . AddParamToUrl(Flavor::getPost(), array("operation"=>"get_video", "file_name"=>$file_name));
+	}
 
-		$torrent_abs_path = FVideo_Torrent_Folder . $this->id . '.torrent';
-		if (0 or ! file_exists($torrent_abs_path)) {
+	public function get_seed()
+	{
+//		return $this->get_video();
+		$file_name = basename($this->get_video());
+		return "https://site.weact.live" . AddParamToUrl(Flavor::getPost(), array("operation"=>"get_video", "file_name"=>$file_name));
+	}
+
+
+	public function create_if_needed()
+	{
+//		$tracker = 'wss://tracker.openwebtorrent.com';
+
+		$torrent_abs_path = FVideo_Torrent_Folder . basename($this->get_video()) . '.torrent';
+//		print "checking for $torrent_abs_path<br/>";
+		if (! file_exists($torrent_abs_path)) {
+//			print "not found<br/>";
 			$video          = $this->get_video();
-			print "v=$video<br/>";
 			$filename_parts = explode( '/', $video );
 			$file_name      = end( $filename_parts );
 
@@ -52,10 +67,12 @@ class FVideo_Video {
 //
 			$tracker = 'wss://tracker.openwebtorrent.com';
 			// wss://tracker.btorrent.xyz
-			$command = "cd " . FVideo_TEMP_Folder . "; node /usr/local/lib/node_modules/webtorrent-cli/bin/cmd.js create -a \"$tracker\" " .
-			           "\"$video\" > " . $torrent_abs_path;
+//			$command = "cd " . FVideo_TEMP_Folder . "; node /usr/local/lib/node_modules/webtorrent-cli/bin/cmd.js create -a \"$tracker\" " .
+//			           "\"$file_name\" > " . $torrent_abs_path;
 
-//			print $command;
+			$command = "cd " . FVideo_TEMP_Folder . "; create-torrent --urlList '" . $this->get_seed() . "' $file_name -o $torrent_abs_path  --announce wss://tracker.openwebtorrent.com";
+			MyLog($command);
+
 			shell_exec( $command );
 
 			if ( ! file_exists( $torrent_abs_path ) ) {

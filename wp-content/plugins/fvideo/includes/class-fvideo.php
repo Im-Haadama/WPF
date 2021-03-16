@@ -1,5 +1,6 @@
 <?php
 
+
 require_once(ABSPATH . '/wp-content/plugins/flavor/flavor.php');
 
 class FVideo {
@@ -164,6 +165,8 @@ class FVideo {
 		add_action('init', array($this, 'register_fvideo'));
 //		add_action('add_meta_boxes', array($this, 'fvideo_box'));
 		add_action( 'save_post', array($this, 'fvideo_box_save'));
+
+		$loader->AddAction("get_video", $this);
 	}
 
 	/**
@@ -533,6 +536,27 @@ class FVideo {
 		update_post_meta( $post_id, 'video_link', $video_link );
 		FVideoLog("update $post_id $video_link");
 	}
+
+	function get_video()
+	{
+		$file_name = GetParam("file_name");
+
+		if (strstr($file_name, "torrent")) {
+			$f = new FVideo_Video(538);
+			$f->create_if_needed();
+//			print $file_name;
+
+			$content = file_get_contents(FVideo_Torrent_Folder  . $file_name);
+			start_download($file_name, strlen($content));
+			print $content;
+			return;
+		}
+		$content = file_get_contents("https://video1.weact.live/"  . $file_name);
+//		print $content;
+		start_download($file_name, strlen($content));
+		print $content;
+	}
+
 }
 
 function FVideoLog($message, $print = false)
@@ -544,3 +568,5 @@ function FVideoLog($message, $print = false)
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
+
+
