@@ -164,31 +164,25 @@ class Org_Team {
 	{
 		$db_prefix = GetTablePrefix();
 
-		$debug = false;
-		if ($debug) print "team: " . $this->getId();
-//		$company = new Org_Company($this->getCompany());
 		$senders = array();
 
 		// Each team member can send:
 		$team_members = self::getWorkers();
 		if ($team_members) foreach ($team_members as $worker_id)
 		{
-			if ($debug) print "worker: $worker_id<br/>";
 			$senders[] = $worker_id;
 		}
 
 		// Including the manager :)
 		if (! in_array($manager = $this->getManager(), $senders)) {
 			$senders[] = $manager;
-			if ($debug) print "manager: $manager";
 		}
-		if ($debug) print "<br/>";
 
 		// Add senders.
 		$type1 = FlavorDbObjects::team;
 		$type2 = FlavorDbObjects::sender;
 		$id = $this->id;
-		$sql = "select id1 from ${db_prefix}links where type1=$type1 and type2=$type2 and id2=$id";
+		$sql = "select id2 from ${db_prefix}links where type1=$type1 and type2=$type2 and id1=$id";
 		$ids = SqlQueryArrayScalar($sql);
 		foreach ($ids as $id)
 			$senders[] = $id;
