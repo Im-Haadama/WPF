@@ -333,13 +333,13 @@ class Core_Html {
 	 *
 	 */
 
-	static function gui_datalist( $id, $table, $field, $include_id = false ) {
-		$args               = [];
-		$args["include_id"] = $include_id;
-		$args["field"]      = $field;
-
-		return self::TableDatalist( $id, $table, $args );
-	}
+//	static function gui_datalist( $id, $table, $field, $include_id = false ) {
+//		$args               = [];
+//		$args["include_id"] = $include_id;
+//		$args["field"]      = $field;
+//
+//		return self::TableDatalist( $id, $table, $args );
+//	}
 
 	/**
 	 * @param $name
@@ -1965,8 +1965,10 @@ class Core_Html {
 		$field = GetArg($args, "field", "field");
 		$include_id = GetArg($args, "include_id", true);
 		$id_field = GetArg($args, "id_field", "id");
+		$sort = GetArg($args, "sort", null);
 
 		$sql = GetArg($args, "sql", "select " . $field . ($include_id ? ", $id_field" : "") .	 " from " . $table);
+		if (! strstr($sql, "sort") and $sort) $sql .= " sort by $sort ";
 		if (!strstr($sql, "where")) $sql .= " where " . GetArg ($args, "query", "1");
 		$values = [];
 

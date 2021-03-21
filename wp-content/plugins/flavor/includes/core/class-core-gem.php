@@ -58,7 +58,7 @@ class Core_Gem {
 	function AddTable($table, $loader = null)
 	{
 //		$debug = 0; //  (get_user_id() == 1);
-	//	 if (get_user_i d() == 1) print "=================================================". __CLASS__ . ":" . $table . "<br/>";
+//		 if (get_user_id() == 1) print "=================================================". __CLASS__ . ":" . $table . "<br/>";
 
 		if (! $loader) $loader = Core_Hook_Handler::instance();
 		// New Row
@@ -76,7 +76,6 @@ class Core_Gem {
 		// Page
 //		AddAction("gem_page_$table", array($class, "page_wrapper"), 10, 3);
 	}
-
 
 	static function page_wrapper($result)
 	{
@@ -275,6 +274,10 @@ class Core_Gem {
 		$result = "";
 		$v_table = GetParam("table", true);
 
+		if (! isset(self::getInstance()->object_types[$v_table])) {
+			die( "object $v_table not registered" );
+		}
+
 		$args = self::getInstance()->object_types[$v_table];
 		$v_key= GetArg($args, "v_key", "id");
 		$args["id"] = GetParam($v_key, true);
@@ -313,13 +316,13 @@ class Core_Gem {
 		$instance = self::getInstance();
 		if (! $instance) return __CLASS__ . ":" . __FUNCTION__ . " no instance. Call constructor first";
 		$args['values'] = GetParams();
-		return self::GemAddRow($table_name, 'Add', $args);
+		print self::GemAddRow($table_name, 'Add', $args);
 	}
 
 	static function show_wrap($result, $id = 0, $args = null)
 	{
 		$table_name = GetParam("table", true);
-		return $result . self::GemElement($table_name, $id, $args);
+		print self::GemElement($table_name, $id, $args);
 	}
 
 	static function GemAddRow($table_name, $text = null, $args = null){
@@ -333,7 +336,7 @@ class Core_Gem {
 		// $next_page = GetArg($args, "next_page", null);
 		if (! $post) die(__FUNCTION__ . " :" . $text . "must send post_file " . $table_name);
 
-		$next_page = @apply_filters("gem_next_page_" . $table_name, '');
+		$next_page = @apply_filters("gem_next_page_" . $table_name, "");
 
 //		print "np=$next_page<br/>";
 		if ($next_page){
@@ -347,7 +350,7 @@ class Core_Gem {
 		</script>';
 			$result .= "\n" . Core_Html::GuiButton("add_row", "add", array("action" => "data_save_new('" . $post . "', '$table_name', '$next_page')\n"));
 		} else {
-			$result .= Core_Html::GuiButton("add_row", "add", array("action" => "data_save_new('" . $post . "', '$table_name')", "add"));
+			$result .= Core_Html::GuiButton("add_row", "add", array("action" => "data_save_new('" . $post . "', '$table_name', action_back)", "add"));
 		}
 		$result .= Core_Html::GuiButton("add_row", "add and continue", array("action" => "data_save_new('" . $post . "', '$table_name', success_message)", "add and continue"));
 

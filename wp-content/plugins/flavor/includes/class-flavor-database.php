@@ -23,15 +23,16 @@ class Flavor_Database extends Core_Database {
 	function CreateFunctions($version, $force)
 	{
 		$current   = $this->checkInstalled(  "functions" );
-
 		if ( $current == $version and ! $force ) return true;
 
-		SqlQuery("drop function FIRST_DAY_OF_WEEK");
+		SqlQuery("drop function if exists FIRST_DAY_OF_WEEK");
 
 		$first_day = get_wp_option("start_of_week");
 
 		if (!$first_day) { // Israel
-			SqlQuery("create function FIRST_DAY_OF_WEEK(day date) returns date 
+			SqlQuery("create function FIRST_DAY_OF_WEEK(day date) 
+			returns date
+			DETERMINISTIC 
 BEGIN
 	if (WEEKDAY(day) = 6) then return day;
 	end if; 

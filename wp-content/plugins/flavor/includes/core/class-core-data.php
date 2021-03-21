@@ -26,10 +26,13 @@ class Core_Data
 
 	static function data_set_active($args)
 	{
-		$id = GetARg($args, "id", 0);
+		$id = GetArg($args, "id", 0);
 		$table = GetArg($args, "table", null);
 		$value = GetArg($args, "value", true);
-		if (! $id or ! $table) return;
+		if (! $id or ! $table) {
+			print "Failed: id or table are missing";
+			return false;
+		};
 		$db_prefix = GetTablePrefix($table);
 		$sql = "update ${db_prefix}$table set is_active = $value where id = $id";
 		SqlQuery($sql);

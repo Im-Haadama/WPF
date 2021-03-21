@@ -548,7 +548,7 @@ function ParseQuery($query, $ignore_list = null)
 		foreach ( $query_parts as $param => $value ) {
 			if (is_array($param)) { print __FUNCTION__ . ":param is array<br/>"; var_dump($param); die(1); }
 			if (is_array($value)) { print __FUNCTION__ . ":value is array<br/>"; var_dump($value); die(1); }
-			if (null != $value) $result .= $glue . $param . '=' . $value;
+			if (null !== $value) $result .= $glue . $param . '=' . $value;
 			$glue   = "&";
 		}
 
@@ -907,4 +907,12 @@ function first_day_of_week()
 		return date('Y-m-d', strtotime("last sunday"));
 	}
 	return date('Y-m-d', strtotime("last monday"));
+}
+
+function start_download($File, $size)
+{
+	header("Content-Disposition: attachment; filename=\"" . basename($File) . "\"");
+	header("Content-Type: application/octet-stream");
+	header("Content-Length: " . $size);
+	header("Connection: close");
 }

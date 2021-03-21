@@ -129,6 +129,7 @@ class Flavor_Mission {
 			$result .= Core_Html::GuiHyperlink("Last week", AddToUrl("week" , date( "Y-m-d", strtotime( "last sunday" )))) . " ";
 			$result .= Core_Html::GuiHyperlink("This week", AddToUrl("week" , date( "Y-m-d", strtotime( "sunday" )))) . " ";
 			$result .= Core_Html::GuiHyperlink("Next week", AddToUrl("week", date( "Y-m-d", strtotime( "next sunday" ))));
+			$result .= Core_Html::GuiHyperlink("[Create]", AddToUrl("operation", "gem_add_missions"));
 			return $result;
 		}
 
@@ -151,6 +152,8 @@ class Flavor_Mission {
 		return $result;
 	}
 
+	// https:/fruity.co.il/wp-content/plugins/flavor/post.php?operation=get_local_anonymous&header=1&mission_ids=1054
+	// http:/127.0.0.1/wp-content/plugins/flavor/post.php?operation=get_local_anonymous&header=1&mission_ids=1
 	static function get_local_anonymous()
 	{
 		FinanceLog(__FUNCTION__);
@@ -173,7 +176,7 @@ class Flavor_Mission {
 				if (class_exists('Freight_Mission_Manager'))
 					$data .= Freight_Mission_Manager::print_deliveries( $mission_id, false);
 
-				if (class_exists("Fresh_Supplies"))
+				if (class_exists("Fresh_Supplies") and TableExists("supplies"))
 					$data .= Fresh_Supplies::print_driver_supplies( $mission_id );
 //				else
 //					print "NNN";

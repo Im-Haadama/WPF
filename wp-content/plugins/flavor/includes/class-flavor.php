@@ -142,7 +142,7 @@ class Flavor {
 	 */
 	private function init_hooks(Core_Hook_Handler $loader) {
 		$this->database = new Flavor_Database();
-		$this->database->install($this->version);
+	// $this->database->install($this->version);
 		register_shutdown_function( array( $this, 'log_errors' ) );
 		$loader->AddAction( 'after_setup_theme', $this, 'setup_environment' );
 		$loader->AddAction( 'after_setup_theme', $this, 'include_template_functions', 11 );
