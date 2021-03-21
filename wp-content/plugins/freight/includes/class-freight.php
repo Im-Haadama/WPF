@@ -168,6 +168,8 @@ class Freight {
 		FreightLog(__FUNCTION__);
 		$m = Freight_Mission_Manager::get_mission_manager($id);
 
+		if (! $m) return false;
+
 		FreightLog("before");
 		print $m->dispatcher();
 		FreightLog("after");

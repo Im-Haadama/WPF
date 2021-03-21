@@ -56,6 +56,11 @@ class Freight_Importer {
 		$html = GetContent($file_name);
 		$html = str_replace("charset=windows-1255", "", $html);
 
+		if (! class_exists("DOMDocument")) {
+			print "DOMDocument not installed. <br/>" .
+		"sudo apt-get install php7.4-xml";
+			die(1);
+		}
 		// Create a new DOM Document
 		$doc = new DOMDocument();
 
@@ -146,13 +151,24 @@ class Freight_Importer {
 		{
 			if ($key == 0) continue;
 			$external_id = $delivery_info['order_id'];
-			if ($external_id and SqlQuerySingleScalar("select count(*) from wp_postmeta where meta_key='external_order_id' and meta_value=$external_id")) {
+			if ($external_id and SqlQuerySingleScalar("select count(*) 
+					from wp_postmeta pm
+					join wp_posts p
+					where meta_key='external_order_id'
+					  and meta_value=$external_id
+					  and pm.post_id = p.id 
+					  and p.post_status != 'trash'")) {
+
 				$deliveries_info[$key]['order_id'] = SqlQuerySingleScalar("select post_id from wp_postmeta where meta_key='external_order_id' and meta_value=$external_id");
 				$deliveries_info[$key]['status'] = 'D' . $external_id;
 				$duplicate++;
 				continue;
 			}
 			$O = Finance_Order::CreateOrder(1, $mission_id,  null, $the_shipping, '', 10, $delivery_info);
+			if (! $O) {
+				print "Can't create order<br/>";
+				continue;
+			}
 			$deliveries_info[$key]['external_order_id'] = $deliveries_info[$key]['order_id'];
 			$deliveries_info[$key]['order_id'] = $O->GetID();
 			if (isset($delivery_info['order_id']))
@@ -204,8 +220,8 @@ class Freight_Importer {
 	{
 		return (strlen($street) > 1)
 		       and (strlen($city) > 1) and
-		           strstr($raw_info, $city) and
-		           strstr($raw_info, $street);
+		           strstr($raw_info, strtok($city, " ")) and
+		           strstr($raw_info, strtok($street, " " ));
 
 	}
 }

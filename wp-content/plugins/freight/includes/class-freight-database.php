@@ -12,9 +12,18 @@ class Freight_Database extends Core_Database {
 
 	function CreateTables( $version, $force )
 	{
-		return;
 		$current = $this->checkInstalled( "tables");
 		$db_prefix = GetTablePrefix();
+
+		if (!TableExists("distance")) SqlQuery("CREATE TABLE `${db_prefix}distance` (
+  `id` int(11) AUTO_INCREMENT NOT NULL,
+  `distance` int(11) DEFAULT NULL,
+  `duration` int(11) DEFAULT NULL,
+  `address_a` varchar(50) DEFAULT NULL,
+  `address_b` varchar(50) DEFAULT NULL,  primary key (id)
+  
+                             
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;");
 
 		if ($current == $version and ! $force) return true;
 

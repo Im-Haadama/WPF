@@ -66,6 +66,9 @@ class Freight_Mission_Manager
 
 	static public function get_mission_manager($mission_id)
 	{
+		if (! self::check_settings())
+			return false;
+
 		self::$multi_site = Core_Db_MultiSite::getInstance();
 
 		FreightLog(__FUNCTION__);
@@ -85,6 +88,15 @@ class Freight_Mission_Manager
 		}
 		$n->save();
 		return $n;
+	}
+
+	private static function check_settings(): bool {
+		if (! defined('MAPS_KEY'))
+		{
+			print "define MAPS_KEY first! in wp-config.php";
+			return false;
+		}
+		return true;
 	}
 
 	private function save()
@@ -398,7 +410,12 @@ group by pm.meta_value, p.post_status");
 					}
 				} else {
 					// TODO - check order when pickup
-					array_push($path_info, array(__("pickup"), '', $this->path[$i], '','','','','','', $total_distance));
+					$pickup_row = array_fill(0, 12, '');
+					$pickup_row[0] = 'pickup';
+					$pickup_row[2] = $this->path[$i];
+					$pickup_row[9] = $total_distance;
+					array_push($path_info, $pickup_row);
+					// array_push($path_info, array(__("pickup"), '', $this->path[$i], '','','','','','', $total_distance));
 				}
 
 				$prev = $this->path[$i];
@@ -521,7 +538,7 @@ group by pm.meta_value, p.post_status");
 				$this->AddPrerequisite( $order_id, $pickup_address );
 			}
 
-			if (0) { /// Pickup lines.
+			if(0) { /// Pickup lines.
 				$pickup_order_info                                  = $order_info;
 				$pickup_order_info[ OrderTableFields::client_name ] = "<b>העמסה</b> " . $order_info[ OrderTableFields::client_name ];
 				$pickup_order_info[ OrderTableFields::address_2 ]   = '';
@@ -1004,27 +1021,30 @@ group by pm.meta_value, p.post_status");
 		}
 		// Running local. Let's do it.
 		// print "type=" . $type . "<br/>";
+		$rc = false;
 		switch ( $type ) {
 			case "orders":
 				$o = new Finance_Order( $id );
 				$message = "";
 				if ( ! $o->delivered($message) )
 					print $message;
-				else
-					return true;
+				else {
+					$rc = true;
+					Freight_Mission_Manager::clean($o->getMissionId());
+				}
 				break;
 			case "tasklist":
 				$t = new Focus_Tasklist( $id );
 				$t->Ended();
-				return true;
+				$rc = true;
 				break;
 			case "supplies":
 				$s = new Fresh_Supply( $id );
 				$s->picked();
-				return true;
+				$rc =  true;
 				break;
 		}
-		return false;
+		return $rc;
 	}
 
 	static function getOrder($order_id)

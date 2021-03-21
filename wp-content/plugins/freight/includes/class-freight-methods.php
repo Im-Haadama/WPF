@@ -28,7 +28,6 @@ class Freight_Methods {
 		add_action("shipment_update_mc", __CLASS__ . "::shipment_update_mc");
 
 		Core_gem::getInstance()->AddTable("mission_types", $loader);
-		Core_Gem::getInstance()->AddTable("missions");
 	}
 
 	static function settings($args = null, $operation = null) {
