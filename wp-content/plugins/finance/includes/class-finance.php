@@ -12,6 +12,7 @@ class Finance {
 	 * @access   protected
 	 * @var
 	 */
+	private static $_instance;
 	protected $loader;
 	protected $shortcodes;
 	protected $payments;
@@ -27,13 +28,8 @@ class Finance {
 	protected $inventory;
 	protected $message;
 	protected $accounting;
-
-	/**
-	 * @return mixed
-	 */
-	public function getMessage() {
-		return $this->message;
-	}
+	protected Finance_Suppliers $suppliers;
+	protected $actions;
 
 	/**
 	 * Plugin version.
@@ -44,19 +40,6 @@ class Finance {
 
 	private $plugin_name;
 
-	/**
-	 * The single instance of the class.
-	 *
-	 * @var Finance
-	 * @since 2.1
-	 */
-	protected static $_instance = null;
-
-	/**
-	 * finance instance.
-	 *
-	 */
-	public $finance = null;
 	/**
 	 * @var Core_Autoloader
 	 */
@@ -139,17 +122,12 @@ class Finance {
 		$this->salary      = new Finance_Salary();
 		$this->inventory = new Finance_Inventory( $this->get_plugin_name(), $this->get_version(), self::getPost());
 		$this->loader->AddAction( 'admin_enqueue_scripts', $this->inventory, 'admin_scripts' );
-
-		$finance_actions = new Finance_Actions();
-		$finance_actions->init_hooks($this->loader);
-
+		$this->actions = new Finance_Actions();
+		$this->suppliers = Finance_Suppliers::instance();
 		$this->accounting = new Finance_Accounting();
-		$this->accounting->init_hooks($this->loader);
-
 
 		$bl = new Finance_Business_Logic();
 		$bl->init_hooks($hook_manager);
-		$this->inventory->init_hooks($this->loader);
 		$this->init_hooks($this->loader);
 
 		do_action( 'finance_loaded' );
@@ -221,6 +199,13 @@ class Finance {
 		$i->AddTable("woocommerce_shipping_zone_methods", "instance_id" );
 		$i->AddTable("woocommerce_shipping_zone_locations", "location_id" );
 		Core_Gem::getInstance()->AddTable( "multisite" );
+		Core_Gem::getInstance()->AddTable("missions");
+
+
+		$this->actions->init_hooks($this->loader);
+		$this->accounting->init_hooks($this->loader);
+		$this->inventory->init_hooks($this->loader);
+		$this->suppliers->init_hooks($this->loader);
 
 		Finance_Delivery::init_hooks($this->loader);
 	}
@@ -315,7 +300,6 @@ class Finance {
 		define_const( 'FINANCE_DELIMITER', '|' );
 		define_const( 'FINANCE_LOG_DIR', $upload_dir['basedir'] . '/finance-logs/' );
 	}
-
 
 	/**
 	 * What type of request is this?
@@ -426,6 +410,7 @@ class Finance {
 	static function admin_menu() {
 		Finance_Settings::instance()->admin_menu();
 		Finance_Inventory::instance()->admin_menu();
+		Finance_Suppliers::instance()->admin_menu();
 	}
 
 	/**
@@ -523,6 +508,8 @@ class Finance {
 
 		$this->payments   = Finance_Payments::instance();
 		$this->shortcodes->add( $this->payments->getShortcodes() );
+		$this->shortcodes->add($this->suppliers->getShortcodes());
+
 
 		$this->invoices   = Finance_Invoices::instance();
 		$this->shortcodes->add( $this->invoices->getShortcodes() );
@@ -553,7 +540,6 @@ class Finance {
 		Flavor_Roles::instance()->addRole("hr", array("working_hours_report", "show_salary"));
 		Flavor_Roles::instance()->addRole("cfo", array("finance_bank"));
 	}
-
 
 //	/**
 //	 * Load Localisation files.
@@ -818,6 +804,13 @@ class Finance {
 	static function getPost()
 	{
 		return Flavor::getPost();
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getMessage() {
+		return $this->message;
 	}
 }
 

@@ -18,6 +18,7 @@ class Finance_Accounting {
 		$menu = Core_Admin_Menu::instance();
 
 		$menu->AddMenu("הנהלת חשבונות", "הנהלת חשבונות", "edit_shop_orders", "accounting", array(__CLASS__, 'accounting'));
+		Core_Gem::getInstance()->AddTable( "business_info" );
 	}
 	static function weekly_report( $week ) {
 		$report = "";
@@ -242,6 +243,7 @@ class Finance_Accounting {
 //		Fresh_Catalog::draft_no_picture();
 
 		$result = "";
+		$hook_manager = Core_Hook_Handler::instance();
 
 		$selected_tab = GetParam("st_suppliers", false, "weekly");
 
@@ -251,8 +253,10 @@ class Finance_Accounting {
 
 		// Put the tab names inside the array.
 		if ($operation = GetParam("operation", false, null, true)) {
-			$result .= apply_filters( $operation, $result, "", null, null );
-			print $result;
+			$args = [];
+			$args["operation"] = $operation;
+			$args["post_file"] = Flavor::getPost();
+			$hook_manager->DoAction($operation, $args);
 			return;
 		}
 

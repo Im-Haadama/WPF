@@ -104,10 +104,7 @@ class Finance_Inventory
 		}
 		$size = strlen($buffer);
 
-		header("Content-Disposition: attachment; filename=\"" . basename($File) . "\"");
-		header("Content-Type: application/octet-stream");
-		header("Content-Length: " . $size);
-		header("Connection: close");
+		start_download($File, $size);
 
 		print $buffer;
 		return true;

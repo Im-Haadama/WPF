@@ -1,7 +1,8 @@
 <?php
 
-class Fresh_Suppliers {
-	private $gem;
+class Finance_Suppliers
+{
+	private static $_instance;
 
 	function init_hooks(Core_Hook_Handler $loader) {
 		$loader->AddAction( "gem_v_show", $this, "pricelist_header" , 9 );
@@ -15,15 +16,19 @@ class Fresh_Suppliers {
 		$loader->AddAction("pricelist_update_price" , $this, 'pricelist_update_price');
 		$loader->AddAction("plan_supply", $this);
 
+		add_action('init', array($this, 'init'));
+
+		// Init GEM
+		Core_Gem::getInstance()->AddTable( "suppliers" );
+
 		add_filter("supplier_price_list_check_valid", array($this, 'supplier_price_list_check_valid'), 10, 2);
 	}
 
 	function init()
 	{
 		if (! TableExists("suppliers")) return;
-		Core_Gem::getInstance()->AddTable( "suppliers" );
 
-		$this->gem =Core_Gem::getInstance();
+		$gem =Core_Gem::getInstance();
 
 		// Products
 		$args = array("query_part" => "from wp_posts p,
@@ -33,7 +38,7 @@ class Fresh_Suppliers {
                 and p.id = m.post_id
                 and m.meta_key = 'supplier_id'
                 and m.meta_value = %d");
-		$this->gem->AddVirtualTable( "products", $args );
+		$gem->AddVirtualTable( "products", $args );
 		$supplier_id = GetParam("supplier_id", false);
 
 		// Pricelist
@@ -66,32 +71,28 @@ class Fresh_Suppliers {
 				"supplier_add_pricelist_item('" . Fresh::getPost() . "', $supplier_id)"),
 				"product_name" => "", "price"=>Core_Html::GuiInput("price_new_row", "", array("size"=>3)));
 
-		$this->gem->AddVirtualTable( "pricelist", $args );
+		$gem->AddVirtualTable( "pricelist", $args );
 
 		$args["prepare_plug"] = "Fresh_Suppliers::supply_plan_line";
 		$args["extra_header"] = array("מלאי", "הזמנות חודש", "מכירות חודש", "הזמנות 6 חודשים", "מכירות 6 חודשים");
 		$args["class"] = "sortable";
 
-		$this->gem->AddVirtualTable( "supplier_products", $args );
-
-//		if (get_user_id() == 1) print '============================== ADD<br/>';
+		$gem->AddVirtualTable( "supplier_products", $args );
 
 		// load classes
-		new Fresh_supply(1);
-		new Fresh_Catalog();
+//		new Fresh_supply(1);
+//		Fresh_Catalog::instance();
 	}
 
 	function supplier_pricelist_before_import($fields)
 	{
 		$sql = "delete from im_supplier_price_list where supplier_id = " . $fields['supplier_id'] . ' and date = \'' . $fields['date'] . "'";
-//		MyLog(__FUNCTION__ . ": $sql");
+
 		return SqlQuery($sql);
 	}
 
 	function supplier_price_list_check_valid($fields, $values)
 	{
-		$table_prefix = GetTablePrefix();
-
 		$product_name_idx = array_search( "product_name", $fields );
 		$price_idx = array_search("price", $fields);
 
@@ -153,6 +154,7 @@ class Fresh_Suppliers {
 		$item = new Fresh_Pricelist_Item(GetParam("id", true));
 		return $item->delete();
 	}
+
 	static function suppliers_map_remove()
 	{
 		$ids = GetParamArray("ids");
@@ -258,7 +260,11 @@ class Fresh_Suppliers {
 		$edit_target = AddToUrl(array("operation" => "gem_show", "table" => "suppliers" , "id" => $row_id));
 		return array(
 			"name" => Core_Html::GuiHyperlink($row["supplier_name"],  $edit_target) . "<br/>" .
-			          Core_Html::GuiHyperlink("delete", "remove"),
+			          Core_Html::GuiHyperlink("delete", AddToUrl(array("operation" => "data_set_active",
+			                                                           "value"=>0,
+			                                                           "id"=>$row_id,
+				                                                        "table"=>"suppliers"
+			          ))),
 			"description" => $row['supplier_description']
 		);
 
@@ -442,5 +448,26 @@ class Fresh_Suppliers {
 
 //		$row = $item->AddProdInfo( $row, $edit, $create_info, $supplier_id );
 		return $row;
+	}
+
+	function admin_menu() {
+		$menu = Core_Admin_Menu::instance();
+
+		// Suppliers
+		$menu->AddSubMenu( "finance", "edit_shop_orders",
+			array( 'page_title' => 'Suppliers', 'function' => array( "Finance_Suppliers", 'suppliers' ) ) );
+
+		$menu->AddTop("suppliers", __("Suppliers", "e-fresh"), "/wp-admin/admin.php?page=suppliers");
+
+	}
+
+	public static function instance() : Finance_Suppliers
+	{
+		if (self::$_instance == null)
+		{
+			self::$_instance = new Finance_Suppliers();
+		}
+
+		return self::$_instance;
 	}
 }

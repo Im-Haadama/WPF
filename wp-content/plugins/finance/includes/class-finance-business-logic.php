@@ -338,8 +338,6 @@ class Finance_Business_Logic {
 			}
 			$paid = $transaction_info['Amount'];
 			if ($transaction_id) {
-				print $user->getName() . " " . __("Paid") . " $amount. $payment_number " . __("payments") . "\n";
-
 				// Create token and save it.
 				$token_info = self::GetToken( $transaction_id );
 				if (isset($token_info['Token'])){

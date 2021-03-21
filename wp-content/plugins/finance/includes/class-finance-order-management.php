@@ -108,7 +108,7 @@ class Finance_Order_Management {
 			$id         = $row["id"];
 //			print "id=$id<br/>";
 			$o = new Fresh_Order($id);
-			$mission_id = $o->getMission();
+			$mission_id = $o->getMissionId();
 			if ( ! in_array( $mission_id, $missions ) ) {
 //				print "adding $mission_id<br/>";
 				if ($mission_id) array_push( $missions, $mission_id );
@@ -154,7 +154,7 @@ class Finance_Order_Management {
 			$user_id    = $row["user_id"];
 			$o = new Fresh_Order($id);
 
-			$mission_id = $o->getMission();
+			$mission_id = $o->getMissionId();
 			if ( $mission_id ) {
 				try {
 					$mission = Mission::getMission( $mission_id );
@@ -289,7 +289,7 @@ class Finance_Order_Management {
 		$O = new Fresh_Order($post->ID);
 		switch ($col) {
 			case "freight":
-				print Flavor_Mission::gui_select_mission("mis_" . $post->ID, $O->getMission(),
+				print Flavor_Mission::gui_select_mission("mis_" . $post->ID, $O->getMissionId(),
 					array("events" => 'onclick="event.stopPropagation();order_mission_changed(\'' . Fresh::getPost() . "', " . $post->ID .')"'));
 				break;
 			case 'city':

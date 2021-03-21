@@ -8,6 +8,35 @@ class Finance_Database extends Core_Database {
 		$db_prefix = GetTablePrefix();
 		$current = self::CheckInstalled("tables");
 
+		if (! TableExists("suppliers")) {
+			SqlQuery( "create table ${db_prefix}suppliers
+(
+	id bigint auto_increment
+		primary key,
+	supplier_name varchar(20) not null,
+	supplier_contact_name varchar(20) not null,
+	supplier_contact_phone varchar(20) not null,
+	factor float default 3 null,
+	site_id int null,
+	email varchar(50) null,
+	supplier_priority int(2) default 5 null,
+	machine_update bit default b'0' null,
+	category int null,
+	eng_name varchar(40) null,
+	print tinyint(1) default 0 null,
+	is_active bit default b'1' null,
+	address varchar(100) null,
+	self_collect bit default b'0' null,
+	source_path varchar(500) null,
+	auto_order_day int(1) null,
+	min_order int null,
+	invoice_email varchar(50) null,
+	supplier_description varchar(200) null
+) charset=utf8;" );
+
+			SqlQuery("ALTER TABLE im_suppliers AUTO_INCREMENT = 100001");
+		}
+
 //		print "=====================================================cur=$current<br/>";
 		if ($current)
 		switch($current)
@@ -210,15 +239,53 @@ charset=utf8;
 
 	function CreateFunctions($version, $force = false)
 	{
-		return;
 		$current = self::CheckInstalled("Finance", "functions");
+
+//		if ($current == $version and ! $force) return true;
+
 		$db_prefix = GetTablePrefix();
 
+		SqlQuery("drop function supply_from_business");
+		SqlQuery("create function supply_from_business( _business_id int) returns integer
+		DETERMINISTIC
+	BEGIN
+		declare _supply_id integer;
+		select id into _supply_id 
+	        from ${db_prefix}supplies where business_id = _business_id; 
+	    return _supply_id;
+	END;
+");
 
-		if ($current == $version and ! $force) return true;
+		SqlQuery("drop function supplier_last_pricelist_date;");
+
+		SqlQuery("create function supplier_last_pricelist_date(_supplier_id int) returns date
+		DETERMINISTIC
+		BEGIN
+		declare _date date;
+		SELECT info_data into _date
+		FROM im_info WHERE info_key = concat('import_supplier_', _supplier_id);
+		return _date;
+		END");
+
+		SqlQuery("drop function supplier_from_business");
+		SqlQuery("create
+     function supplier_from_business(bus_id int) returns text CHARSET utf8
+     DETERMINISTIC
+BEGIN
+    declare _supplier_id int;
+    declare _display varchar(50) CHARSET utf8;
+    SELECT part_id INTO _supplier_id FROM im_business_info where id = bus_id;
+    select supplier_name into _display from im_suppliers where id = _supplier_id;
+
+    return _display;
+  END;
+
+");
 
 		SqlQuery("drop function if exists  supplier_displayname");
-		SqlQuery( "create function supplier_displayname (supplier_id int) returns text charset utf8  
+		SqlQuery( "create function supplier_displayname (supplier_id int) 
+		returns text charset utf8
+		DETERMINISTIC  
 BEGIN
 declare _user_id int;
 declare _display varchar(50) CHARSET utf8;
@@ -231,7 +298,9 @@ END;
 " );
 
 		SqlQuery("drop function if exists supplier_balance");
-		$sql = "create function supplier_balance (_supplier_id int, _date date) returns float   
+		$sql = "create function supplier_balance (_supplier_id int, _date date)
+		 returns float
+		 DETERMINISTIC   
 BEGIN
 declare _amount float;
 select sum(amount) into _amount from ${db_prefix}business_info
@@ -244,9 +313,11 @@ return round(_amount, 0);
 END;";
 		SqlQuery($sql);
 
-		SqlQuery("drop function working_rate");
+		SqlQuery("drop function if exists working_rate");
 		SqlQuery("create
-    function working_rate(_worker int, _project int) returns float
+    function working_rate(_worker int, _project int)
+     returns float
+     DETERMINISTIC
 BEGIN
     declare _rate float;
 
@@ -269,7 +340,9 @@ BEGIN
 ");
 
 		SqlQuery("drop function client_from_delivery");
-		SqlQuery("create function client_from_delivery(del_id int) returns text CHARSET 'utf8'
+		SqlQuery("create function client_from_delivery(del_id int) 
+		returns text CHARSET 'utf8'
+		DETERMINISTIC
 BEGIN
   declare _order_id int;
   declare _user_id int;
@@ -285,8 +358,21 @@ END;
 
 ");
 
-		SqlQuery("drop function delivery_receipt");
-		SqlQuery("create function delivery_receipt(_del_id int) returns int
+		SqlQuery("drop function if exists  order_user");
+		SqlQuery("create function order_user(order_id int) returns int
+BEGIN
+    declare _user_id int;
+    SELECT meta_value INTO _user_id FROM wp_postmeta where post_id = order_id and meta_key = '_customer_user';
+
+    return _user_id;
+  END;
+
+");
+
+		SqlQuery("drop function if exists delivery_receipt");
+		SqlQuery("create function delivery_receipt(_del_id int) 
+		returns int
+		DETERMINISTIC
 BEGIN
 		declare _receipt integer;
 		select payment_receipt into _receipt 
@@ -296,7 +382,9 @@ BEGIN
 ");
 
 		SqlQuery("drop function order_from_delivery");
-		SqlQuery("create function order_from_delivery(del_id int) returns text
+		SqlQuery("create function order_from_delivery(del_id int)
+		 returns text
+		 DETERMINISTIC
 BEGIN
     declare _order_id int;
     SELECT order_id INTO _order_id FROM im_delivery where id = del_id;
@@ -307,7 +395,9 @@ END;
 ");
 
 		SqlQuery("drop function client_balance");
-		SqlQuery("create function client_balance(_client_id int, _date date) returns float
+		SqlQuery("create function client_balance(_client_id int, _date date)
+		 returns float
+		 DETERMINISTIC
 BEGIN
     declare _amount float;
 select sum(transaction_amount) into _amount
@@ -319,7 +409,9 @@ END;
 ");
 
 		SqlQuery("drop function client_payment_method");
-		SqlQuery("create function client_payment_method(_user_id int) returns text charset utf8
+		SqlQuery("create function client_payment_method(_user_id int) 
+		returns text charset utf8
+		DETERMINISTIC
 BEGIN
     declare _method_id int;
     declare _name VARCHAR(50) CHARSET 'utf8';
@@ -332,7 +424,9 @@ BEGIN
 ");
 
 		SqlQuery("drop function if exists  order_line_get_variation");
-		SqlQuery("create function order_line_get_variation(_order_item_id int) RETURNS text
+		SqlQuery("create function order_line_get_variation(_order_item_id int)
+		 RETURNS text
+		 DETERMINISTIC
 BEGIN
     declare _variation int;
     select meta_value into _variation from wp_woocommerce_order_itemmeta
@@ -345,7 +439,9 @@ BEGIN
 ");
 
 		SqlQuery( "drop function reduce_vat" );
-		SqlQuery( "create FUNCTION `reduce_vat`(total float) RETURNS float
+		SqlQuery( "create FUNCTION `reduce_vat`(total float) 
+		RETURNS float
+		DETERMINISTIC
 BEGIN
     return round(total/1.17, 2);
   END;" );

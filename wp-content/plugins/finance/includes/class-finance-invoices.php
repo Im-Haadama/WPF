@@ -6,7 +6,6 @@
 
 class Finance_Invoices {
 	static private $_instance;
-	static private $_post;
 
 	public static function instance() {
 		if ( is_null( self::$_instance ) ) {
@@ -17,7 +16,6 @@ class Finance_Invoices {
 	}
 
 	function init( Core_Hook_Handler $loader) {
-		self::$_post = Flavor::getPost();
 		$loader->AddAction( "invoice_add", $this, "invoice_add" );
 		$loader->AddAction( "invoice_show", $this, "invoice_show" );
 		$loader->AddAction( "invoice_supplier", $this);
@@ -26,8 +24,8 @@ class Finance_Invoices {
 	/**
 	 * @return mixed
 	 */
-	public static function getPost() {
-		return self::$_post;
+	public static function getPost($operation = null) {
+		return Flavor::getPost($operation);
 	}
 
 	function getShortcodes() {
@@ -58,7 +56,7 @@ class Finance_Invoices {
 
 		$result .= Core_Html::GuiHeader( 1, __( "Invoices for year" ) . " " . $year );
 
-		$page = "EXTRACT(YEAR FROM DATE) = " . $year . " and document_type in (4, 8) and is_active=1";
+		$page = "EXTRACT(YEAR FROM DATE) = " . $year . " and document_type in (4, 8, 9) and is_active=1";
 		$t    = new Core_PivotTable( "im_business_info", $page,
 			"date_format(date, '%m')", "part_id", "net_amount" ); // month_with_index(DATE)
 
@@ -124,7 +122,7 @@ class Finance_Invoices {
 		);
 		$args["post_file"]        = self::getPost();
 
-		return Core_Gem::GemAddRow( "business_info", "invoices", $args );
+		print Core_Gem::GemAddRow( "business_info", "invoices", $args );
 	}
 
 	static function gui_select_document_type( $id = null, $selected = null, $args = null )
@@ -163,7 +161,7 @@ class Finance_Invoices {
 		$year    = GetParam( "the_year", false, date("Y") );
 		$result  .= Core_Html::GuiHeader( 2, self::get_supplier_name( $part_id ) );
 		$result  .= Core_Html::GuiHeader( 3, "year " . $year );
-		$page    = "EXTRACT(YEAR FROM DATE) = " . $year . " and document_type in (4, 8) and is_active=1"
+		$page    = "EXTRACT(YEAR FROM DATE) = " . $year . " and document_type in (4, 8, 9) and is_active=1"
 		           . " and part_id = " . $part_id;
 		$links   = array(
 			"id"    => AddToUrl( array( "operation" => "invoice_show", "id" => "%s" ) ),
@@ -191,8 +189,7 @@ class Finance_Invoices {
 		}
 //
 //		var_dump($result);
-		return $result;
-
+		print $result;
 	}
 
 	static function invoice_show()

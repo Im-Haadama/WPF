@@ -86,7 +86,7 @@ class Finance_Order {
 		return $i;
 	}
 
-	public function getMission()
+	public function getMissionId()
 	{
 		return $this->mission_id;
 	}
@@ -140,11 +140,12 @@ class Finance_Order {
 
 		$total = 0;
 
-		if (! (($prods_and_quantity and count($prods_and_quantity)) or $delivery_instance)) {
-			MyLog("empty order requested and refused");
-			print "Failed: הזמנה ריקה לא נקלטה";
-			return null;
-		}
+		// For now we don't force order content. for deliveries save.
+//		if (! (($prods_and_quantity and count($prods_and_quantity)) or $delivery_instance)) {
+//			MyLog("empty order requested and refused");
+//			print "Failed: הזמנה ריקה לא נקלטה";
+//			return null;
+//		}
 
 		// Handle products
 		if ($prods_and_quantity and count($prods_and_quantity))
@@ -1075,7 +1076,7 @@ class Finance_Order {
 		if ( $payment_method <> "מזומן" and $payment_method <> "המחאה" ) $payment_method = "";
 		array_push( $fields, $payment_method );
 
-		array_push( $fields, self::getMission() );
+		array_push( $fields, self::getMissionId() );
 
 		array_push( $fields, Core_Db_MultiSite::LocalSiteID() );
 
