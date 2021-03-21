@@ -370,3 +370,10 @@ function inventory_change(post_file, prod_id)
     let request = post_file + "?operation=inventory_save&data=" + data.join();
     execute_url(request, fail_message);
 }
+
+function product_tag(post_file, product_id)
+{
+    let tags = get_value_by_name("tag_"+ product_id);
+    let url = post_file + '?operation=product_tags&product_id='+product_id+'&tags='+tags;
+    execute_url(url, fail_message);
+}

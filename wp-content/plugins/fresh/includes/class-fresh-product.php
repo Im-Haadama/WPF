@@ -84,6 +84,25 @@ class Fresh_Product  extends Finance_Product {
 		return round( $in, 1 );
 	}
 
+	public function getTags()
+	{
+		$terms = get_the_terms( $this->id, 'product_tag' );
+
+		$tags = array();
+		if ( ! empty( $terms ) && ! is_wp_error( $terms ) ){
+			foreach ( $terms as $term ) {
+				$tags[] = $term->term_id;
+			}
+		}
+		return $tags;
+	}
+
+	public function setTags(array $terms)
+	{
+		if ((count ($terms) == 1) and ($terms[0] === 0)) $terms = null;
+		wp_set_object_terms($this->id, $terms, 'product_tag');
+	}
+
 	private function q_out() : float {
 		$sql = "SELECT q_out FROM i_out WHERE prod_id = " . $this->id;
 
@@ -165,7 +184,10 @@ class Fresh_Product  extends Finance_Product {
 	function getVatPercent() {
 		if ( $this->isFresh() ) return 0;
 
-		return Israel_Shop::getVatPercent();
+		if (class_exists("Israel_Shop"))
+			return Israel_Shop::getVatPercent();
+
+		return 17;
 	}
 
 	function getPrice( $customer_type = "regular" ) {

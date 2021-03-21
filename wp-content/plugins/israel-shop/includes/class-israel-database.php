@@ -16,7 +16,7 @@ class Israel_Database extends Core_Database
 		$current = $this->checkInstalled( "tables");
 
 //		print "ver=$current force=$force";
-		if ($current == $version and ! $force) return true;
+//		if ($current == $version and ! $force) return true;
 //		print "cont";
 
 		$this->create_cities();
@@ -29,9 +29,10 @@ class Israel_Database extends Core_Database
 	static private function create_conversion() {
 		$db_prefix = GetTablePrefix();
 
-		if ( ! TableExists( "conversion" ) ) {
+		if ( 1 or ! TableExists( "conversion" ) ) {
 			print "creating conversion<br/>";
 
+		SqlQuery("drop table develop.im_conversion");
 			SqlQuery( "create table ${db_prefix}conversion
 (
 	id int auto_increment

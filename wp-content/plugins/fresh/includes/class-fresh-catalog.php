@@ -27,6 +27,7 @@ class Fresh_Catalog {
 		$loader->AddAction("product_change_regularprice", $this, "ChangeProductRegularPrice_wrap");
 		$loader->AddAction("product_change_saleprice", $this, "ChangeProductSalePrice_wrap");
 		$loader->AddAction("product_publish", $this, "product_publish");
+		$loader->AddAction("product_tags", $this);
 		$loader->AddAction("remove_map", $this, "remove_map");
 		$loader->AddAction("draft_by_map_id", $this, "draft_by_map_id");
 //		self::HandleMinusQuantity();
@@ -65,6 +66,24 @@ class Fresh_Catalog {
 			$p->Draft();
 		return true;
 	}
+
+	static function product_tags()
+	{
+//		let url = post_file + '?operation=&product_id='+product_id+'&status='+publish;
+		$product_id = GetParam("product_id", true);
+		$tags = GetParam("tags", true);
+		$p = new Fresh_Product($product_id);
+		$terms = [];
+		foreach (explode(":", $tags) as $tag){
+			if ($tag) {
+				$term    = get_term( $tag, "product_tag" );
+				$terms[] = $term->slug;
+			}
+		}
+		$p->setTags($terms);
+		return true;
+	}
+
 	static function CreateProduct_wrap()
 	{
 		$category_id = GetParam("category_name", true);

@@ -95,7 +95,6 @@ class Core_Data
 
 	static function data_update($table_name)
 	{
-		$debug = false;
 		$db_prefix = GetTablePrefix($table_name);
 		// TODO: adding meta key when needed(?)
 		global $meta_table_info;
@@ -105,7 +104,7 @@ class Core_Data
 
 		$conn = GetSqlConn();
 
-		SqlSetEncoding($conn, "${db_prefix}$table_name", $debug);
+		SqlSetEncoding($conn, "${db_prefix}$table_name");
 
 		// Prepare sql statements: primary and meta tables;
 		$values = self::data_parse_get($table_name, array("search", "operation", "table_name", "id", "dummy"));
@@ -115,7 +114,6 @@ class Core_Data
 		foreach ($values as $tbl => $changed_values)
 		{
 			foreach ($changed_values as $changed_field => $changed_pair){
-				if ($debug) print $changed_field . " " . $changed_pair[0] . "<br/>";
 				$changed_value = $changed_pair[0];
 				$is_meta = $changed_pair[1];
 				if ( SqlType($table_name, $changed_field) == 'date' and strstr($changed_value, "0001")) {
@@ -362,6 +360,8 @@ class Core_Data
 			return $row;
 		}
 
+		$field_args = $args;
+
 		foreach ($row as $key => $data)
 		{
 			if (isset($row[$key])) $data = $row[$key];
@@ -388,7 +388,7 @@ class Core_Data
 				if ($transpose)	$field_events = sprintf($events, "'" . $key . "'", $row_id);
 				else			$field_events = sprintf( $events, $row_id, $key );
 
-                $args["events"] = $field_events;
+                $field_args["events"] = $field_events;
 			}
 
 			// Let's start
@@ -397,7 +397,7 @@ class Core_Data
 				if ( $links and  array_key_exists( $key, $links )) {
 					if ( $selectors and array_key_exists( $key, $selectors ) ) {
 						$selector_name = $selectors[ $key ];
-						$selected = $selector_name( $input_name, $orig_data, $args ); //, 'onchange="update_' . $key . '(' . $row_id . ')"' );
+						$selected = $selector_name( $input_name, $orig_data, $field_args ); //, 'onchange="update_' . $key . '(' . $row_id . ')"' );
 					} else $selected = $value;
 
 //					print $links[$key] . "<br/>";
@@ -409,7 +409,7 @@ class Core_Data
 					if ( strlen( $selector_name ) < 2 ) die( "selector " . $key . "is empty" );
 					// print $selector_name;
 //					if ($key == "team") dd ($args);
-					$value = $selector_name( $input_name, $orig_data, $args );
+					$value = $selector_name( $input_name, $orig_data, $field_args );
 					// $value = (function_exists($selector_name) ? $selector_name( $input_name, $orig_data, $args ) : $orig_data); //, 'onchange="update_' . $key . '(' . $row_id . ')"' );
 //					if (! function_exists($selector_name)) {
 //						print( "function $selector_name does not exists" );

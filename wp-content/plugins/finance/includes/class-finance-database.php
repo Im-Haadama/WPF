@@ -241,7 +241,7 @@ charset=utf8;
 	{
 		$current = self::CheckInstalled("Finance", "functions");
 
-//		if ($current == $version and ! $force) return true;
+		if ($current == $version and ! $force) return true;
 
 		$db_prefix = GetTablePrefix();
 
@@ -481,3 +481,4 @@ BEGIN
 
 
 }
+

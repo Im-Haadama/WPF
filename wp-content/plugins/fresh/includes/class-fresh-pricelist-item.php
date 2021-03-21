@@ -186,6 +186,7 @@ class Fresh_Pricelist_Item {
 			$map_id  = null;
 
 			array_push( $row, $p->getName() );
+			array_push($row, gui_select_tags("tag_" . $linked_prod_id, $p->getTags(), array("events" => "onchange=\"product_tag('" . Fresh::getPost() . "', $linked_prod_id)\"")));
 			array_push($row, Core_Html::GuiCheckbox("pub_" . $linked_prod_id, $p->isPublished(), array("events" => "onchange=\"product_publish('" . Fresh::getPost() . "', $linked_prod_id)\"")));
 			array_push( $row, $calculated_price);
 			$style = null;
@@ -249,4 +250,20 @@ function product_other_suppliers( $prod_id, $supplier_id ) {
 
 	return rtrim( $result, ", " );
 }
+
+function gui_select_tags($id, $value, $args)
+{
+	$args["multiple"] = true;
+	$terms = get_terms( 'product_tag', array("hide_empty" => false) );
+	$term_array = array(array("id"=>0, "name"=>"none"));
+	if ( ! empty( $terms ) && ! is_wp_error( $terms ) ){
+		foreach ( $terms as $term ) {
+			$term_array[] = array("id"=>$term->term_id, "name"=>$term->name);
+		}
+	}
+
+	$args["values"] = $term_array;
+	return Core_Html::GuiSelect($id, implode(":", $value), $args);
+}
+
 ?>

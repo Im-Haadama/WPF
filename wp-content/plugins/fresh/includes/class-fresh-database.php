@@ -60,19 +60,6 @@ where `wp_terms`.`term_id` in (select `wp_term_taxonomy`.`term_id`
 
 ");
 
-		SqlQuery("create table ${db_prefix}supplier_mapping
-(
-	id bigint auto_increment
-		primary key,
-	product_id bigint not null,
-	supplier_id bigint not null,
-	supplier_product_name varchar(40) not null,
-	pricelist_id int(4) default 0 not null,
-	supplier_product_code int null,
-	selected tinyint(1) null
-) charset=utf8");
-
-
 		SqlQuery("create OR REPLACE view im_products as select `wp_posts`.`ID`                    AS `ID`,
        `wp_posts`.`post_author`           AS `post_author`,
        `wp_posts`.`post_date`             AS `post_date`,
@@ -135,6 +122,18 @@ order by 1;");
 			}
 		}
 		if ($current == $version and ! $force) return true;
+
+		SqlQuery("create table ${db_prefix}supplier_mapping
+(
+	id bigint auto_increment
+		primary key,
+	product_id bigint not null,
+	supplier_id bigint not null,
+	supplier_product_name varchar(40) not null,
+	pricelist_id int(4) default 0 not null,
+	supplier_product_code int null,
+	selected tinyint(1) null
+) charset=utf8");
 
 		SqlQuery("alter table im_supplier_price_list add product_id integer(11)");
 
@@ -265,7 +264,7 @@ charset=utf8;
 				SqlQuery("create table im_supplier_price_list
 (
 	ID bigint auto_increment,
-	product_name varchar(40) not null,
+	product_name varchar(200) not null,
 	supplier_id bigint not null,
 	date date not null,
 	price float not null,
@@ -276,6 +275,7 @@ charset=utf8;
 	sale_price float null,
 	category varchar(100) null,
 	picture_path varchar(200) null,
+	product_id int(11) null,
 	constraint ID_3
 		unique (ID)
 )

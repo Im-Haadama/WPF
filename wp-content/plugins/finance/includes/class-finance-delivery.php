@@ -382,8 +382,18 @@ class Finance_Delivery
 //					$order_item_id           = $order_item_ids[0];
 					$line_total              = self::get_order_itemmeta( $item_id, '_line_total' );
 					$quantity                = self::get_order_itemmeta( $item_id, '_qty' );
+					$name = SqlQuerySingleScalar( "SELECT order_item_name FROM wp_woocommerce_order_items WHERE order_item_id = " . $item_id );
+					if ($prod_id) {
+						$p = new Fresh_Product($prod_id);
+						$tags = $p->getTags();
+						foreach ($tags as $tag){
+							$t = get_term( $tag, 'product_tag');
+							if ($t)
+								$name .= " " . $t->name;
+						}
+					}
 					$table[ $item_id ] = array(
-						"product_name"     => SqlQuerySingleScalar( "SELECT order_item_name FROM wp_woocommerce_order_items WHERE order_item_id = " . $item_id ),
+						"product_name"     => $name,
 						"comment"          => self::get_order_itemmeta( $item_id, 'product_comment' ),
 						"quantity_ordered" => $quantity,
 						"quantity"         => '',
