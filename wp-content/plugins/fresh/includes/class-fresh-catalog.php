@@ -29,6 +29,7 @@ class Fresh_Catalog {
 		$loader->AddAction("product_publish", $this, "product_publish");
 		$loader->AddAction("remove_map", $this, "remove_map");
 		$loader->AddAction("draft_by_map_id", $this, "draft_by_map_id");
+//		self::HandleMinusQuantity();
 //		add_action('template_redirect', array($this, 'draft_no_picture'));
 	}
 
@@ -189,7 +190,7 @@ class Fresh_Catalog {
 		$sql = "INSERT INTO im_supplier_mapping (product_id, supplier_id, supplier_product_name, supplier_product_code, pricelist_id)"
 		       . "VALUES (' "
 		       . $product_id . "', "
-		       . $supplier_id . ", '" . $supplier_product_name . '\', '
+		       . $supplier_id . ", '" . EscapeString($supplier_product_name) . '\', '
 		       . $pricelist["supplier_product_code"] . ", " . $pricelist_id . ')';
 
 		SqlQuery( $sql );
@@ -652,8 +653,11 @@ class Fresh_Catalog {
 			}
 		}
 	}
+
+
 	static function HandleMinusQuantity()
 	{
+		$d = new Fresh_Product(1); // Load interator
 		$categs = self::GetFreshCategories();
 
 		foreach ($categs as $categ){
@@ -672,7 +676,7 @@ class Fresh_Catalog {
 
 	static function GetFreshCategories()
 	{
-		return explode(",", info_get( "fresh"));
+		return explode(",", InfoGet( "fresh"));
 	}
 
 	static function missing_pictures()

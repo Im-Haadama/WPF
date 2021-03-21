@@ -50,7 +50,7 @@ class Fresh_Product  extends Finance_Product {
 		return false;
 	}
 
-	private function q_in( $arrived = false ) {
+	private function q_in( $arrived = false ) :float{
 		$sql = "SELECT q_in FROM i_in WHERE product_id = " . $this->id;
 
 		$in = SqlQuerySingleScalar( $sql );
@@ -61,7 +61,7 @@ class Fresh_Product  extends Finance_Product {
 					    sum(`l`.`quantity`)
   						FROM (`im_supplies_lines` `l`
     					JOIN `im_supplies` `s`)
-  			WHERE ((`l`.`status` < 8) AND (`s`.`status` IN (" . SupplyStatus::Sent . "," . SupplyStatus::NewSupply . ")) 
+  			WHERE ((`l`.`status` < 8) AND (`s`.`status` IN (" . eSupplyStatus::Sent . "," . eSupplyStatus::NewSupply . ")) 
   			
   				AND (`s`.`id` = `l`.`supply_id`))
   				AND l.product_id = " . $this->id;
@@ -84,7 +84,7 @@ class Fresh_Product  extends Finance_Product {
 		return round( $in, 1 );
 	}
 
-	private function q_out() {
+	private function q_out() : float {
 		$sql = "SELECT q_out FROM i_out WHERE prod_id = " . $this->id;
 
 		$out = SqlQuerySingleScalar( $sql );
@@ -331,20 +331,23 @@ class Fresh_Product  extends Finance_Product {
 
 	function getStock( $arrived = false ) {
 		if ( $this->isFresh() ) {
-//			print "<br/> fresh " . $this -> q_in() . " " . $this->q_out() . " ";
+//			print "<br/> fresh " . $this -> q_in() . " " . $this->q_out() . " " . $this->getName() . $arrived;
 			$inv         = $this->q_in( $arrived ) - $this->q_out();
-			$stock_delta = SqlQuerySingleScalar( "select meta_value " .
+			$stock_delta = floatval(SqlQuerySingleScalar( "select meta_value " .
 			                                     " from wp_postmeta " .
 			                                     " where post_id = " . $this->id .
-			                                     " and meta_key = 'im_stock_delta'" );
+			                                     " and meta_key = 'im_stock_delta'" ));
+
+			if ($this->id === 298) MyLog("in: " . $this->q_in() . " " . $this->q_out() . " delta = " . $stock_delta);
+
 			if ( $stock_delta ) {
 				$inv += $stock_delta;
 			}
 
-			if ($inv < 0) {
-				self::setStock(0);
-				return 0;
-			}
+//			if ($inv < 0) {
+//				self::setStock(0);
+//				return 0;
+//			}
 
 			return round( $inv, 1 );
 		}
@@ -375,9 +378,9 @@ class Fresh_Product  extends Finance_Product {
 
 				return true;
 			}
-
-			SqlQuery( "update wp_postmeta set meta_value = " . $delta .
-			          " where meta_key = 'im_stock_delta' and post_id = " . $this->id );
+			$sql = "update wp_postmeta set meta_value = " . $delta .
+			       " where meta_key = 'im_stock_delta' and post_id = " . $this->id;
+			SqlQuery( $sql );
 
 			if ( is_null( SqlQuerySingleScalar( "select meta_value " .
 			                                    " from wp_postmeta " .

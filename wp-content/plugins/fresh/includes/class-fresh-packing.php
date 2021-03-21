@@ -9,6 +9,11 @@ class Fresh_Packing {
 		return self::$_instance;
 	}
 
+	private function __construct()
+	{
+		new Fresh_Supply(1); // for eSupplyStatus
+	}
+
 	static function needed_products() {
 		$result = "";
 
@@ -40,7 +45,8 @@ class Fresh_Packing {
 	static function get_total_orders_supplier( $supplier_id, $needed_products, $args)
 	{
 		$filter_zero = GetArg($args, "filter_zero", false);
-		$filter_stock = GetArg($args, "filter_stock", false);
+		$filter_stock = GetArg($args, "filter_in_stock", false);
+
 		$debug = false;
 		$print = GetArg($args, "print", false);
 
@@ -67,7 +73,7 @@ class Fresh_Packing {
 
 			$row = array();
 
-			if ( $filter_stock and ($P->getStock() >= $quantity_array[0] )) continue;
+			if ( $filter_stock and ($P->getStock(true) >= $quantity_array[0] )) continue;
 
 			if ( $P->isDraft() ) $row[] = "טיוטא";
 			else $row[] = Core_Html::GuiCheckbox( "chk" . $prod_id, 0, array("checkbox_class" => $checkbox_class ));
@@ -77,7 +83,7 @@ class Fresh_Packing {
 				$row[]    = $quantity;
 
 				if ( $inventory_managed ) {
-					$q_inv = $P->getStock();
+					$q_inv = $P->getStock(true);
 					$row[] = Core_Html::GuiInput( "inv_" . $prod_id, $q_inv, array( "events" => "onchange=\"inventory_change('$post_file', " . $prod_id . ")\" onkeyup=\"moveNext('$post_file'," . $prod_id . ")\"" ) );
 
 					$numeric_quantity = ceil( $quantity - $q_inv );
@@ -239,7 +245,7 @@ class Fresh_Packing {
 					}
 					if (! strlen ($tab_content)) continue;
 
-					if ( $supply_id = Fresh_Suppliers::TodaySupply( $supplier->getId() ) ) {
+					if ( $supply_id = Finance_Suppliers::TodaySupply( $supplier->getId() ) ) {
 						$tab_content .= Core_Html::GuiHyperlink( "Supply " . $supply_id, Fresh_Supply::getLink($supply_id ) ). "<br/>";
 					}
 
@@ -290,8 +296,6 @@ class Fresh_Packing {
 		$loader->AddAction('inventory_save', $this);
 		Flavor::AddTop("packing", "Packing", "/wp-admin/admin.php?page=packing");
 		Flavor::AddTop("packing_printing", "Printing", "/wp-admin/admin.php?page=printing", "packing");
-
-
 	}
 
 	static function inventory_save()
@@ -306,7 +310,7 @@ class Fresh_Packing {
 
 	static function orders_per_item( $prod_id, $multiply, $args)
 	{
-		$short = GetArg($args, "short", false);
+		$short = GetArg($args, "short", true);
 		$include_basket = GetArg($args, "include_basket", false);
 		$include_bundle = GetArg($args, "include_basket", false);
 		$just_total = GetArg($args, "just_total", false);
@@ -535,7 +539,7 @@ class Fresh_Packing {
 
 				// display order_id with link to display it.
 				// 1) order ID with link to the order
-				$mission_id = $order->getMission();
+				$mission_id = $order->getMissionId();
 
 				$args                                = array();
 				$args["events"]                      = "onchange=\"order_mission_changed('" . Fresh::getPost() . "', " . $order_id . ")\"";

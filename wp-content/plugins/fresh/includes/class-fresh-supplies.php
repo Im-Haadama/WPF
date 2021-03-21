@@ -99,6 +99,8 @@ class Fresh_Supplies {
 		}
 		$tabs = [];
 
+		new Fresh_supply(); // Load enum classes.
+
 //		print Core_Html::GuiHyperlink("Create supply", GetUrl(1) . "?operation=new_supply");
 //		$args["title"] = "Supplies to get";       print SuppliesTable( SupplyStatus::Sent, $args );
 //		$args["title"] = "Supplies to collect";   print SuppliesTable( SupplyStatus::OnTheGo, $args );

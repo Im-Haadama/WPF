@@ -12,7 +12,6 @@ class Fresh {
 	protected $loader;
 	protected $auto_loader;
 	protected $delivery_manager;
-	protected $suppliers;
 	protected $supplies;
 	protected $supplier_balance;
 	protected $totals;
@@ -200,7 +199,6 @@ class Fresh {
 		$this->loader->AddAction( 'wp_enqueue_scripts', $orders, 'enqueue_scripts' );
 
 		Fresh_Packing::instance()->init_hooks($this->loader);
-//		Fresh_Suppliers::init_hooks();
 		Fresh_Order_Management::instance()->init_hooks();
 		Fresh_Catalog::instance()->init_hooks($this->loader);
 		Fresh_Client::init_hooks();
@@ -492,14 +490,12 @@ class Fresh {
 		// Set up localisation.
 		$this->load_plugin_textdomain();
 		$this->delivery_manager = new Finance_Delivery_Manager();
-		$this->suppliers = new Fresh_Suppliers();
 		$this->supplies = new Fresh_Supplies();
 		$this->supplier_balance = Fresh_Supplier_Balance::instance();
 		$this->totals = Fresh_Totals::instance();
 		$this->client_views = new Fresh_Client_Views();
 
 		$shortcodes = Core_Shortcodes::instance();
-		$shortcodes->add($this->suppliers->getShortcodes());
 //		$shortcodes->add($this->supplier_balance->getShortcodes());
 		$this->supplier_balance->init_hooks($this->loader);
 		$shortcodes->add($this->totals->getShortcodes());
@@ -507,8 +503,6 @@ class Fresh {
 
 		$this->supplies->init_hooks($this->loader);
 		$this->supplies->init();
-		$this->suppliers->init_hooks($this->loader);
-		$this->suppliers->init();
 		Fresh_Basket::init($this->loader);
 		$this->delivery_manager->init($this->loader);
 
@@ -1082,3 +1076,12 @@ function modify_title( $title ) {
 //	MyLog(__FUNCTION__);
 //	 return 'OK';
 //}
+
+abstract class eSupplyStatus {
+	const NewSupply = 1;
+	const Sent = 3;
+	const OnTheGo = 4;
+	const Supplied = 5;
+	const Merged = 8;
+	const Deleted = 9;
+}

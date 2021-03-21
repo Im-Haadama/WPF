@@ -19,7 +19,7 @@ class Fresh_Shortcodes {
 	 */
 	public static function init() {
 		$shortcodes = array(
-			'fresh_suppliers'      => __CLASS__ . '::suppliers', // [fresh_suppliers]
+			'Finance_Suppliers'    => __CLASS__ . '::suppliers', // [fresh_suppliers]
 			'fresh_control'        => __CLASS__ . '::packing_control', // [fresh_suppliers]
 //			'fresh_orders'    => __CLASS__ . '::orders',
 			'fresh_account_status' => __CLASS__ . '::fresh_account_status',

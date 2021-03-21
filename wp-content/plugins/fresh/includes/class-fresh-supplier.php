@@ -78,6 +78,8 @@ class Fresh_Supplier {
 		}
 		$args["name"] = "supplier_name";
 		$args['selected'] = $value;
+		$args["query"] = "is_active = 1";
+		$args["order_by"] = "supplier_name";
 
 		return Core_Html::GuiSelectTable($id, "suppliers", $args);
 //		$sql_where );

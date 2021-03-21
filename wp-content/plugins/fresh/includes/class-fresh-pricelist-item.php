@@ -196,7 +196,7 @@ class Fresh_Pricelist_Item {
 					"style" => $style)));
 			array_push( $row, Core_Html::GuiInput("sal_$linked_prod_id", $p->getSalePrice(),
 				array("events"=>array("onchange=\"product_change_saleprice('" . Fresh::getPost() . "', $linked_prod_id)\"", 'onkeypress="moveNext(this)"'), "size"=>5)));
-			$n = Fresh_Packing::orders_per_item( $linked_prod_id, 1, true, true, true );
+			$n = Fresh_Packing::orders_per_item( $linked_prod_id, 1, array());
 			array_push( $row, $n );
 		} else {
 			if ($create_info) {

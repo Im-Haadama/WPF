@@ -18,7 +18,7 @@
         // require (['WebTorrent'], function(WebTorrent) {
         function load() {
             let client = new WebTorrent();
-            var torrentId = 'https://site.weact.live/wp-content/uploads/videos/Trump.torrent';
+            var torrentId = 'https://site.weact.live/wp-content/uploads/videos/trump.torrent';
             torrentId += '?tr=wss://tracker.webtorrent.io';
             document.getElementById("log").innerHTML += torrentId;
             client.add(torrentId, function (torrent) {

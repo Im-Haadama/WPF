@@ -6,15 +6,6 @@
  * Time: 11:58
  */
 
-abstract class eSupplyStatus {
-	const NewSupply = 1;
-	const Sent = 3;
-	const OnTheGo = 4;
-	const Supplied = 5;
-	const Merged = 8;
-	const Deleted = 9;
-}
-
 class Fresh_Supply {
 	private $ID = 0;
 	private $Status;

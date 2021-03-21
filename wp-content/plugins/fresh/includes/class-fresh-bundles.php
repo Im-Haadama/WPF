@@ -83,7 +83,8 @@ class Fresh_Bundles {
 			)
 		) );
 		$result .=  Core_Html::GuiButton( "btn_create_bundle", "צור", "bundle_create('$post_file')");
-		$result .=  Core_Html::gui_datalist( "products", "im_products", "ID"); // "post_title", true );
+		$result .=  Core_Html::TableDatalist( "products", "im_products"); // "post_title", true );
+//		$result .=  Core_Html::gui_datalist( "products", "im_products", "ID"); // "post_title", true );
 
 		return $result;
 	}

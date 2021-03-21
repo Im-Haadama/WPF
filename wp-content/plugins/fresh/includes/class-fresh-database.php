@@ -261,35 +261,6 @@ charset=utf8;
 ) charset=utf8;
 ");
 
-		if (! TableExists("suppliers")) {
-			SqlQuery( "create table ${db_prefix}suppliers
-(
-	id bigint auto_increment
-		primary key,
-	supplier_name varchar(20) not null,
-	supplier_contact_name varchar(20) not null,
-	supplier_contact_phone varchar(20) not null,
-	factor float default 3 null,
-	site_id int null,
-	email varchar(50) null,
-	supplier_priority int(2) default 5 null,
-	machine_update bit default b'0' null,
-	category int null,
-	eng_name varchar(40) null,
-	print tinyint(1) default 0 null,
-	is_active bit default b'1' null,
-	address varchar(100) null,
-	self_collect bit default b'0' null,
-	source_path varchar(500) null,
-	auto_order_day int(1) null,
-	min_order int null,
-	invoice_email varchar(50) null,
-	supplier_description varchar(200) null
-) charset=utf8;" );
-
-	SqlQuery("ALTER TABLE im_suppliers AUTO_INCREMENT = 100001");
-}
-
 		if (! TableExists("supplier_price_list"))
 				SqlQuery("create table im_supplier_price_list
 (
@@ -335,43 +306,6 @@ charset=utf8;
 		$db_prefix = GetTablePrefix();
 
 		if ($current == $version and ! $force) return true;
-
-//		new Fresh_Delivery(0); // Load classes
-
-		SqlQuery("drop function supplier_from_business");
-		SqlQuery("create
-     function supplier_from_business(bus_id int) returns text CHARSET utf8
-BEGIN
-    declare _supplier_id int;
-    declare _display varchar(50) CHARSET utf8;
-    SELECT part_id INTO _supplier_id FROM im_business_info where id = bus_id;
-    select supplier_name into _display from im_suppliers where id = _supplier_id;
-
-    return _display;
-  END;
-
-");
-
-
-		SqlQuery("drop function supply_from_business");
-		SqlQuery("create function supply_from_business( _business_id int) returns integer
-	BEGIN
-		declare _supply_id integer;
-		select id into _supply_id 
-	        from ${db_prefix}supplies where business_id = _business_id; 
-	    return _supply_id;
-	END;
-");
-
-		SqlQuery("drop function supplier_last_pricelist_date;");
-
-		SqlQuery("create function supplier_last_pricelist_date(_supplier_id int) returns date
-		BEGIN
-		declare _date date;
-		SELECT info_data into _date
-		FROM im_info WHERE info_key = concat('import_supplier_', _supplier_id);
-		return _date;
-		END");
 
 		SqlQuery("create function order_mission_date(order_id int) returns date
 		BEGIN
@@ -480,17 +414,6 @@ BEGIN
     where id = user_id;
 
     return _display;
-  END;
-
-");
-
-		SqlQuery("drop function if exists  order_user");
-		SqlQuery("create function order_user(order_id int) returns int
-BEGIN
-    declare _user_id int;
-    SELECT meta_value INTO _user_id FROM wp_postmeta where post_id = order_id and meta_key = '_customer_user';
-
-    return _user_id;
   END;
 
 ");

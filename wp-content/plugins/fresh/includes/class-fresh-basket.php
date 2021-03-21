@@ -259,7 +259,7 @@ class Fresh_Basket extends Fresh_Product  {
 				$p = new Fresh_Product($prod_id);
 				if ($prod_id  == $basket_id) continue;
 				$row['product_id'] = Core_Html::GuiHyperlink($p->getName(),
-					($p->is_basket() ? AddToUrl("basket_id", $prod_id) : Fresh_Suppliers::get_link($p->getSupplierId())));
+					($p->is_basket() ? AddToUrl("basket_id", $prod_id) : Finance_Suppliers::get_link($p->getSupplierId())));
 				$row['buy_price'] = Fresh_Pricing::get_buy_price($prod_id);
 				$buy_total += $row['buy_price'];
 				if (is_numeric($row["line_price"])) $total += $row["line_price"];
