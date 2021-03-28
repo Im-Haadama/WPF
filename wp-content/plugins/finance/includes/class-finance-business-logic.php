@@ -49,8 +49,8 @@ class Finance_Business_Logic {
 		$loader->AddAction( 'pay_user_credit', $this);
 		$loader->AddAction('credit_clear_token', $this);
 
-
 	}
+
 	public function process_payment( $order_id, $args ) : bool {
 		$order              = new WC_Order( $order_id );
 
@@ -357,6 +357,36 @@ class Finance_Business_Logic {
 		}
 		return false;
 	}
+
+	static public function CreateTokens()
+	{
+		$sql = "select id from im_payment_info where card_number not like 'XXXX%' and length(card_number) > 4";
+		$ids = SqlQueryArrayScalar($sql);
+		$yaad = new Finance_Yaad( YAAD_API_KEY, YAAD_TERMINAL, get_bloginfo( 'name' ), YAAD_PassP );
+		foreach ($ids as $id)
+		{
+			print "<br/>handling $id ";
+			$user_id = SqlQuerySingleScalar("select user_id from im_payment_info where id = $id");
+			if (! $user_id) {
+				$email = SqlQuerySingleScalar("select email from im_payment_info where id = $id");
+				$user_id = SqlQuerySingleScalar("select ID from wp_users where user_email = '$email'");
+				SqlQuery("update im_payment_info set user_id = $user_id where id = $id");
+			}
+			$u = new Finance_Client($user_id);
+			print $u->getName(). " ";
+			$trans_id = SqlQuerySingleScalar("select transaction_id from im_yaad_transactions where user_id = $user_id order by id desc limit 1");
+			$token_info = $yaad->GetToken($trans_id);
+			$user = new Finance_Client($user_id);
+			if (isset($token_info['Token'])) {
+				print " got token. Saving and removing raw";
+				delete_user_meta( $user->getUserId(), 'credit_token' );
+				add_user_meta( $user->getUserId(), 'credit_token', $token_info['Token'] );
+
+				E_Fresh_Payment_Gateway::RemoveRawInfo( $id );
+			}
+		}
+	}
+
 
 	function credit_clear_token()
 	{

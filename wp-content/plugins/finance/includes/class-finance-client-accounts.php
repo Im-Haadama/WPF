@@ -221,7 +221,7 @@ class Finance_Client_Accounts
 		$C = new Finance_Client($customer_id);
 		$invoice->Login();
 
-		$client = $C->getInvoiceUser(true);
+		$client = $C->getInvoiceUser();
 
 		if ( !$client or (isset($client->ID) and ! ( $client->ID )) > 0 ) {
 			print "Client not found " . $customer_id . "<br>";

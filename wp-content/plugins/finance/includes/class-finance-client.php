@@ -92,7 +92,6 @@ class Finance_Client {
 		$email = $this->get_customer_email();
 		$name = $this->getName();
 
-
 //	    // Try the cache
 		$id = get_user_meta( $this->user_id, 'invoice_id', 1 );
 		FinanceLog("get by id $id");

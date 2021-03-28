@@ -153,6 +153,7 @@ class Flavor_Mission {
 	}
 
 	// https:/fruity.co.il/wp-content/plugins/flavor/post.php?operation=get_local_anonymous&header=1&mission_ids=1054
+	// https:/super-organi.co.il/wp-content/plugins/flavor/post.php?operation=get_local_anonymous&header=1&mission_ids=1065
 	// http:/127.0.0.1/wp-content/plugins/flavor/post.php?operation=get_local_anonymous&header=1&mission_ids=1
 	static function get_local_anonymous()
 	{

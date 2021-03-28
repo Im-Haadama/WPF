@@ -242,6 +242,7 @@ class Finance_Accounting {
 	static function accounting() {
 //		Fresh_Catalog::draft_no_picture();
 
+//		Finance_Business_Logic::CreateTokens();
 		$result = "";
 		$hook_manager = Core_Hook_Handler::instance();
 
