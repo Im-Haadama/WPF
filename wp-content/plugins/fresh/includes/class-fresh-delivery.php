@@ -485,52 +485,6 @@ class Fresh_Delivery extends Finance_Delivery {
 		return $this->delivery_fields_names;
 	}
 
-	public function add_delivery_lines( $delivery_id, $lines, $edit ) {
-		$debug = true;
-		if ( $edit ) {
-			$d = new Fresh_Delivery( $delivery_id );
-			if (! $d) return false;
-			$d->DeleteLines();
-		}
-
-		for ( $pos = 0; $pos < count( $lines ); $pos += 8 ) {
-			$prod_id = $lines[ $pos ];
-
-			$p = new Fresh_Product($prod_id);
-			if ($prod_id == -1)
-				$product_name = "הנחת סל";
-			else
-				if ( is_numeric( $prod_id ) ) {
-					$product_name = $p->getName();
-				} else {
-					if ( strstr( $prod_id, ")" ) ) {
-						$prod_id      = substr( $prod_id, 0, strstr( $prod_id, ")" ) );
-						$product_name = substr( $prod_id, strstr( $prod_id, ")" ) );
-					} else {
-						$product_name = $prod_id;
-						$prod_id      = 0;
-					}
-				}
-			$quantity         = $lines[ $pos + 1 ];
-			$quantity_ordered = $lines[ $pos + 2 ];
-			$unit_ordered     = $lines[ $pos + 3 ];
-			if ( ! ( strlen( $unit_ordered ) > 0 ) ) {
-				$unit_ordered = "NULL";
-			} // print $unit_ordered . "<br/>";
-			$vat        = $lines[ $pos + 4 ];
-			$price      = $lines[ $pos + 5 ];
-			$line_price = $lines[ $pos + 6 ];
-			$part_of_basket = $lines[$pos + 7];
-			if ($debug)
-				MyLog("id: " . $prod_id . ", name: " . $product_name . " delivery_id: " . $delivery_id . " quantity: " . $quantity . " quantity_ordred: " . $quantity_ordered .
-			      "units: " . $unit_ordered . " vat: " . $vat . " price: " . $price . " line_price: " . $line_price );
-
-			$rc =  self::AddDeliveryLine( $product_name, $delivery_id, $quantity, $quantity_ordered, $unit_ordered, $vat, $price, $line_price, $prod_id, $part_of_basket );
-			if (! $rc) return false;
-		}
-		return true;
-	}
-
 	static function link($id)
 	{
 		return "/wp-admin/admin.php?page=deliveries&delivery_id=$id";

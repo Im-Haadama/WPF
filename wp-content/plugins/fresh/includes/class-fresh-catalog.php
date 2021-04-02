@@ -695,6 +695,7 @@ class Fresh_Catalog {
 
 	static function GetFreshCategories()
 	{
+//		InfoUpdate("fresh", "15"); Todo: make ui to edit this
 		return explode(",", InfoGet( "fresh"));
 	}
 

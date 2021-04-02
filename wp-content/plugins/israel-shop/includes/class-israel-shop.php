@@ -101,6 +101,8 @@ class Israel_Shop
 		add_action('vat_add_category', array($this, 'vat_add_category'));
 		add_action('vat_remove_category', array($this, 'vat_remove_category'));
 		AddAction('israel_data_update', array($this, 'data_update'));
+		add_filter('vat_percent', __CLASS__ . ":vat_percent");
+		add_filter('vat_from_total', __CLASS__ . ":vat_from_total");
 	}
 
 	public function data_update()
@@ -223,4 +225,13 @@ class Israel_Shop
 		return round($net * (100 + self::getVatPercent()) / 100, 2);
 	}
 
+	static function vat_percent($in)
+	{
+		return self::getVatPercent();
+	}
+
+	static function vat_from_total($amount)
+	{
+		return self::vatFromTotal($amount);
+	}
 }

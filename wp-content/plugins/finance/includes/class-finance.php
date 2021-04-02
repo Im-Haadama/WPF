@@ -538,7 +538,7 @@ class Finance {
 		Flavor_Roles::instance()->addRole("staff");
 		Flavor_Roles::instance()->addRole("shop_manager");
 		Flavor_Roles::instance()->addRole("hr", array("working_hours_report", "show_salary"));
-		Flavor_Roles::instance()->addRole("cfo", array("finance_bank"));
+		Flavor_Roles::instance()->addRole("cfo", array("finance_bank", "show_bank"));
 	}
 
 //	/**

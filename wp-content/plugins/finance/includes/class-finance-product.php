@@ -17,7 +17,9 @@ class Finance_Product {
 	 * @param $id
 	 */
 	public function __construct( $id ) {
-		if (! class_exists('WC_Product')) return null;
+		if ( ! class_exists( 'WC_Product' ) ) {
+			return null;
+		}
 
 		$this->id = $id;
 		try {
@@ -29,20 +31,20 @@ class Finance_Product {
 		}
 	}
 
-	public function found() : bool
-	{
+	public function found(): bool {
 		return null != $this->wp_p;
 	}
 
-	static function getByName($prod_name)
-	{
-		$id = SqlQuerySingleScalar("select id from im_products where post_title = " . QuoteText($prod_name));
-		if ($id) return new self($id);
+	static function getByName( $prod_name ) {
+		$id = SqlQuerySingleScalar( "select id from im_products where post_title = " . QuoteText( $prod_name ) );
+		if ( $id ) {
+			return new self( $id );
+		}
+
 		return null;
 	}
 
-	function getPrice()
-	{
+	function getPrice() {
 		return get_postmeta_field( $this->id, '_price' );
 	}
 
@@ -97,6 +99,8 @@ class Finance_Product {
 	}
 
 	public function getVatPercent() {
-		return Israel_Shop::getVatPercent();
+		// Default vat is 0. To overide include plugin like Israel_Shop.
+		return apply_filters('vat_percent', 0);
+//		return Israel_Shop::getVatPercent();
 	}
 }

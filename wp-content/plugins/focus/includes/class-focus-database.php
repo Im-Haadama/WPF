@@ -68,32 +68,6 @@ class Focus_Database extends Core_Database
 	// Create what needed in clean install
 	static function FreshInstall()
 	{
-		SqlQuery("drop function client_displayname");
-		SqlQuery( "create function client_displayname (user_id int) returns text charset 'utf8'
-BEGIN
-    declare _user_id int;
-    declare _display varchar(50) CHARSET utf8;
-    select display_name into _display from wp_users
-    where id = user_id;
-
-    return _display; 
-  END;
-
-" );
-
-		SqlQuery("drop function task_status");
-		SqlQuery( "CREATE FUNCTION task_status(task_id INT)
-  RETURNS TEXT CHARSET 'utf8'
-  BEGIN
-    declare _status int;
-    select status into _status from im_tasklist
-    where id = task_id;
-
-    return _status;
-  END;
-" );
-
-
 		if (!TableExists("working_teams"))
 			SqlQuery("create table im_working_teams
 (
@@ -236,6 +210,32 @@ engine=InnoDB;
 		$db_prefix = GetTablePrefix();
 
 //		if ($current == $version and ! $force) return true;
+
+		SqlQuery("drop function client_displayname");
+		SqlQuery( "create function client_displayname (user_id int) returns text charset 'utf8'
+BEGIN
+    declare _user_id int;
+    declare _display varchar(50) CHARSET utf8;
+    select display_name into _display from wp_users
+    where id = user_id;
+
+    return _display; 
+  END;
+
+" );
+
+		SqlQuery("drop function task_status");
+		SqlQuery( "CREATE FUNCTION task_status(task_id INT)
+  RETURNS TEXT CHARSET 'utf8'
+  BEGIN
+    declare _status int;
+    select status into _status from im_tasklist
+    where id = task_id;
+
+    return _status;
+  END;
+" );
+
 
 		SqlQuery("drop function preq_done");
 		SqlQuery("CREATE FUNCTION preq_done(_task_id int)

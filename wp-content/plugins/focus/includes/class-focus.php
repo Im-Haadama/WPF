@@ -198,7 +198,7 @@ class Focus {
 	{
 		FocusLog(__FUNCTION__);
 		$this->database = new Focus_Database("Focus");
-		$this->database->install($this->version);
+		$this->database->install($this->version, true);
 		// Give the administrator the capability
 		if (is_admin_user()) {
 			FocusLog("Creating role");

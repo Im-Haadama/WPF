@@ -98,7 +98,7 @@ engine=MyISAM;");
 	line_price float not null,
 	prod_id int null,
 	unit_ordered float null,
-	part_of_basket int null,
+	has_vat bool,
 	a int null
 );
 
@@ -179,20 +179,21 @@ charset=utf8;
 
 		if (!TableExists("bank"))
 		SqlQuery("CREATE TABLE `im_bank` (
-  `id` int(11) NOT NULL,
-  `account_id` int(20) NOT NULL,
-  `date` date NOT NULL,
-  `description` varchar(200) NOT NULL,
-  `reference` int(11) NOT NULL,
-  `out_amount` float DEFAULT NULL,
-  `in_amount` float DEFAULT NULL,
-  `balance` float NOT NULL,
-  `client_name` varchar(400) DEFAULT NULL,
-  `customer_id` int(11) DEFAULT NULL,
-  `receipt` varchar(100) DEFAULT NULL,
-  `site_id` int(11) DEFAULT NULL,
-  `transaction_type` int(11) DEFAULT NULL,
-  `comment` varchar(400) DEFAULT NULL
+                           `id` int(11) NOT NULL auto_increment,
+                           `account_id` int(20) NOT NULL,
+                           `date` date NOT NULL,
+                           `description` varchar(200) NOT NULL,
+                           `reference` int(11) NOT NULL,
+                           `out_amount` float DEFAULT NULL,
+                           `in_amount` float DEFAULT NULL,
+                           `balance` double NOT NULL,
+                           `client_name` varchar(400) DEFAULT NULL,
+                           `customer_id` int(11) DEFAULT NULL,
+                           `receipt` varchar(100) DEFAULT NULL,
+                           `site_id` int(11) DEFAULT NULL,
+                           `transaction_type` int(11) DEFAULT NULL,
+                           `comment` varchar(400) DEFAULT NULL,
+                       primary key (id)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;");
 
 		if (! TableExists("bank_lines"))

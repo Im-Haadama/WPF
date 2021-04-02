@@ -1,0 +1,2 @@
+#!/bin/bash -f
+systemctl restart apache2.service

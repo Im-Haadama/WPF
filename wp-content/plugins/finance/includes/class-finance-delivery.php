@@ -385,12 +385,7 @@ class Finance_Delivery
 					$name = SqlQuerySingleScalar( "SELECT order_item_name FROM wp_woocommerce_order_items WHERE order_item_id = " . $item_id );
 					if ($prod_id) {
 						$p = new Fresh_Product($prod_id);
-						$tags = $p->getTags();
-						foreach ($tags as $tag){
-							$t = get_term( $tag, 'product_tag');
-							if ($t)
-								$name .= " " . $t->name;
-						}
+						$name = $p->getName(false, true);
 					}
 					$table[ $item_id ] = array(
 						"product_name"     => $name,
@@ -508,9 +503,8 @@ class Finance_Delivery
 		for ($i = 1; $i < count($data); $i ++)
 		{
 			$prod_name = urldecode($data[$i][0]);
-			$q = $data[$i][1];
-			if (! is_numeric($q)) $q = 0;
-			$p = $data[$i][2];
+			$q = $data[$i][1]; 		if (! is_numeric($q)) $q = 0;
+			$p = $data[$i][2]; if (! is_numeric($p)) $p = 10;
 			$prod_id = $data[$i][4];
 			$has_vat = $data[$i][6];
 			if (! ($prod_id > 0)) {
@@ -788,7 +782,7 @@ class Finance_Delivery
 					break;
 			}
 			$prod_to_add['quantity_ordered'] = $prod_to_add['quantity'];
-			$prod_to_add['vat']       = ($P->getVatPercent() ? Israel_Shop::vatFromTotal($product['total']) :0);
+			$prod_to_add['vat']       = ($P->getVatPercent() ? apply_filters('vat_from_total', $product['total']) : 0);
 			$vat += $prod_to_add['vat'];
 			$quantity                 = $product["quantity"];
 
@@ -803,9 +797,10 @@ class Finance_Delivery
 
 		if ($fee = $this->order->getShippingFee()) {
 			$total += $fee;
-			$vat += Israel_Shop::vatFromTotal($fee);
+			$this_vat = apply_filters('vat_from_total', $fee);
+			$vat += $this_vat;
 			$lines ++;
-			FinanceLog("fee vat: $vat $fee " . Israel_Shop::vatFromTotal($fee));
+			FinanceLog("fee vat: $vat $fee " . $this_vat);
 		}
 
 		$delivery_id = $this->CreateOrUpdateDelivery($order_id, $total, $vat, $lines, false, $fee);

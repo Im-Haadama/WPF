@@ -323,6 +323,11 @@ class Focus_Views {
 	static function show_project_wrapper() {
 		$db_prefix = GetTablePrefix();
 		// Are we here after creating a task?
+		if ($operation = GetParam("operation", false, null)){
+			$args = self::Args("tasklist");
+			Core_Hook_Handler::instance()->DoAction($operation, $args);
+			return;
+		}
 		$new = GetParam( "new", false, false, true ); // Called after add a task. Ned is the id of the new task.
 		if ( false !== $new ) {
 			if ($new) {

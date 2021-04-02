@@ -103,6 +103,10 @@ class Fresh_Category {
 		if (! class_exists('Fresh_ProductIterator')) new Fresh_Product(1); // Initiate auto load
 
 		$iter = new Fresh_ProductIterator();
+		if (! $this->term) {
+			print "terms not found<br/>";
+			return -1;
+		}
 		$iter->iterateCategory( $this->term->term_id );
 
 		$sort_array = [];

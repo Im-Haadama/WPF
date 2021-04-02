@@ -105,7 +105,7 @@ class Finance_Bank
 		$args['post_file'] = $this->post_file;
 		$result = Core_Gem::GemAddRow("bank_account", 'Create bank account', $args);
 
-		return $result;
+		print $result;
 	}
 
 	function show_bank_accounts_wrap()

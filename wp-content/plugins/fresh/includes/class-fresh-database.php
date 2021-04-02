@@ -254,9 +254,7 @@ charset=utf8;
 	price float not null,
 	line_price float not null,
 	prod_id int null,
-	unit_ordered float null,
-	part_of_basket int null,
-	a int null
+	unit_ordered float null
 ) charset=utf8;
 ");
 

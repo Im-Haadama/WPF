@@ -258,7 +258,7 @@ class Fresh_Basket extends Fresh_Product  {
 				$prod_id = $row['product_id'];
 				$p = new Fresh_Product($prod_id);
 				if ($prod_id  == $basket_id) continue;
-				$row['product_id'] = Core_Html::GuiHyperlink($p->getName(),
+				$row['product_id'] = Core_Html::GuiHyperlink($p->getName(true, true),
 					($p->is_basket() ? AddToUrl("basket_id", $prod_id) : Finance_Suppliers::get_link($p->getSupplierId())));
 				$row['buy_price'] = Fresh_Pricing::get_buy_price($prod_id);
 				$buy_total += $row['buy_price'];
@@ -290,15 +290,17 @@ class Fresh_Basket extends Fresh_Product  {
 			foreach ($result as $prod_id){
 				if ($prod_id == $basket_id) continue;
 				$p = new Fresh_Product($prod_id);
-				$data .= $p->getName() . "<br/>";
+				$data .= $p->getName(false, true) . "<br/>";
 				SqlQuery( "delete from im_baskets where product_id = " . $prod_id);
 			}
 		}
 
 		// show in the button product prices for selection.
 		$options = array();
-		foreach (array(19, 62, 18) as $categ) {
+		foreach (Fresh_Catalog::GetFreshCategories() as $categ) {
+//			array(19, 62, 18) as $categ) {
 			$C = new Fresh_Category( $categ );
+			if (! $C->getId()) continue;
 			array_push( $options, $C->getProductsWithPrice());
 		}
 		$data .= Core_Html::gui_table_args(array($options), "basket", $args);

@@ -186,6 +186,13 @@ class Core_Importer {
 				// Fix data.
 				switch ( substr( SqlType( $table_name, $k ), 0, 3 ) ) {
 					case 'flo':
+					case "dou":
+						if ( $line[ $m ] == '' ) {
+							$line[ $m ] = 0;
+						} else {
+							$line[$m] = preg_replace("/[^0-9\-.]/", "", $line[$m]);
+						}
+						break;
 					case "int":
 						if ( $line[ $m ] == '' ) {
 							$line[ $m ] = 0;
