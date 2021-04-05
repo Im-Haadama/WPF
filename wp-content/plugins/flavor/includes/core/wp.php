@@ -33,8 +33,9 @@ function get_postmeta_field( $post_id, $field_name ) {
  */
 function set_post_meta_field( $post_id, $field_name, $field_value ) {
 	if ( ! add_post_meta( $post_id, $field_name, $field_value, true ) ) {
-		update_post_meta( $post_id, $field_name, $field_value );
+		return update_post_meta( $post_id, $field_name, $field_value );
 	}
+	return true;
 	// my_log("Error: can't add meta. Post_id=" . $post_id . "Field_name=" . $field_name . "Field_value=" . $field_value, __FILE__);
 }
 

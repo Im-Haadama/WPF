@@ -49,7 +49,7 @@ class Finance_Suppliers
 		              and ((select machine_update from im_suppliers where id = supplier_id) = 0 or  
 		              date >= supplier_last_pricelist_date(supplier_id))",
 			"fields" => array("id", "product_name", "price", "date"),
-			"extra_header" => array("Delete", "linked product", "tag", "published", "calculated price", "price", "sale price", "open orders"),
+			"extra_header" => array("Delete", "linked product", "tag", "published", "calculated price", "price", "sale price", "open orders", "auto update"),
 			"order"=>"order by id",
 			"prepare" => "Fresh_Pricelist_Item::add_prod_info",
 //			"header_fields" => array("supplier_product_code" => "code", "product_name" => "name"),
@@ -400,7 +400,9 @@ class Finance_Suppliers
 		$new_price = GetParam("price", true);
 
 		$item = new Fresh_Pricelist_Item($pricelist_id);
-		return $item->setPrice($new_price);
+		$rc = $item->setPrice($new_price);
+		if ($item->message) print $item->message;
+		return $rc;
 	}
 
 	function plan_supply($args)
