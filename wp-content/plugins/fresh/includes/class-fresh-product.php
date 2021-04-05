@@ -455,8 +455,20 @@ class Fresh_Product  extends Finance_Product {
 		and delivery_id in (select id from im_delivery
 		           where date > CURDATE() - INTERVAL $time_period)";
 		return SqlQuerySingleAssoc($sql);
-
 	}
+
+	public function auto_update()
+	{
+		$v = get_postmeta_field($this->id, "auto_update");
+		if ($v == null) $v = true;
+		return $v;
+	}
+
+	public function set_auto_update($value)
+	{
+		return set_post_meta_field($this->id, "auto_update", $value);
+	}
+
 }
 
 class Fresh_ProductIterator implements  Iterator {

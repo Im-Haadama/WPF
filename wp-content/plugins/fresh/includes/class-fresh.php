@@ -24,7 +24,7 @@ class Fresh {
 	 *
 	 * @var string
 	 */
-	public $version = '1.4.2';
+	public $version = '1.4.4';
 
 	private $plugin_name;
 
@@ -603,7 +603,7 @@ class Fresh {
 //	    $file = FLAVOR_INCLUDES_URL . 'core/data/data.js';
 //	    wp_enqueue_script( 'data', $file, null, $this->version, false );
 
-        $file = FRESH_INCLUDES_URL . 'js/admin.js?v=1.2';
+        $file = FRESH_INCLUDES_URL . 'js/admin.js?v=' . $this->version;
 	    wp_register_script( 'fresh_admin', $file);
 
 	    $params = array(
@@ -613,8 +613,7 @@ class Fresh {
 
 	    wp_enqueue_script('fresh_admin');
 
-	    if (defined('WC_VERSION')){
-	    	if (! defineD('WC_URL')) return;
+	    if (defined('WC_VERSION') and defined ('WC_URL')) {
             wp_register_style( 'woocommerce_admin_menu_styles', WC_URL . '/assets/css/menu.css', array(), WC_VERSION );
             wp_register_style( 'woocommerce_admin_styles', WC_URL . '/assets/css/admin.css', array(), WC_VERSION );
 

@@ -13,10 +13,20 @@ if ( ! defined( 'FRESH_INCLUDES' ) ) {
 class Fresh_Catalog {
 
 	protected static $_instance = null;
+	private static ?Core_Logger $logger = null;
+
+	/**
+	 * Fresh_Catalog constructor.
+	 *
+	 * @param null $logger
+	 */
+	public function __construct( ) {
+		self::$logger = new Core_Logger(__CLASS__, "db");
+	}
 
 	public static function instance() {
 		if ( is_null( self::$_instance ) ) {
-			self::$_instance = new self("Fresh");
+			self::$_instance = new self();
 		}
 		return self::$_instance;
 	}
@@ -28,6 +38,7 @@ class Fresh_Catalog {
 		$loader->AddAction("product_change_saleprice", $this, "ChangeProductSalePrice_wrap");
 		$loader->AddAction("product_publish", $this, "product_publish");
 		$loader->AddAction("product_tags", $this);
+		$loader->AddAction("product_auto_update", $this);
 		$loader->AddAction("remove_map", $this, "remove_map");
 		$loader->AddAction("draft_by_map_id", $this, "draft_by_map_id");
 //		self::HandleMinusQuantity();
@@ -60,6 +71,8 @@ class Fresh_Catalog {
 		$product_id = GetParam("product_id", true);
 		$publish = GetParam("status", true);
 		$p = new Fresh_Product($product_id);
+		self::log_changes($p->getName(true, true) . " publish $publish");
+
 		if ($publish)
 			$p->PublishItem();
 		else
@@ -84,6 +97,15 @@ class Fresh_Catalog {
 		return true;
 	}
 
+	static function product_auto_update()
+	{
+		$product_id = GetParam("product_id", true);
+		$value = GetParam("value", true);
+		$p = new Fresh_Product($product_id);
+		$p->set_auto_update($value);
+		return true;
+	}
+
 	static function CreateProduct_wrap()
 	{
 		$category_id = GetParam("category_name", true);
@@ -100,6 +122,7 @@ class Fresh_Catalog {
 		$P = new Fresh_Product($prod_id);
 		if (! $P) return false;
 		$P->setRegularPrice($price);
+		self::log_changes($P->getName(true, true) . " regular price $price");
 		return true;
 	}
 
@@ -110,9 +133,9 @@ class Fresh_Catalog {
 		$P = new Fresh_Product($prod_id);
 		if (! $P) return false;
 		$P->setSalePrice($price);
+		self::log_changes($P->getName(true, true) . " sale price $price");
 		return true;
 	}
-
 
 	static function CreateProducts( $category_id, $ids ) {
 		MyLog( "Create_products. Category = " . $category_id );
@@ -673,7 +696,6 @@ class Fresh_Catalog {
 		}
 	}
 
-
 	static function HandleMinusQuantity()
 	{
 		$d = new Fresh_Product(1); // Load interator
@@ -973,6 +995,11 @@ class Fresh_Catalog {
 		}
 
 		print $data;
+	}
+
+	static function log_changes($message)
+	{
+		self::$logger->info($message);
 	}
 
 	static function upload_image( $post_id, $image ) {

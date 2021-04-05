@@ -28,6 +28,7 @@ class Fresh_Pricelist_Item {
 	private $category;
 	private $picture_path;
 	private $supplier_id;
+	public $message;
 
 	function __construct( $pricelist_id ) {
 		if ($pricelist_id == 0) return;
@@ -44,14 +45,14 @@ class Fresh_Pricelist_Item {
 		}
 		$this->id                    = $pricelist_id;
 		$this->product_name          = $result["product_name"];
-		$supplier_id           = $result["supplier_id"];
+		$this->supplier_id           = $result["supplier_id"];
 		$this->date                  = $result["date"];
 		$this->price                 = $result["price"];
 		$this->supplier_product_code = $result["supplier_product_code"];
 		$this->sale_price            = $result["sale_price"];
 		$this->category              = $result["category"];
 		$this->picture_path          = $result["picture_path"];
-		$this->supplier = new Fresh_Supplier($supplier_id);
+		$this->supplier = new Fresh_Supplier($this->supplier_id);
 	}
 
 	public function getPreviousPrice()
@@ -199,6 +200,7 @@ class Fresh_Pricelist_Item {
 				array("events"=>array("onchange=\"product_change_saleprice('" . Fresh::getPost() . "', $linked_prod_id)\"", 'onkeypress="moveNext(this)"'), "size"=>5)));
 			$n = Fresh_Packing::orders_per_item( $linked_prod_id, 1, array());
 			array_push( $row, $n );
+			array_push($row, Core_Html::GuiCheckbox("aut_$linked_prod_id", $p->auto_update(), array("events"=>"onchange=\"product_auto_update('" . Fresh::getPost() . "', $linked_prod_id)\"")));
 		} else {
 			if ($create_info) {
 				array_push($row, Fresh_Category::Select("categ_" . $row['id'], "categories", null));
@@ -230,10 +232,25 @@ class Fresh_Pricelist_Item {
 	function setPrice(float $price)
 	{
 		$this->price = $price;
+		$this->message = "";
 		$sql = "update im_supplier_price_list
 		set price = $price,
 		  date = curdate() where id = " . $this->id;
 		MyLog(__FUNCTION__, $sql);
+
+		$prod_id = Fresh_Catalog::GetProdID( $this->id);
+		if ($prod_id) {
+			$prod_id = $prod_id[0];
+			$prod = new Fresh_Product($prod_id);
+			if ($prod->auto_update()) {
+				$new_price = Fresh_Pricing::calculate_price( $this->getPrice(), $this->supplier_id );
+				if ( $new_price > 0 ) {
+					$this->message = "$prod_id,$new_price"; // will be output for supplier price list line update.
+					$prod->setRegularPrice( $new_price );
+				}
+			}
+		}
+
 		return SqlQuery($sql);
 	}
 }

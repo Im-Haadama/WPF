@@ -22,7 +22,18 @@ function pricelist_update_price(post_file, pricelist_id)
 {
     let price = get_value_by_name("price_" + pricelist_id);
     let url = post_file + '?operation=pricelist_update_price&pricelist_id=' + pricelist_id + '&price=' + price;
-    execute_url(url, fail_message);
+    execute_url(url, pricelist_price_updated);
+}
+
+function pricelist_price_updated(xhp)
+{
+    if (fail_message(xhp)) return;
+    let values = xhp.response.split(',');
+
+    let prod_id = values[0];
+    let new_price = values[1];
+    let p = document.getElementById("prc_" + prod_id);
+    if (undefined != p) p.value = new_price;
 }
 
 function pricelist_filter()

@@ -377,3 +377,10 @@ function product_tag(post_file, product_id)
     let url = post_file + '?operation=product_tags&product_id='+product_id+'&tags='+tags;
     execute_url(url, fail_message);
 }
+
+function product_auto_update(post_file, product_id)
+{
+    let value = get_value_by_name("aut_"+ product_id);
+    let url = post_file + '?operation=product_auto_update&product_id='+product_id+'&value='+value;
+    execute_url(url, fail_message);
+}
