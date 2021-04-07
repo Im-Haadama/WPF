@@ -27,6 +27,23 @@ abstract class OrderTableFields
 	const max = 14;
 }
 
+abstract class DispatchTableFields
+{
+	const order_number = 0;
+	const customer_name = 1;
+	const city = 2;
+	const address_1 = 3;
+	const address_2 = 4;
+	const comments = 5;
+	const external_id = 6;
+	const phone = 7;
+	const delivered = 8;
+	const eta = 9;
+	const acc_km = 10;
+	const priority = 11;
+	const max = 12;
+}
+
 class Freight_Mission_Manager
 {
 	private $mission_id;
@@ -372,7 +389,7 @@ group by pm.meta_value, p.post_status");
 						$address_2 = $order_info[ OrderTableFields::address_2 ];
 
 						$external_id = $order_info[OrderTableFields::external_order_id];
-						$link = self::get_url($external_id, "external_order", true);
+						$external_link = self::get_url($external_id, "external_order", true);
 
 						// Editable fields
 						if (($site_id == $multi_site->getLocalSiteID()) and $edit and ($type == "orders")) {
@@ -389,31 +406,34 @@ group by pm.meta_value, p.post_status");
 
 						$url = (($type == "supplies") ? Core_Html::GuiHyperlink($order_id, "/wp-admin/admin.php?page=supplies&operation=show_supply&id=$order_id") :
 							Core_Html::GuiHyperlink( $order_id, "/wp-admin/post.php?post=$order_id&action=edit" ));
-						$new_row =
-							array(
-								$url,
-								$edit_user,
-								Core_Html::GuiHyperlink( $user_name, $multi_site->getSiteURL( $site_id ) . "/wp-admin/user-edit.php?user_id=$user_id" ),
-								$city,
-								$address_1,
-								$address_2,
-								$comments,
-								$link,
-								$order_info[ OrderTableFields::phone ]);
-						if (! $print) array_push($new_row,  Core_Html::GuiCheckbox( "chk_$order_id", false,
-									array( "events" => 'onchange="delivered(\'' . Freight::getPost() . "', " . $site_id . "," . $order_id . ', \'' . $type . '\')"' ) ));
-						array_push($new_row, date('H:i', $arrive_time));
-						array_push($new_row, $total_distance);
-
-						if ($edit) array_push($new_row, $pri_input);
+						$new_row = array_fill(0, DispatchTableFields::max,'');
+						$new_row[DispatchTableFields::order_number] = $url;
+						$new_row[DispatchTableFields::customer_name] = $edit_user;
+						$new_row[DispatchTableFields::city] = $city;
+						$new_row[DispatchTableFields::address_1] = $address_1;
+						$new_row[DispatchTableFields::address_2] = $address_2;
+						$new_row[DispatchTableFields::comments] = $comments;
+						$new_row[DispatchTableFields::external_id] = $external_link;
+						$new_row[DispatchTableFields::phone] = $order_info[OrderTableFields::phone];
+						if (! $print) $new_row[DispatchTableFields::delivered] = Core_Html::GuiCheckbox( "chk_$order_id", false,
+									array( "events" => 'onchange="delivered(\'' . Freight::getPost() . "', " . $site_id . "," . $order_id . ', \'' . $type . '\')"' ) );
+						$new_row[DispatchTableFields::eta] = date('H:i', $arrive_time);
+						$new_row[DispatchTableFields::acc_km] = $total_distance;
+						if ($edit) $new_row[DispatchTableFields::priority] = $pri_input;
 						array_push( $path_info, $new_row);
 					}
 				} else {
 					// TODO - check order when pickup
-					$pickup_row = array_fill(0, 12, '');
-					$pickup_row[0] = 'pickup';
-					$pickup_row[2] = $this->path[$i];
-					$pickup_row[9] = $total_distance;
+					$pickup_row = array_fill(0, DispatchTableFields::max, "");
+					$pickup_info = $this->point_orders[$this->path[$i]];
+					$site_id = $pickup_info[OrderTableFields::site_id];
+					$order_id = $pickup_info[OrderTableFields::order_id];;
+					$order_pri = self::order_get_pri($pickup_info);
+					$pickup_row[DispatchTableFields::order_number] = 'pickup';
+					$pickup_row[DispatchTableFields::city] = $this->path[$i];
+					$pickup_row[DispatchTableFields::acc_km] = $total_distance;
+					$pickup_row[DispatchTableFields::priority] = Core_Html::GuiInput( "pri" . $order_id . "_" . $site_id,
+						$order_pri, array( "size"   => 5,"events" => 'onchange="update_order_pri(\'' . self::getPost() . '\',this)"'));
 					array_push($path_info, $pickup_row);
 					// array_push($path_info, array(__("pickup"), '', $this->path[$i], '','','','','','', $total_distance));
 				}
@@ -428,7 +448,7 @@ group by pm.meta_value, p.post_status");
 			$args["class"] = "widefat";
 			$args["col_width"] = array(); $args["col_width"][3] = 10; // Not working...
 
-			$args["hide_cols"] = array( OrderTableFields::client_number - 1 => 1 );
+//			$args["hide_cols"] = array( OrderTableFields::client_number - 1 => 1 );
 			$result            .= Core_Html::gui_table_args( $path_info, "dispatch_" . $the_mission, $args );
 			if (($end_address = $m->getEndAddress()))
 				$total_distance += round(self::get_distance($prev, $m->getEndAddress()) / 1000, 1);
@@ -574,6 +594,7 @@ group by pm.meta_value, p.post_status");
 		$multi = Core_Db_MultiSite::getInstance();
 
 		$point = trim($point);
+		$point = str_replace( '-', ' ', $point);
 		if ( ! in_array( $point, $this->stop_points ) ) {
 			array_push( $this->stop_points, $point);
 			$this->point_orders[$point] = $order_info;
@@ -931,12 +952,6 @@ group by pm.meta_value, p.post_status");
 		foreach ($orders_info as $order_info) {
 			$order_id = $order_info[ OrderTableFields::order_id ];
 			$site_id  = $order_info[ OrderTableFields::site_id ];
-			if ( $order_id == "loading" ) {
-				$pri = 0;
-			}
-			if ( ! ( $order_id > 0 ) ) {
-				return "bad order_id $order_id";
-			}
 			$i = InfoGet( "mission_order_priority_" . $site_id . '_' . $order_id );
 			if ($i) $pri = min($pri, $i);
 		}
@@ -1098,6 +1113,7 @@ group by pm.meta_value, p.post_status");
 			if ($multi->getResults($site_id)){
 				$pickup_info = array_fill(0, OrderTableFields::max, '');
 				$pickup_info[OrderTableFields::order_id] = "loading";
+				$pickup_info[OrderTableFields::site_id] = $site_id;
 				self::add_stop_point($multi->getSiteAddress($site_id), $pickup_info, true);
 			}
 		}
