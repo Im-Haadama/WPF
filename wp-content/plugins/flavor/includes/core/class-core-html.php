@@ -1858,7 +1858,7 @@ class Core_Html {
 		if ($edit) {
 			// $args["v_checkbox"] = 1; 09/11/2020 Add v_checkbox where needed
 			if (! isset($args["transpose"])) $args["transpose"] = 1;
-			$args["events"] = "onchange=changed_field(%s)";
+			$args["events"] = 'onchange="changed_field(%s)"';
 		}
 		if ($row_id) { // Show specific record
 			$sql = "select " . ($fields ? CommaImplode($fields) : "*") . " from ${db_prefix}$table_name where " . $id_key . " = " . $row_id;

@@ -427,7 +427,7 @@ function doMoveNextRow()
     if ((next_row.tagName !== 'TR')) return; // Can't find next row
 
     let input = next_row.cells[cell_index];
-    for (let l = 0; l < level; l++)
+    for (let l = 0; l < level- 1; l++)
         input = input.firstElementChild;
 
     input.focus();

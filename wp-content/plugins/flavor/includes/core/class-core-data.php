@@ -426,7 +426,7 @@ class Core_Data
 				/// 23/9/2019  isset($edit_cols[$key]) - set $args["edit_cols"][$key] for fields that need to be edit.
 				if ($edit){
 					// Copy the global args to field args. And than handle specific col args.
-					$field_args = $args;
+					// $field_args = $args; Set previously
 					if (isset($args["size"]) and is_array($args["size"]))
 						$field_args["size"] = (isset($args["size"][$key]) ? $args["size"][$key] : null);
 //					if (isset($args["events"])) $field_args["events"] = $args["events"];

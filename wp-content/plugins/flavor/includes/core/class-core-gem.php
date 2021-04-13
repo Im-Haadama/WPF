@@ -319,9 +319,11 @@ class Core_Gem {
 		print self::GemAddRow($table_name, 'Add', $args);
 	}
 
-	static function show_wrap($result, $id = 0, $args = null)
+	static function show_wrap($result, $args = null)
 	{
 		$table_name = GetParam("table", true);
+		$id = GetParam("id", true);
+		$args["post_file"] = Flavor::getPost();
 		print self::GemElement($table_name, $id, $args);
 	}
 
