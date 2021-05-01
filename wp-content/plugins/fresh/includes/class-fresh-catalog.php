@@ -750,6 +750,7 @@ class Fresh_Catalog {
 		if ($debug) MyLog($prod_id, __FUNCTION__);
 
 		$alternatives = self::alternatives($prod_id, $debug);
+		if ($debug) var_dump($alternatives);
 		$min  = 1111111;
 		$best = null;
 		if (! $alternatives) {

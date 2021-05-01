@@ -16,7 +16,7 @@ class Israel_Database extends Core_Database
 		$current = $this->checkInstalled( "tables");
 
 //		print "ver=$current force=$force";
-//		if ($current == $version and ! $force) return true;
+		if ($current == $version and ! $force) return true;
 //		print "cont";
 
 		$this->create_cities();

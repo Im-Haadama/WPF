@@ -3,29 +3,37 @@
 
 class Freight_Methods {
 
+	static private $_instance;
+
+	public static function instance() {
+		if ( is_null( self::$_instance ) ) {
+			self::$_instance = new self();
+		}
+		return self::$_instance;
+	}
+
 	private $version = '1.0';
 	/**
 	 * Freight_Zones constructor.
 	 */
-	static public function init($loader) {
-		add_action("show_path", __CLASS__ . "::show_path_wrap");
-		add_action("add_zone_times", __CLASS__ . "::add_zone_times");
-		add_action("path_remove_times", __CLASS__ . "::remove_zone_times");
-		add_action("create_missions", __CLASS__ . "::create_missions");
-		add_action("update_shipping_methods",  "Fresh_Delivery_Manager::update_shipping_methods");
-		add_action("create_shipping_method", __CLASS__ . "::create_shipping_method");
-		add_action("path_save_days", __CLASS__ . "::path_save_days");
-		add_action("path_create_instance", __CLASS__ . "::path_create_instance");
-		add_action("path_create_instance", __CLASS__ . "::show_path_wrap");
-		add_action("update_shipment_instance", __CLASS__ . "::update_shipment_instance");
+	public function init($loader) {
+		$loader->AddAction("show_path", $this);
+		$loader->AddAction("add_zone_times", $this);
+		$loader->AddAction("path_remove_times", $this);
+		$loader->AddAction("create_missions", $this);
+//		$loader->AddAction("update_shipping_methods",  "Fresh_Delivery_Manager::update_shipping_methods");
+		$loader->AddAction("create_shipping_method", $this);
+		$loader->AddAction("path_save_days", $this);
+		$loader->AddAction("path_create_instance", $this);
+		$loader->AddAction("path_create_instance", $this);
+		$loader->AddAction("update_shipment_instance", $this);
 
 		// Delete instance and show the path
-		add_action("shipment_delete", __CLASS__ . "::shipment_delete");
-
-		add_action("update_zone_missions", __CLASS__ . "::update_zones_missions");
-//		add_action("show_mission", __CLASS__ . "::show_mission_wrap");
-		add_action("toggle_shipment_enable", __CLASS__ . "::toggle_shipment_enable");
-		add_action("shipment_update_mc", __CLASS__ . "::shipment_update_mc");
+		$loader->AddAction("shipment_delete", $this);
+		$loader->AddAction("update_zone_missions", $this);
+//		$loader->AddAction("show_mission", $this);
+		$loader->AddAction("toggle_shipment_enable", $this);
+		$loader->AddAction("shipment_update_mc", $this);
 
 		Core_gem::getInstance()->AddTable("mission_types", $loader);
 	}

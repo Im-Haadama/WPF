@@ -152,7 +152,7 @@ class Freight {
 		// get local deliveries
 
 		GetSqlConn(ReconnectDb());
-		Freight_Methods::init($loader);
+		Freight_Methods::instance()->init($loader);
 		Freight_Actions::instance()->init_hooks($loader);
 	}
 
@@ -179,7 +179,7 @@ class Freight {
 	{
 		$actions['Plan'] = Core_Html::GuiHyperlink("Plan", "/wp-content/plugins/freight/plan.php?id=%d");
 		$actions['Dispatch'] = Core_Html::GuiHyperlink("Dispatch", AddToUrl("operation", "mission_dispatch&id=%d"));
-		$actions['Clean'] = Core_Html::GuiHyperlink("Clean", AddToUrl("operation", "mission_clean&id=%d"));
+		$actions['Clean'] = Core_Html::GuiButton("btn_Clean", "Clean", "execute_url('".AddToUrl("operation", "mission_clean&id=%d") . "')");
 		$actions['Driver'] = Core_Html::GuiHyperlink("Driver", Flavor::getPost("mission_driver&id=%d"));
 
 		return $actions;

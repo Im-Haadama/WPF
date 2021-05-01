@@ -414,6 +414,7 @@ function moveNextRow() {
 function doMoveNextRow()
 {
     let me = document.getElementById(event.target.id);
+    if (me.tagName == "TD") me = me.firstElementChild;
     let cursor = me; // .parentElement.nextElementSibling;
     let level = 0;
     let cell_index = undefined;

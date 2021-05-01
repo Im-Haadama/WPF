@@ -425,16 +425,22 @@ group by pm.meta_value, p.post_status");
 				} else {
 					// TODO - check order when pickup
 					$pickup_row = array_fill(0, DispatchTableFields::max, "");
-					$pickup_info = $this->point_orders[$this->path[$i]];
-					$site_id = $pickup_info[OrderTableFields::site_id];
-					$order_id = $pickup_info[OrderTableFields::order_id];;
-					$order_pri = self::order_get_pri($pickup_info);
-					$pickup_row[DispatchTableFields::order_number] = 'pickup';
-					$pickup_row[DispatchTableFields::city] = $this->path[$i];
-					$pickup_row[DispatchTableFields::acc_km] = $total_distance;
-					$pickup_row[DispatchTableFields::priority] = Core_Html::GuiInput( "pri" . $order_id . "_" . $site_id,
-						$order_pri, array( "size"   => 5,"events" => 'onchange="update_order_pri(\'' . self::getPost() . '\',this)"'));
-					array_push($path_info, $pickup_row);
+					if (isset($this->point_orders[$this->path[$i]])) {
+						$pickup_info = $this->point_orders[ $this->path[ $i ] ];
+						$site_id     = $pickup_info[ OrderTableFields::site_id ];
+						$order_id    = $pickup_info[ OrderTableFields::order_id ];;
+						$order_pri                                       = self::order_get_pri( $pickup_info );
+						$pickup_row[ DispatchTableFields::order_number ] = 'pickup';
+						$pickup_row[ DispatchTableFields::city ]         = $this->path[ $i ];
+						$pickup_row[ DispatchTableFields::acc_km ]       = $total_distance;
+						$pickup_row[ DispatchTableFields::priority ]     = Core_Html::GuiInput( "pri" . $order_id . "_" . $site_id,
+							$order_pri, array( "size"   => 5,
+							                   "events" => 'onchange="update_order_pri(\'' . self::getPost() . '\',this)"'
+							) );
+						array_push( $path_info, $pickup_row );
+					} else {
+						print "no info for " . $this->path[$i] . "</br>";
+					}
 					// array_push($path_info, array(__("pickup"), '', $this->path[$i], '','','','','','', $total_distance));
 				}
 

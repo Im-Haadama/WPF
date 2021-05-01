@@ -667,9 +667,6 @@ class Finance {
 		$file = FLAVOR_INCLUDES_URL . 'core/data/data.js';
 		wp_enqueue_script( 'data', $file, null, $this->version, false );
 
-//		$file = FLAVOR_INCLUDES_URL . 'core/gui/client_tools.js';
-//		wp_enqueue_script( 'client_tools', $file, null, $this->version, false );
-
 		$file = FINANCE_INCLUDES_URL . 'business.js';
 		wp_enqueue_script( 'business', $file, null, $this->version, false );
 

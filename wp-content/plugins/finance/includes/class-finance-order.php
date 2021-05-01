@@ -709,56 +709,9 @@ class Finance_Order {
 
 		$result .= __("Client comments") . ":" . $this->GetComments() . "<br/>";
 		return $result;
-
-//		$row_data = [];
-//		$row_data["header"] = array_assoc(array("client_name" => "Client name", "order_id" => "Order number", "comments"=>"Comments"));
-//		$row_data[$this->order_id] = array("value" =>,
-//			"comments" => $this->GetComments());
-////		$row_data[$this->order_id] = array("info" =>  ));
-//
-//		$args = [];
-////		$args = ["transpose" => true, "include_id" => true];
-//		return gui_table_args($row_data, "order_" . $this->order_id . "_info", $args);
-//		$data      = "<table><tr><td rowspan='4'>";
-//		$data      .= '<table>';
-//		$client_id = $this->getCustomerId();
-//		// Client info
-//		$user_edit = "../";
-//		$row_text  = '<tr><td>לקוח:</td><td>' . Core_Html::GuiHyperlink( , $user_edit ) . '</td><tr>';
-//		$data      .= $row_text;
-//		$data      .= '<tr><td>טלפון:</td><td>' . $this->getOrderInfo( '_billing_phone' ) . '</td><tr>';
-//		$data      .= '<tr><td>הוזמן:</td><td>' . $this->GetOrderDate() . '</td><tr>';
-//
-//		// Shipping info
-//		$row_text = '<tr><td>משלוח:</td><td>' . $this->getOrderInfo( '_shipping_first_name' ) . ' '
-//		            . $this->getOrderInfo( '_shipping_last_name' ) . '</td><tr>';
-//		$data     .= $row_text;
-////	$row_text = '<tr><td>כתובת:</td><td>' . order_info( $order_id, '_shipping_address_1' ) . ' '
-////	            . order_info( $order_id, '_shipping_address_2' ) . '</td><tr>';
-////	$data     .= $row_text;
-//
-//		//		$row_text = '<tr><td>כתובת:</td><td>' .
-//		$row_text .= $this->info_right_box_input( "shipping_city", $edit, "עיר" );
-//		$row_text .= $this->info_right_box_input( "shipping_address_1", $edit, "רחוב ומספר" );
-//		$row_text .= $this->info_right_box_input( "shipping_address_2", $edit, "כניסה, קוד אינטרקום, קומה ומספר דירה" );
-//		$row_text .= gui_row(array("מזהה לקוח", get_user_meta( $client_id, 'invoice_id', 1)));
-//		$row_text .= $this->user_info_right_box_input( "preference", $edit, "העדפות לקוח" );
-//		$data     .= $row_text;
-//
-//
-//		$rows = array("client", )
 	}
 
 	function infoBox( $edit_order = false, $operation = null, $addition_orders = null ) {
-//		return $this->order_id;
-//		if ( ! $this->WC_Order ) {
-//			try {
-//				$this->WC_Order = new WC_Order( $this->order_id );
-//			} catch (Exception $e) {
-//				throw new Exception( "no WC_Order" . $e->getMessage());
-//			}
-//		}
-
 		$logo_url = get_custom_logo();
 		$header = "";
 		if ( $operation ) {
@@ -831,7 +784,7 @@ class Finance_Order {
 		$row_text .= $this->info_right_box_input( "shipping_zipcode", $edit, "מיקוד" );
 //		$row_text .= $this->info_right_box_input( "shipping_address_2", $edit, "כניסה, קוד אינטרקום, קומה ומספר דירה" );
 		$row_text .= Core_Html::gui_row(array("מזהה לקוח", get_user_meta( $client_id, 'invoice_id', 1)));
-//		$row_text .= $this->user_info_right_box_input( "preference", $edit, "העדפות לקוח" );
+		$row_text .= $this->user_info_right_box_input( "preference", $edit, "העדפות לקוח" );
 		$data     .= $row_text;
 
 //		$mission = $this->GetMissionId();
@@ -1579,7 +1532,7 @@ class Finance_Order {
 
 	public function box_number()
 	{
-		$n = 1;
+		$n = 0;
 		$list = array('ק"ג', "ק''ג", "משקל");
 		foreach ($this->getItems() as $item)
 		{

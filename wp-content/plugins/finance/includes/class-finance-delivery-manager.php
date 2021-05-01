@@ -15,10 +15,10 @@ class Finance_Delivery_Manager
 		$this->logger = new Core_Logger(__CLASS__);
 	}
 
-	public function init($loader)
+	public function init(Core_Hook_Handler $loader)
 	{
-		$loader->AddAction("update_shipping_methods", __CLASS__ . "::update_shipping_methods");
-		$loader->AddAction("update_shipping_methods_anonymous", __CLASS__ . "::update_shipping_methods");
+		$loader->AddAction("update_shipping_methods", $this);
+		$loader->AddAction("update_shipping_methods_anonymous", $this, "update_shipping_methods");
 		add_action('admin_menu',array($this, 'admin_menu'));
 		add_action('admin_notices', array($this, 'delivered_previous_days'));
 		add_filter('delivery_args', array($this, 'delivery_args'));

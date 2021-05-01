@@ -459,7 +459,7 @@ class Focus_Tasklist {
 	{
 		$db_prefix = GetTablePrefix();
 
-		$sql = "UPDATE ${db_prefix}tasklist SET team = null " .
+		$sql = "UPDATE ${db_prefix}tasklist SET team = 0 " .
 		       " WHERE id = " . $this->id;
 
 		$this->add_time("remove assignment");

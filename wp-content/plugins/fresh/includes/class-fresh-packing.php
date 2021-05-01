@@ -187,8 +187,11 @@ class Fresh_Packing {
 
 		// Find out which suppliers are relevant
 		foreach ( $needed_products as $prod_id => $product_info ) {
+			$debug = false; // ($prod_id == 849);
 			$prod        = new Fresh_Product( $prod_id );
-			$supplier_id = $prod->getSupplierId();
+			$supplier_id = $prod->getSupplierId($debug);
+
+			if ($debug) print "=============================================> supplier = $supplier_id<br/>";
 
 			if ( ! in_array( $supplier_id, $suppliers ) and $supplier_id ) {
 				array_push( $suppliers, $supplier_id );

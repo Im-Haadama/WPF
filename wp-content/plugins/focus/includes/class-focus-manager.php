@@ -115,6 +115,7 @@ class Focus_Manager {
 			$task    = new Focus_Tasklist( $task_id, $this->logger );
 			if ( ! $task->working_time() ) {
 				$debug_message .= " not working_time";
+				$this->logger->trace($debug_message);
 				continue;
 			}
 

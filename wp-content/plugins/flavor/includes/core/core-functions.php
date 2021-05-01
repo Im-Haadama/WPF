@@ -230,9 +230,11 @@ function GetParams($ignore_list = array())
 		$db_prefix = GetTablePrefix();
 		$data = EscapeString($data);
 		$key = EscapeString($key);
-		return SqlQuery( "insert into ${db_prefix}info (info_key, info_data)
+		$sql = "insert into ${db_prefix}info (info_key, info_data)
 			values('$key', '$data')
-			on duplicate key update info_data='$data'" );
+			on duplicate key update info_data='$data'";
+//		print $sql;
+		return SqlQuery( $sql );
 	}
 
 	function InfoDelete( $key ) {
