@@ -20,7 +20,7 @@ class Subscription_Manager {
 
 
 	function getPost() {
-		return Flavor::getPost();
+		return WPF_Flavor::getPost();
 	}
 
 	public static function instance() {

@@ -94,7 +94,7 @@ class Finance_Settings {
 				      'menu_slug' => 'missions',
 				      'function' => 'Flavor_Mission::install_woocommerce'));
 
-		Flavor::AddTop("client_accounts", "Client accounts", "/wp-admin/users.php?page=client-accounts");
+		WPF_Flavor::AddTop("client_accounts", "Client accounts", "/wp-admin/users.php?page=client-accounts");
 
 		$menu->AddSubMenu( "users.php", "edit_shop_orders",
 			array( 'page_title' => 'Payment methods', 'function' => array( "Finance_Payments", 'payment_methods' ) ) );
@@ -109,13 +109,15 @@ class Finance_Settings {
 		// Deliveries
 		$menu->Add("woocommerce", "edit_shop_orders", "deliveries", array("Finance_Delivery" , 'deliveries' ));
 		// On Top
-		Flavor::AddTop("deliveries", "Deliveries", "/wp-admin/admin.php?page=deliveries");
+		WPF_Flavor::AddTop("deliveries", "Deliveries", "/wp-admin/admin.php?page=deliveries");
 
 		if (class_exists("WC_Order")) {
-			Flavor::AddTop( 'orders', 'Orders', '/wp-admin/edit.php?post_type=shop_order&post_status=wc-processing' );
-			Flavor::AddTop( 'orders_all', 'All orders', '/wp-admin/edit.php?post_type=shop_order', 'orders' );
-			Flavor::AddTop( 'orders_print', 'Print', '/wp-admin/admin.php?page=printing', 'orders' );
+			WPF_Flavor::AddTop( 'orders', 'Orders', '/wp-admin/edit.php?post_type=shop_order&post_status=wc-processing' );
+			WPF_Flavor::AddTop( 'orders_all', 'All orders', '/wp-admin/edit.php?post_type=shop_order', 'orders' );
+			WPF_Flavor::AddTop( 'orders_print', 'Print', '/wp-admin/admin.php?page=printing', 'orders' );
 		}
+
+		WPF_Flavor::AddTop( 'missions', 'Missions', '/wp-admin/admin.php?page=missions' );
 
 	}
 

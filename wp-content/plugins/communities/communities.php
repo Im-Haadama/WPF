@@ -11,7 +11,7 @@
  * @package communities
  */
 
-if (! class_exists("Flavor"))
+if (! class_exists( "WPF_Flavor" ))
 	add_action('admin_notices', 'communities_admin_notice');
 //	die("Flavor should be active");
 

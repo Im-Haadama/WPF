@@ -39,7 +39,7 @@ class Finance_Bank
 
 	public static function instance() :Finance_Bank {
 		if ( is_null( self::$_instance ) ) {
-			self::$_instance = new self( Flavor::getPost() );
+			self::$_instance = new self( WPF_Flavor::getPost() );
 		}
 
 		return self::$_instance;

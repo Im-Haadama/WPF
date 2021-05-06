@@ -29,13 +29,6 @@ if ( ! defined( 'FRESH_PLUGIN_FILE' ) ) {
 
 require_once(ABSPATH . 'wp-admin/includes/plugin.php');
 
-// Require parent plugin
-if ( ! is_plugin_active( 'flavor/flavor.php' ) /* and current_user_can( 'activate_plugins' ) */ ) {
-	// Deactivate this plugin
-	deactivate_plugins(__FILE__);
-	return;
-}
-
 //if (1 == get_user_id())
 //	show_errors();
 // Include the main WooCommerce class.
@@ -58,8 +51,6 @@ function run_fresh() {
 	$plugin = new Fresh("Fresh");
 	$plugin->run();
 }
-
-run_fresh();
 
 //add_filter( 'wp_calculate_image_sizes', 'sizes', 10, 2 );
 //
@@ -92,4 +83,22 @@ run_fresh();
 function query_test($query)
 {
 		var_dump($query);
+}
+
+add_action('init', 'init_fresh', 30);
+
+function init_fresh() {
+	if ( ! is_plugin_active( 'wpf_flavor/wpf_flavor.php' ) /* and current_user_can( 'activate_plugins' ) */ ) {
+		// Deactivate this plugin
+		deactivate_plugins(__FILE__);
+		return;
+	}
+
+	if ( ! is_plugin_active( 'finance/finance.php' ) /* and current_user_can( 'activate_plugins' ) */ ) {
+		// Deactivate this plugin
+		deactivate_plugins(__FILE__);
+		return;
+	}
+
+	run_fresh();
 }

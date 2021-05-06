@@ -33,14 +33,14 @@ class FVideo_Video {
 	public function get_torrent()
 	{
 		$file_name = basename($this->get_video()) . '.torrent';
-		return "https://site.weact.live" . AddParamToUrl(Flavor::getPost(), array("operation"=>"get_video", "file_name"=>$file_name));
+		return "https://site.weact.live" . AddParamToUrl(WPF_Flavor::getPost(), array( "operation" =>"get_video", "file_name" =>$file_name));
 	}
 
 	public function get_seed()
 	{
 //		return $this->get_video();
 		$file_name = basename($this->get_video());
-		return "https://site.weact.live" . AddParamToUrl(Flavor::getPost(), array("operation"=>"get_video", "file_name"=>$file_name));
+		return "https://site.weact.live" . AddParamToUrl(WPF_Flavor::getPost(), array( "operation" =>"get_video", "file_name" =>$file_name));
 	}
 
 

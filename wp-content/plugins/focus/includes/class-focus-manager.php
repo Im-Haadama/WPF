@@ -20,7 +20,7 @@ class Focus_Manager {
 
 	public static function instance() {
 		if ( is_null( self::$_instance ) ) {
-			self::$_instance = new Focus_Manager(Flavor::getPost());
+			self::$_instance = new Focus_Manager(WPF_Flavor::getPost());
 		}
 		return self::$_instance;
 	}
@@ -40,14 +40,14 @@ class Focus_Manager {
 	function create_tasks( $freqs = null, $default_owner = 1 )
 	{
 		// For Debug:
-		// SqlQuery("update im_task_templates set last_check = null where id = XXX");
+//		 SqlQuery("update im_task_templates set last_check = null where id = 6");
 		$table_prefix = GetTablePrefix();
 
 		$last_run = get_wp_option("focus_create_tasks_last_run");
 		$run_period = get_wp_option("focus_create_tasks_run_period", 5*60); // every 5 min
-//		if ($last_run and ((time() - $last_run) < $run_period)) {
-//			return true;
-//		}
+		if ($last_run and ((time() - $last_run) < $run_period)) {
+			return true;
+		}
 
 		update_wp_option("focus_create_tasks_last_run", time()); // Immediate update so won't be activated in parallel
 
@@ -57,11 +57,13 @@ class Focus_Manager {
 		}
 
 		if ( ! $freqs ) $freqs = SqlQueryArrayScalar( "select DISTINCT repeat_freq from ${table_prefix}task_templates" );
+//		$this->logger->info(StringVar($freqs));
 
 		// TODO: create_tasks_per_mission();
 		$verbose_table = array( array( "template_id", "freq", "query", "active", "result", "priority", "new task" ));
 
 		foreach ( $freqs as $freq ) {
+			$this->logger->info("handling freq $freq");
 			$sql = "SELECT id" .
 			       " FROM ${table_prefix}task_templates " .
 			       " where repeat_freq = '" . $freq . "' and ((last_check is null) or (last_check < " . QuoteText(date('Y-m-j')) . ") or repeat_freq like 'c%')";
@@ -107,6 +109,7 @@ class Focus_Manager {
 		       " where team = " . $team->getId() .
 		       ' and status < 2 ';
 
+		$this->logger->trace($sql);
 		$debug_message = "";
 		$result = SqlQuery($sql);
 		while ($row = SqlFetchAssoc($result)) {

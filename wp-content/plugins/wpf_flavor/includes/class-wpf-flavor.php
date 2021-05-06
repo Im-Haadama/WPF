@@ -3,7 +3,7 @@
 /**
  * Class Flavor
  */
-class Flavor {
+class WPF_Flavor {
 
 	/**
 	 * The loader that's responsible for maintaining and registering all hooks that power
@@ -36,7 +36,7 @@ class Flavor {
 	/**
 	 * The single instance of the class.
 	 *
-	 * @var Flavor
+	 * @var WPF_Flavor
 	 * @since 2.1
 	 */
 	protected static $_instance = null;
@@ -72,7 +72,7 @@ class Flavor {
 	 * Ensures only one instance of Flavor is loaded or can be loaded.
 	 *
 	 * @static
-	 * @return Flavor - Main instance.
+	 * @return WPF_Flavor - Main instance.
 	 */
 	public static function instance() {
 		if ( is_null( self::$_instance ) ) {
@@ -163,6 +163,7 @@ class Flavor {
 		$i->AddTable("options", "option_id" );
 
 		// WP actions.
+		add_action('init', array(Core_Shortcodes::instance(), 'init'), 100);
 		add_action( 'admin_enqueue_scripts', array($this, 'admin_scripts' ));
 		add_action( 'admin_notices', array($this, 'admin_notices' ));
 		add_action('admin_init', array($this, 'blog_settings'));
@@ -194,15 +195,13 @@ class Flavor {
 	public function admin_menu()
 	{
 		$menu = Core_Admin_Menu::instance();
-//		$menu->AddSubMenu('freight', 'edit_shop_orders',
-//			array('page_title' => 'Missions',
-//			      'menu_title' => 'Missions',
-//			      'menu_slug' => 'missions',
-//			      'function' => 'Freight_Mission_Manager::missions'));
 
+
+//		if (get_user_id() == 824)
+			$menu->AddMenu('plugins', 'plugins', null, "plugins", array($this, 'plugins'));
 
 //		if (TableExists("mission_types"))
-		self::AddTop('missions',"Missions", '/wp-admin/admin.php?page=missions');
+//		self::AddTop('missions',"Missions", '/wp-admin/admin.php?page=missions');
 	}
 
 	static function AddTop($id, $title, $href, $parent = null)
@@ -374,12 +373,14 @@ class Flavor {
 	private function define_constants() {
 		$upload_dir = wp_upload_dir( null, false );
 
+		$this->define('FLAVOR_FOLDER', "wpf_flavor");
+
 		$this->define( 'FLAVOR_ABSPATH', dirname( FLAVOR_PLUGIN_FILE ) . '/' );
 		$this->define( 'FLAVOR_PLUGIN_BASENAME', plugin_basename( FLAVOR_PLUGIN_FILE ) );
 		$this->define( 'FLAVOR_VERSION', $this->version );
-		$this->define( 'FLAVOR_URL', plugins_url() . '/flavor/' ); // For languages
-		$this->define( 'FLAVOR_INCLUDES_URL', plugins_url() . '/flavor/includes/' ); // For js
-		$this->define( 'FLAVOR_INCLUDES_ABSPATH', plugin_dir_path(__FILE__) . '../../flavor/includes/' );  // for php
+		$this->define( 'FLAVOR_URL', plugins_url() . '/' . FLAVOR_FOLDER . '/' ); // For languages
+		$this->define( 'FLAVOR_INCLUDES_URL', FLAVOR_URL . '/includes/' ); // For js
+		$this->define( 'FLAVOR_INCLUDES_ABSPATH', plugin_dir_path(__FILE__) . '../../' . FLAVOR_FOLDER . '/includes/' );  // for php
 		$this->define( 'FLAVOR_DELIMITER', '|' );
 		$this->define( 'FLAVOR_LOG_DIR', $upload_dir['basedir'] . '/flavor-logs/' );
 	}
@@ -432,7 +433,7 @@ class Flavor {
 		$hook_master = Core_Hook_Handler::instance();
 		$ignore_list = array("operation");
 		$args = GetParams($ignore_list);
-		$args["post_file"] = Flavor::getPost();
+		$args["post_file"] = WPF_Flavor::getPost();
 
 		try {
 			$hook_master->DoAction($operation, $args);
@@ -533,7 +534,6 @@ class Flavor {
 //
 //		wp_enqueue_style('woocommerce_admin_styles');
 
-//		self::admin_menu();
 	}
 
 	static public function display_name()
@@ -656,7 +656,7 @@ class Flavor {
 	static function getPost($action = null, $link = false)
 	{
 //		return plugin_dir_url(dirname(__FILE__)) . "post.php"; // Physical file.
-		$result = "/wp-content/plugins/flavor/post.php";
+		$result = "/wp-content/plugins/wpf_flavor/post.php";
 		if ($action)
 			$result .= "?operation=$action&nonce=" . wp_create_nonce($action);
 
@@ -754,6 +754,11 @@ class Flavor {
 		print '</div>';
 	}
 
+	function plugins()
+	{
+		dd("aa");
+	}
+
 	static function getTextDomain()
 	{
 		return 'e-fresh';
@@ -766,7 +771,7 @@ class Flavor {
 
 	function unlogged_guest_posts_redirect()
 	{
-		if (Flavor::isManagementPage() && !is_user_logged_in()) {
+		if ( WPF_Flavor::isManagementPage() && !is_user_logged_in()) {
 			auth_redirect();
 		}
 	}

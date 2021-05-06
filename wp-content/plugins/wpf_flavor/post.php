@@ -6,10 +6,11 @@ if ( ! defined( "ABSPATH" ) ) {
 	define( 'ABSPATH', dirname(dirname(dirname( dirname( $_SERVER["SCRIPT_FILENAME"])))). '/');
 }
 
+
 require_once(ABSPATH . 'wp-config.php');
 
 $operation = GetParam('operation', true);
-$flavor = Flavor::instance();
+$flavor = WPF_Flavor::instance();
 
 if (! strstr($operation, "anonymous")) {
 	$user           = GetParam( 'AUTH_USER', false, null );

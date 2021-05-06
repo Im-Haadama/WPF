@@ -256,7 +256,7 @@ class Finance_Accounting {
 		if ($operation = GetParam("operation", false, null, true)) {
 			$args = [];
 			$args["operation"] = $operation;
-			$args["post_file"] = Flavor::getPost();
+			$args["post_file"] = WPF_Flavor::getPost();
 			$hook_manager->DoAction($operation, $args);
 			return;
 		}

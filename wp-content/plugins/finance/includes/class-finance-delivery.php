@@ -113,9 +113,9 @@ class Finance_Delivery
 					$report .= "תעודה שולמה ($receipt) ולא ניתנת לעריכה או למחיקה";
 				} else {
 					// $report .= Core_Html::GuiHyperlink( "[Delete]", AddToUrl( "operation", "delivery_delete" ) ) . " ";
-					$report .= Core_Html::GuiButton("btn_delete", "Delete", array("action"=>"delivery_delete('" . Flavor::getPost() . "')"));
+					$report .= Core_Html::GuiButton("btn_delete", "Delete", array("action"=> "delivery_delete('" . WPF_Flavor::getPost() . "')"));
 					$report .= Core_Html::GuiHyperlink( "[Edit]", AddToUrl( "operation", "delivery_show_edit" ) ) . " ";
-					$report .= Core_Html::GuiButton( "btn_send", "send delivery", array( "action" => "delivery_send_mail('" . Flavor::getPost() . "', $delivery_id)" ) );
+					$report .= Core_Html::GuiButton( "btn_send", "send delivery", array( "action" => "delivery_send_mail('" . WPF_Flavor::getPost() . "', $delivery_id)" ) );
 				}
 			} else {
 				$report .= __("No delivery note for order"). " " .$order_id;
@@ -138,6 +138,17 @@ class Finance_Delivery
 		}
 	}
 
+	public function OrderId() {
+		if ( ! ( $this->order_id > 0 ) ) {
+			$sql = "SELECT order_id FROM im_delivery WHERE id = " . $this->delivery_id;
+
+			$this->order_id = SqlQuerySingleScalar( $sql );
+		}
+
+		return $this->order_id;
+	}
+
+
 	static function week_deliveries($date)
 	{
 		$report = "";
@@ -147,7 +158,7 @@ class Finance_Delivery
 		// Show selected week
 		$args["sql"]       = "select ID, date, order_id, client_from_delivery(ID) as client from im_delivery where first_day_of_week(date) = " . QuoteText( $date );
 		$args["id_field"]  = "ID";
-		$args["post_file"] = Flavor::getPost();
+		$args["post_file"] = WPF_Flavor::getPost();
 
 		// $args["links"] = array("ID" => add_param_to_url(get_url(), "operation", "show_id", "row_id", "%s"));
 		$args["links"] = array( "ID" => AddToUrl("delivery_id", "%s" ));
@@ -297,14 +308,14 @@ class Finance_Delivery
 				__( "Total" ) . ": " .
 				Core_html::gui_label( "total", $this->getDeliveryTotal() )
 			);
-			$post_file = flavor::getPost() . "?delivery_id=" . $this->getId();
+			$post_file = WPF_Flavor::getPost() . "?delivery_id=" . $this->getId();
 			$html .= Core_Html::GuiLabel( "order_id", $this->order_id, array( "hidden" => true ) );
 			if ( $edit ) {
-				$html .= Core_Html::GuiButton("btn_add_line", "Add Line", "delivery_add_line('". Flavor::getPost() . "', $user_id, $vat, 1)");
+				$html .= Core_Html::GuiButton("btn_add_line", "Add Line", "delivery_add_line('" . WPF_Flavor::getPost() . "', $user_id, $vat, 1)");
 				$html .= Core_Html::GuiButton( "btn_delete", "Delete Lines", "delete_items('delivery_lines', '" . $post_file . "', 'delivery_delete_lines')" );
 
 				$html .= "<div>" . Core_html::GuiCheckbox("chk_send_email", true) . ETranslate("Send email") .
-				         Core_Html::GuiButton( "btn_do", "Save", "delivery_save_or_edit('" . Flavor::getPost() . "', 'delivery_edit')" ) ."</div>";
+				         Core_Html::GuiButton( "btn_do", "Save", "delivery_save_or_edit('" . WPF_Flavor::getPost() . "', 'delivery_edit')" ) . "</div>";
 
 			}
 			$html .= '<datalist id="products"></datalist>';
@@ -457,8 +468,8 @@ class Finance_Delivery
 //		$args);
 
 		$html .= Core_Html::GuiLabel("order_id", $this->order_id, array("hidden"=>true));
-		$html .= Core_Html::GuiButton("btn_add_line", "Add Line", "delivery_add_line('". Flavor::getPost() . "', $user_id, $vat, 0)");
-		$html .= Core_Html::GuiDiv(null, Core_Html::GuiButton("btn_do", "Create", "delivery_save_or_edit('" . Flavor::getPost() . "', 'delivery_save')")) .
+		$html .= Core_Html::GuiButton("btn_add_line", "Add Line", "delivery_add_line('" . WPF_Flavor::getPost() . "', $user_id, $vat, 0)");
+		$html .= Core_Html::GuiDiv(null, Core_Html::GuiButton("btn_do", "Create", "delivery_save_or_edit('" . WPF_Flavor::getPost() . "', 'delivery_save')")) .
 		         '<datalist id="products"></datalist>';
 		$html .= Core_Html::GuiDiv(null, Core_Html::GuiLabel(null, "Send to customer") . Core_Html::GuiCheckbox("chk_send_email", 1));
 
@@ -746,10 +757,10 @@ class Finance_Delivery
 			// Check if there is delivery fee.
 			if (! $fee) {
 				FinanceLog("No delivery fee for order $order_id");
-				Flavor::instance()->add_admin_notice("No delivery fee for order $order_id");
+				WPF_Flavor::instance()->add_admin_notice("No delivery fee for order $order_id");
 			}
 			$del_id = $O->CreateDeliveryFromOrder($order_id, 1);
-			Flavor::instance()->add_admin_notice("Delivery $del_id created");
+			WPF_Flavor::instance()->add_admin_notice("Delivery $del_id created");
 		}
 	}
 

@@ -25,7 +25,7 @@ class Finance_Invoices {
 	 * @return mixed
 	 */
 	public static function getPost($operation = null) {
-		return Flavor::getPost($operation);
+		return WPF_Flavor::getPost($operation);
 	}
 
 	function getShortcodes() {

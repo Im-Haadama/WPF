@@ -106,7 +106,7 @@ class Core_Gem {
 	{
 		if (! $args) {
 			$args              = [];
-			$args["post_file"] = Flavor::getPost();
+			$args["post_file"] = WPF_Flavor::getPost();
 		}
 		$operation = GetArg($args, "operation", null);
 		if (! $operation) {
@@ -157,7 +157,7 @@ class Core_Gem {
 		$unmapped = [];
 		$rc = Core_Importer::Import($file_name, $table, $fields,  $unmapped);
 		if (count($unmapped)) {
-			$result .= self::MapFields($unmapped, $db_prefix, $table, Flavor::getPost()) .
+			$result .= self::MapFields($unmapped, $db_prefix, $table, WPF_Flavor::getPost()) .
 			           Core_Html::load_scripts(array('/wp-content/plugins/flavor/includes/core/gui/client_tools.js',
 				           '/wp-content/plugins/flavor/includes/core/data/data.js'));
 			print $result;
@@ -296,7 +296,7 @@ class Core_Gem {
 			$result .= self::ShowVImport( "$v_table", $args );
 		}
 
-		$result .= Core_Html::GuiHyperlink("download as CSV", Flavor::getPost() . "?operation=gem_v_csv&table=" . $v_table . '&'. $v_key . '=' . $args["id"]) ;
+		$result .= Core_Html::GuiHyperlink("download as CSV", WPF_Flavor::getPost() . "?operation=gem_v_csv&table=" . $v_table . '&' . $v_key . '=' . $args["id"]) ;
 
 		print $result;
 	}
@@ -323,7 +323,7 @@ class Core_Gem {
 	{
 		$table_name = GetParam("table", true);
 		$id = GetParam("id", true);
-		$args["post_file"] = Flavor::getPost();
+		$args["post_file"] = WPF_Flavor::getPost();
 		print self::GemElement($table_name, $id, $args);
 	}
 
@@ -513,7 +513,7 @@ class Core_Gem {
 	{
 		$entry = "entry_$table_id";
 		$div_args = array("class"=>"gem_modal");
-		$args = array("post_file" => Flavor::getPost());
+		$args = array("post_file" => WPF_Flavor::getPost());
 		$html = Core_Html::GuiDiv($entry, self::GemAddRow($table_id, 'Add', $args), $div_args);
 		$html .= Core_Html::GuiButton("btn_add_$table_id", "Add", "show_modal($entry);");
 

@@ -135,7 +135,7 @@ class Focus {
 		AddAction( 'after_setup_theme', array( $this, 'setup_environment' ) );
 		AddAction( 'after_setup_theme', array( $this, 'include_template_functions' ), 11 );
 //		AddAction( 'init', array( $this, 'init' ), 0 );
-		AddAction( 'init', array( 'Core_Shortcodes', 'init' ) );
+//		AddAction( 'init', array( 'Core_Shortcodes', 'init' ) );
 
 //		GetSqlConn(ReconnectDb());
 
@@ -216,9 +216,7 @@ class Focus {
 		$this->define( 'FOCUS_ABSPATH', dirname( FOCUS_PLUGIN_FILE ) . '/' );
 		$this->define( 'FOCUS_VERSION', $this->version );
 		$this->define( 'FOCUS_INCLUDES', FOCUS_ABSPATH . 'includes/' );
-		$this->define( 'FLAVOR_INCLUDES_URL', plugins_url() . '/flavor/includes/' ); // For js
 		$this->define( 'FOCUS_INCLUDES_URL', plugins_url() . '/focus/includes/' ); // For js
-		$this->define( 'FLAVOR_INCLUDES_ABSPATH', plugin_dir_path(__FILE__) . '../../flavor/includes/' );  // for php
 		$this->define( 'FOCUS_DELIMITER', '|' );
 
 		$upload_dir = wp_upload_dir( null, false );
@@ -317,15 +315,15 @@ class Focus {
 		 * Class autoload`er.
 		 */
 		require_once FOCUS_INCLUDES . 'class-focus-autoloader.php';
-		require_once FLAVOR_INCLUDES_ABSPATH . 'core/data/sql.php';
-//		require_once FLAVOR_INCLUDES_ABSPATH . 'core/org_gui.php';
-		require_once FLAVOR_INCLUDES_ABSPATH . 'core/fund.php';
+//		require_once FLAVOR_INCLUDES_ABSPATH . 'core/data/sql.php';
+////		require_once FLAVOR_INCLUDES_ABSPATH . 'core/org_gui.php';
+//		require_once FLAVOR_INCLUDES_ABSPATH . 'core/fund.php';
 //		require_once FLAVOR_INCLUDES_ABSPATH . 'core/wp.php';
 
 		/**
 		 * Core classes.
 		 */
-		include_once FLAVOR_INCLUDES_ABSPATH . 'core/core-functions.php';
+//		include_once FLAVOR_INCLUDES_ABSPATH . 'core/core-functions.php';
 	}
 
 	/**
@@ -363,7 +361,7 @@ class Focus {
 
 		$plugins = get_option( 'active_plugins', array());
 		$plugin = "focus/focus.php";
-		if (! in_array("flavor/flavor.php", $plugins)) {
+		if (! in_array("wpf_flavor/wpf_flavor.php", $plugins)) {
 			unset ( $plugins[ $plugin ] );
 			return false;
 		}
@@ -455,13 +453,13 @@ class Focus {
 //			                                   array("Repeating monthly", "/focus?operation=show_repeating_tasks&freq=j","show_tasks"),
 //			                                   array("Repeating annual", "/focus?operation=show_repeating_tasks&freq=z","show_tasks")));
 
-		$result .= Flavor::ClassSettingPage($module_list);
+		$result .= WPF_Flavor::ClassSettingPage($module_list);
 		return $result;
 	}
 
 	static function getPost()
 	{
-		return Flavor::getPost();
+		return WPF_Flavor::getPost();
 	}
 
 	static function print_driver_tasks( $mission_id = 0 ) {

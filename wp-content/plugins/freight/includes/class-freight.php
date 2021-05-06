@@ -106,6 +106,7 @@ class Freight {
 	 */
 	public function __construct($plugin_name)
 	{
+		if (! class_exists('Core_Autoloader')) return;
 	    self::$_instance = $this;
 		$this->plugin_name = $plugin_name;
 		$this->define_constants();
@@ -180,7 +181,7 @@ class Freight {
 		$actions['Plan'] = Core_Html::GuiHyperlink("Plan", "/wp-content/plugins/freight/plan.php?id=%d");
 		$actions['Dispatch'] = Core_Html::GuiHyperlink("Dispatch", AddToUrl("operation", "mission_dispatch&id=%d"));
 		$actions['Clean'] = Core_Html::GuiButton("btn_Clean", "Clean", "execute_url('".AddToUrl("operation", "mission_clean&id=%d") . "')");
-		$actions['Driver'] = Core_Html::GuiHyperlink("Driver", Flavor::getPost("mission_driver&id=%d"));
+		$actions['Driver'] = Core_Html::GuiHyperlink("Driver", WPF_Flavor::getPost("mission_driver&id=%d"));
 
 		return $actions;
 	}
@@ -217,9 +218,6 @@ class Freight {
 		$this->define( 'FREIGHT_DELIMITER', '|' );
 		$this->define( 'FREIGHT_LOG_DIR', $upload_dir['basedir'] . '/freight-logs/' );
 		$this->define( 'FREIGHT_INCLUDES_URL', plugins_url() . '/freight/includes/' ); // For js
-
-		$this->define( 'FLAVOR_INCLUDES_URL', plugins_url() . '/flavor/includes/' ); // For js
-		$this->define( 'FLAVOR_INCLUDES_ABSPATH', plugin_dir_path(__FILE__) . '../../flavor/includes/' );  // for php
 	}
 
 	/**
@@ -486,7 +484,7 @@ class Freight {
 		}
 		if (! is_callable($function)){
 			print __FUNCTION__ . ": function is not callable";
-			print debug_trace();
+//			print debug_trace();
 			return;
 		}
 		register_activation_hook($file, $function);
@@ -508,7 +506,7 @@ class Freight {
 
 	static function getPost()
 	{
-		return Flavor::getPost();
+		return WPF_Flavor::getPost();
 	}
 
 	public function admin_scripts()

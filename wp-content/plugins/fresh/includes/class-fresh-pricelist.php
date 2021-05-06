@@ -410,6 +410,7 @@ class Fresh_Pricelist {
 
 			// print "<p dir=ltr>" . $sql . "</p>";
 
+			print $sql;
 			$result = SqlQuery( $sql );
 			// Output
 			$id = SqlInsertId( );

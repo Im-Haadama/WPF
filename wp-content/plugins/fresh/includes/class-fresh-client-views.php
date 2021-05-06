@@ -247,7 +247,7 @@ class Fresh_Client_Views  extends Finance_Client_Views {
 	static function Args()
 	{
 		$args = [];
-		$args["post_file"] = Flavor::getPost();
+		$args["post_file"] = WPF_Flavor::getPost();
 		$args["page_number"] = GetParam("page_number");
 		$query["query"] = GetParam("query");
 

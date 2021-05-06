@@ -21,7 +21,7 @@ if ( ! defined( 'MED_PLUGIN_DIR' ) ) {
 	define( 'MED_PLUGIN_DIR', dirname( MED_PLUGIN_FILE ) );
 }
 require_once( ABSPATH . 'wp-admin/includes/plugin.php' );
-if ( ! is_plugin_active( 'flavor/flavor.php' ) /* and current_user_can( 'activate_plugins' ) */ ) {
+if ( ! is_plugin_active( 'wpf_flavor/wpf_flavor.php' ) /* and current_user_can( 'activate_plugins' ) */ ) {
 	// Stop activation redirect and show error
 	deactivate_plugins( __FILE__ );
 

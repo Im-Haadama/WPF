@@ -36,14 +36,14 @@ class Finance_Delivery_Manager
 		self::sync_from_master();
 
 		// Otherwise - master - update.
-		$result .= "Updating<br/>";
+		$result = "Updating<br/>";
 		$sql = "select * from wp_woocommerce_shipping_zone_methods";
 		$sql_result = SqlQuery($sql);
 		while ($row = SqlFetchAssoc($sql_result)) {
 			$instance_id = $row['instance_id'];
 			self::update_shipping_method($instance_id);
 		}
-		return $result;
+		print  $result;
 	}
 
 	static function sync_from_master()

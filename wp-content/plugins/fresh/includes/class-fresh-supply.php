@@ -365,7 +365,7 @@ class Fresh_Supply {
 		$data .= "<br/>";
 		if ($edit) $data .= $this->Operation();
 
-		$data .= Core_Html::GuiHyperlink("Download", Flavor::getPost() . "?operation=supply_download&id=" .  $this-> getID());
+		$data .= Core_Html::GuiHyperlink("Download", WPF_Flavor::getPost() . "?operation=supply_download&id=" . $this-> getID());
 
 		return $data;
 	}

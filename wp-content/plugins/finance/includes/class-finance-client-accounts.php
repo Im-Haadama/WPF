@@ -437,7 +437,7 @@ charset=utf8;
 		$status = get_user_meta($client->getUserId(), 'credit_token', true);
 
 		$result = "";
-		$post_file = Flavor::getPost("credit_clear_token&id=" . $client->getUserId());
+		$post_file = WPF_Flavor::getPost( "credit_clear_token&id=" . $client->getUserId());
 
 		if ($status) $result .= "Has token." . Core_Html::GuiButton("btn_clear_token", "Clear", "execute_url('$post_file', location_reload)");
 

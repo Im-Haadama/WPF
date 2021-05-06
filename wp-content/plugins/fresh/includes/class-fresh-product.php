@@ -126,7 +126,7 @@ class Fresh_Product  extends Finance_Product {
 		       "from im_supplies_lines l\n" .
 		       "join im_supplies s, im_suppliers sup\n" .
 		       "where product_id = " . $this->id . "\n" .
-		       " and s.status in (" . eSupplyStatus::Sent . "," . eSupplyStatus::NewSupply . ")\n" .
+		       " and s.status in (1, 3)\n" . // new, pending
 		       " and l.supply_id = s.id\n" .
 		       " and s.mission_id = $mission_id " .
 		       " and sup.id = s.supplier";

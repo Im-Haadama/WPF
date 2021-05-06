@@ -18,7 +18,7 @@ class Fresh_Packing {
 		$result = "";
 
 		$filter_in_stock = GetParam("stock_filter", false, 0);
-		$result .= Flavor::getPost("needed_products_print", true);
+		$result .= WPF_Flavor::getPost("needed_products_print", true);
 		
 		$result                .= Core_Html::GuiHeader( 1, "Needed products" );
 		if ($filter_in_stock)
@@ -297,8 +297,8 @@ class Fresh_Packing {
 		$loader->AddAction("packing_download", $this);
 
 		$loader->AddAction('inventory_save', $this);
-		Flavor::AddTop("packing", "Packing", "/wp-admin/admin.php?page=packing");
-		Flavor::AddTop("packing_printing", "Printing", "/wp-admin/admin.php?page=printing", "packing");
+		WPF_Flavor::AddTop("packing", "Packing", "/wp-admin/admin.php?page=packing");
+		WPF_Flavor::AddTop("packing_printing", "Printing", "/wp-admin/admin.php?page=printing", "packing");
 	}
 
 	static function inventory_save()
@@ -641,13 +641,13 @@ class Fresh_Packing {
 			}
 		}
 		$result = $Table->GetTable($args);
-		if ($download_url) $result .= Core_Html::GuiHyperlink("download", Flavor::getPost("packing_download") . '&category=' . $term->getId());
+		if ($download_url) $result .= Core_Html::GuiHyperlink("download", WPF_Flavor::getPost("packing_download") . '&category=' . $term->getId());
 		return $result;
 	}
 
 	function mission_actions($actions)
 	{
-		$actions['labels'] = Core_Html::GuiHyperlink("labels", Flavor::getPost() . '?operation=mission_labels&id=%d');
+		$actions['labels'] = Core_Html::GuiHyperlink("labels", WPF_Flavor::getPost() . '?operation=mission_labels&id=%d');
 
 		return $actions;
 	}

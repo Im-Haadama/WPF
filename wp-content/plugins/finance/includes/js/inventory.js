@@ -6,7 +6,7 @@
  * Vestibulum commodo. Ut rhoncus gravida arcu.
  */
 
-let post = '/wp-content/plugins/flavor/post.php';
+let post = '/wp-content/plugins/wpf_flavor/post.php';
 
 function save_inv(collection_name) {
     let collection = document.getElementsByName(collection_name);

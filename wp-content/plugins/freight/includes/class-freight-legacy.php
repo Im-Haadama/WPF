@@ -139,7 +139,7 @@ class Freight_Legacy {
 
 			$result .=  "</table>";
 
-			$result .= Core_Html::GuiButton("btn_done", "Delivered", "delivery_done('" . Flavor::getPost() . "')");
+			$result .= Core_Html::GuiButton("btn_done", "Delivered", "delivery_done('" . WPF_Flavor::getPost() . "')");
 
 			return $result;
 		} else {

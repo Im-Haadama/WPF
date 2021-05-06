@@ -136,7 +136,7 @@ class Flavor_Mission {
 		$args = array();
 		$args["edit"] = $edit;
 		$args["add_checkbox"] = true;
-		$args["post_file"] = Flavor::getPost();
+		$args["post_file"] = WPF_Flavor::getPost();
 
 		$sql = "select id, date, name, mission_type from im_missions where id in (" . CommaImplode($missions) . ") order by date";
 
@@ -152,12 +152,12 @@ class Flavor_Mission {
 		return $result;
 	}
 
-	// https:/fruity.co.il/wp-content/plugins/flavor/post.php?operation=get_local_anonymous&header=1&mission_ids=1054
-	// https:/super-organi.co.il/wp-content/plugins/flavor/post.php?operation=get_local_anonymous&header=1&mission_ids=1065
-	// http:/127.0.0.1/wp-content/plugins/flavor/post.php?operation=get_local_anonymous&header=1&mission_ids=1
+	// https:/fruity.co.il/wp-content/plugins/wpf_flavor/post.php?operation=get_local_anonymous&header=1&mission_ids=1054
+	// https:/super-organi.co.il/wp-content/plugins/wpf_flavor/post.php?operation=get_local_anonymous&header=1&mission_ids=1065
+	// http:/127.0.0.1/wp-content/plugins/flavor/wpf_post.php?operation=get_local_anonymous&header=1&mission_ids=1
 	static function get_local_anonymous()
 	{
-		FinanceLog(__FUNCTION__);
+		FlavorLog(__FUNCTION__);
 		$mission_ids = GetParam("mission_ids", true);
 		$header = GetParam("header", false, false);
 		print self::GetLocalMissions($mission_ids, $header);
@@ -231,7 +231,7 @@ class Flavor_Mission {
 			return;
 		}
 
-		$args = array("post_file" => Flavor::getPost());
+		$args = array("post_file" => WPF_Flavor::getPost());
 		$m = Core_Db_MultiSite::getInstance();
 		$args["edit"] = $m->isMaster();
 		$result = "";

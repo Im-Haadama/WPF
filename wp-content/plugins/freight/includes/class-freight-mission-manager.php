@@ -312,7 +312,7 @@ group by pm.meta_value, p.post_status");
 
 		$multi_site = Core_Db_MultiSite::getInstance();
 		$result = "";
-		$post_file = Flavor::getPost();
+		$post_file = WPF_Flavor::getPost();
 
 		$m = new Mission($the_mission);
 		if (! $m->getStartAddress()){
@@ -491,7 +491,7 @@ group by pm.meta_value, p.post_status");
 	{
 		$mission_id = $this->mission_id;
 		// Read from all sites.
-		$data_url = Flavor::getPost() . "?operation=get_local_anonymous&mission_ids=$mission_id";
+		$data_url = WPF_Flavor::getPost() . "?operation=get_local_anonymous&mission_ids=$mission_id";
 
 		$output   = self::$multi_site->GetAll( $data_url, false, $debug );
 
@@ -528,7 +528,7 @@ group by pm.meta_value, p.post_status");
 
 	static function getPost()
 	{
-		return Flavor::getPost();
+		return WPF_Flavor::getPost();
 	}
 
 	// Calculates points_pe
@@ -541,7 +541,8 @@ group by pm.meta_value, p.post_status");
 		for ( $i = 1; $i < count( $data_lines ); $i ++ ) {
 			$order_info = $data_lines[ $i ];
 
-			$stop_point = str_replace( '-', ' ', $order_info[ OrderTableFields::address_1 ] . " " . $order_info[ OrderTableFields::city ] );
+			$stop_point = trim(str_replace( '-', ' ', $order_info[ OrderTableFields::address_1 ] . " " . $order_info[ OrderTableFields::city ] ));
+			if (! strlen($stop_point)) $stop_point = $mission->getStartAddress();
 			if ($debug) print $stop_point ."<br/>";
 			$order_id   = $order_info[ OrderTableFields::order_id ];
 			$order_site = $order_info[ OrderTableFields::site_name ];
@@ -752,7 +753,7 @@ group by pm.meta_value, p.post_status");
 	{
 		if (! $rest or ! is_array($rest)) return;
 		if ( count( $rest ) == 1 ) {
-			array_push( $this->path, $rest[0] );
+			array_push( $this->path, reset($rest ));
 			return;
 		}
 		$this->find_route( $rest, $this->path );
@@ -975,8 +976,7 @@ group by pm.meta_value, p.post_status");
 		$result .= Core_Html::GuiHeader(1, "add delivery");
 
 		$args = array("post_file" => Freight::getPost());
-		$result .= __("Recipient") . "<br/>"
-		. Fresh_Client::gui_select_client("delivery_client", null, $args) . "<br/>".
+		$result .= __("Recipient") . "<br/>". Finance_Client::gui_select_client("delivery_client", null, $args) . "<br/>".
 		 __("Price before taxes:") . "<br/>" .
 		           Core_Html::GuiInput("delivery_price", $price, $args) . "<br/>" .
 			Core_Html::GuiButton("btn_add_delivery", "Add", array("action" => "freight_add_delivery('" . Freight::getPost() . "', $mission_id)"));

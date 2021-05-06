@@ -30,7 +30,7 @@ class Israel_Shop
 	static function Args($type = null)
 	{
 		$args = [];
-		$args["post_file"] = Flavor::getPost();
+		$args["post_file"] = WPF_Flavor::getPost();
 		// $args["edit"] = true;
 
 		return $args;
@@ -65,7 +65,7 @@ class Israel_Shop
 
 	static public function getPost()
 	{
-		return Flavor::getPost();
+		return WPF_Flavor::getPost();
 	}
 
 	private function define_constants() {
@@ -79,9 +79,6 @@ class Israel_Shop
 		$this->define( 'ISRAEL_LOG_DIR', $upload_dir['basedir'] . '/israel-logs/' );
 		$this->define( 'ISRAEL_INCLUDES_URL', plugins_url() . '/israel-shop/includes/' ); // For js
 		$this->define( 'WC_URL', plugins_url() . '/woocommerce/' ); // For css
-
-		$this->define( 'FLAVOR_INCLUDES_URL', plugins_url() . '/flavor/includes/' ); // For js
-		$this->define( 'FLAVOR_INCLUDES_ABSPATH', plugin_dir_path(__FILE__) . '../../flavor/includes/' );  // for php
 	}
 
 	function init()

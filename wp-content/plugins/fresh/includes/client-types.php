@@ -7,8 +7,8 @@
  */
 require_once(dirname(dirname(dirname(dirname(dirname(__FILE__))))) . '/wp-config.php');
 ?>
-    <script type="text/javascript" src="/wp-content/plugins/flavor/includes/core/gui/client_tools.js"></script>
-    <script type="text/javascript" src="/wp-content/plugins/flavor/includes/core/data/data.js"></script>
+    <script type="text/javascript" src="/wp-content/plugins/wpf_flavor/includes/core/gui/client_tools.js"></script>
+    <script type="text/javascript" src="/wp-content/plugins/wpf_flavor/includes/core/data/data.js"></script>
     <script>
         function update_client_type(id) {
             var type = get_value_by_name("select_type_" + id);

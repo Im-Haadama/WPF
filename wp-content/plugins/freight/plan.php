@@ -25,7 +25,7 @@ $id = GetParam("id");
             padding: 0;
         }
     </style>
-    <script src="/wp-content/plugins/flavor/includes/core/gui/client_tools.js"></script>
+    <script src="/wp-content/plugins/wpf_flavor/includes/core/gui/client_tools.js"></script>
 </head>
 
 <html>
@@ -50,7 +50,7 @@ $id = GetParam("id");
         var infoWindow = new google.maps.InfoWindow;
 
         // Change this depending on the name of your PHP or XML file
-        let url = '/wp-content/plugins/flavor/post.php?operation=mission_markers&id=<?php print $id;?>'
+        let url = '<?php print WPF_Flavor::getPost() ?>?operation=mission_markers&id=<?php print $id;?>'
         execute_url(url, function(data) {
             var xml = data.responseXML;
             if (null == xml) {

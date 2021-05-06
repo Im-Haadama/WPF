@@ -133,12 +133,14 @@ class Freight_Actions {
 		print $m->dispatcher($args);
 
 		// Supplies to collect
-		$supplies = Fresh_Supplies::mission_supplies($id);
-		foreach ($supplies as $supply_id) {
-			$s = new Fresh_Supply($supply_id);
-			print $s->Html($args) ;
+		if (class_exists(('Fresh_Supplies'))) {
+			$supplies = Fresh_Supplies::mission_supplies( $id );
+			foreach ( $supplies as $supply_id ) {
+				$s = new Fresh_Supply( $supply_id );
+				print $s->Html( $args );
+			}
 		}
-		die(0);
+//		die(0);
 	}
 
 	static function order_update_driver_comment()

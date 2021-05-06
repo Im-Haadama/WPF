@@ -35,7 +35,6 @@ class Med {
 		define_const( 'MED_INCLUDES', MED_ABSPATH . 'includes/' );
 		define_const( 'MED_INCLUDES_URL', plugins_url() . '/med/includes/' ); // For js
 		define_const( 'MED_INCLUDES_URL', plugins_url() . '/med/includes/' ); // For js
-		define_const( 'FLAVOR_INCLUDES_ABSPATH', plugin_dir_path( __FILE__ ) . '../../flavor/includes/' );  // for php
 		define_const( 'MED_DELIMITER', '|' );
 		define_const( 'MED_LOG_DIR', $upload_dir['basedir'] . '/MED-logs/' );
 	}
@@ -103,7 +102,7 @@ class Med {
 
 	static function getPost()
 	{
-		return Flavor::getPost();
+		return WPF_Flavor::getPost();
 	}
 
 	function add_case() {

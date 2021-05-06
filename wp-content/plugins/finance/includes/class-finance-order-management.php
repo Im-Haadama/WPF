@@ -107,7 +107,7 @@ class Finance_Order_Management {
 		while ( $row = SqlFetchAssoc( $result ) ) {
 			$id         = $row["id"];
 //			print "id=$id<br/>";
-			$o = new Fresh_Order($id);
+			$o = new Finance_Order($id);
 			$mission_id = $o->getMissionId();
 			if ( ! in_array( $mission_id, $missions ) ) {
 //				print "adding $mission_id<br/>";
@@ -286,11 +286,11 @@ class Finance_Order_Management {
 	static function add_freight($col)
 	{
 		global $post;
-		$O = new Fresh_Order($post->ID);
+		$O = new Finance_Order($post->ID);
 		switch ($col) {
 			case "freight":
 				print Flavor_Mission::gui_select_mission("mis_" . $post->ID, $O->getMissionId(),
-					array("events" => 'onclick="event.stopPropagation();order_mission_changed(\'' . Fresh::getPost() . "', " . $post->ID .')"'));
+					array("events" => 'onclick="event.stopPropagation();order_mission_changed(\'' . Finance::getPost() . "', " . $post->ID .')"'));
 				break;
 			case 'city':
 				print $O->getOrderInfo( '_shipping_city' );

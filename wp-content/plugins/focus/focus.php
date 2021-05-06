@@ -20,13 +20,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 if ( ! defined( 'FOCUS_PLUGIN_FILE' ) ) {
 	define( 'FOCUS_PLUGIN_FILE', __FILE__ );
 }
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
 require_once(ABSPATH . 'wp-admin/includes/plugin.php');
-if ( ! is_plugin_active( 'flavor/flavor.php' ) /* and current_user_can( 'activate_plugins' ) */ ) {
-	// Stop activation redirect and show error
-	deactivate_plugins(__FILE__);
-	return;
-}
 
 // Include the main WooCommerce class.
 if ( ! class_exists( 'Focus' ) ) {
@@ -42,11 +40,21 @@ function run_focus() {
 	$plugin->run();
 }
 
-run_focus();
-
 register_activation_hook( __FILE__, 'focus_activate' );
 
 function focus_activate()
 {
 	Focus::instance()->install();
+}
+
+add_action('init', 'init_focus', 20);
+
+function init_focus() {
+	if ( ! is_plugin_active( 'wpf_flavor/wpf_flavor.php' ) /* and current_user_can( 'activate_plugins' ) */ ) {
+		// Stop activation redirect and show error
+		deactivate_plugins(__FILE__);
+		return;
+	}
+
+	run_focus();
 }

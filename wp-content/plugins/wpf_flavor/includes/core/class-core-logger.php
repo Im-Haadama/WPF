@@ -77,7 +77,7 @@ class Core_Logger
 	static function Args()
 	{
 		$args = [];
-		$args["post_file"] = Flavor::getPost();
+		$args["post_file"] = WPF_Flavor::getPost();
 		$args["page"] = GetParam("page", false, 1);
 		$args["order"] = "id desc";
 		$args["reverse"] = 1; // In order to get the newest by order

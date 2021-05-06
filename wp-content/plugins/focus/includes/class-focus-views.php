@@ -21,6 +21,8 @@ class Focus_Views {
 
 		$loader->AddAction('focus_edit_project', $this);
 		$loader->AddAction('show_new_task', $this);
+		$loader->AddAction('show_template', $this, 'show_template_wrapper');
+
 		//	Function not found:
 		//	$loader->AddFilter("data_update_prepare_tasklist", $this, "data_update_prepare_tasklist", 10, 2);
 	}
@@ -89,8 +91,8 @@ class Focus_Views {
 		wp_enqueue_script( 'awesome', $awesome, null, $version, false );
 	}
 
-	static function focus_main_wrapper($attr) {
-
+	static function focus_main_wrapper($attr)
+	{
 		$narrow = GetArg($attr, "narrow", false);
 
 		$user_id = get_user_id();
@@ -223,7 +225,8 @@ class Focus_Views {
 						"team"       => "Focus_Views::gui_select_team",
 						"priority"   => "Focus_Views::gui_select_priority",
 						"created" => "Core_Html::GuiShowDynamicDateTime",
-						"mission_id" => "Flavor_Mission::gui_select_mission"
+						"mission_id" => "Flavor_Mission::gui_select_mission",
+						"status" => "Focus_Views::gui_select_status"
 					);
 					if ( self::OptionEnabled( "missions" ) ) {
 						$args["selectors"]["mission_id"] = "Flavor_Mission::gui_select_mission";
@@ -696,7 +699,7 @@ class Focus_Views {
 	static function search_box() {
 		$result = "";
 		$result .= Core_Html::GuiInput( "search_text", "(search here)",
-			array( "events" => "onfocus=\"search_by_text()\" onkeyup=\"search_by_text('". Flavor::getPost() . "')\" onfocusout=\"search_box_reset()\"" ) );
+			array( "events" => "onfocus=\"search_by_text()\" onkeyup=\"search_by_text('" . WPF_Flavor::getPost() . "')\" onfocusout=\"search_box_reset()\"" ) );
 
 		return $result;
 	}
@@ -1043,12 +1046,16 @@ class Focus_Views {
 			return self::show_new_template();
 		}
 		if ($operation = GetParam("operation", false, null)){
-			$args = array("id"=> GetParam("id", true),
-			"table"=>"task_templates");
-			do_action($operation, $args);
+			if ($operation != 'show_template') {
+				$args = array(
+					"id"    => GetParam( "id", true ),
+					"table" => "task_templates"
+				);
+				do_action( $operation, $args );
+			}
 		}
 
-		return self::instance()->show_templates( $not_used, $template_id );
+		print self::instance()->show_templates( $not_used, $template_id );
 	}
 
 	static function show_task_wrapper() {
@@ -1251,17 +1258,21 @@ class Focus_Views {
 			$result .= $template;
 
 			$tasks_args         = self::Args( "tasklist" );
+
 			$tasks_args["edit"] = false;
 			// $tasks_args["prepare_plug"] = "Focus_Tasklist::prepare";
 
 			$tasks_args["class"] = "sortable";
 
-			$sql   = "select * from ${db_prefix}tasklist where task_template = " . $template_id;
-			$sql   .= " order by date desc limit 10";
-			$table = Core_Html::GuiTableContent( "last_tasks", $sql, $tasks_args );
+//			$sql   = "select * from ${db_prefix}tasklist where task_template = " . $template_id;
+//			$sql   .= " order by date desc limit 10";
+			array_push($tasks_args["fields"], "status");
+			$tasks_args["where"] = "task_template = $template_id";
+			$tasks_args["order_by"] = " order by id desc limit 10";
+			$table = Core_Html::GuiTableContent( "tasklist", null, $tasks_args );
 
 			if ( $table ) {
-				$result .= Core_Html::GuiHeader( 2, "משימות אחרונות" );
+				$result .= Core_Html::GuiHeader( 2, "Last tasks" );
 				$result .= $table;
 			} else {
 				$result .= "<br/>Not tasks created for this template";
@@ -1601,6 +1612,7 @@ class Focus_Views {
 
 		// Specific given sender permission
 		$can_send_to = $worker->CanSendTasks();
+
 		foreach ($can_send_to as $team) {
 			if (! in_array($team, $teams))
 			array_push($teams, $team);
@@ -2017,7 +2029,7 @@ class Focus_Views {
 	function focus_edit_project()
 	{
 		$id = GetParam("id");
-		$post_file = Flavor::getPost();
+		$post_file = WPF_Flavor::getPost();
 		$result = "";
 		try {
 			$p = new Org_Project( $id );
@@ -2047,5 +2059,13 @@ class Focus_Views {
 	{
 		$result = "";
 		print $result;
+	}
+
+	static function gui_select_status($id, $value, $args)
+	{
+		global $Tasklist_Status_Names;
+		return $Tasklist_Status_Names[$value];
+//		$args["values"] = $Tasklist_Status_Names;
+//		return Core_Html::GuiSimpleSelect($id, $value, $args);
 	}
 }

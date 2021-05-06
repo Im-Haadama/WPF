@@ -261,7 +261,7 @@ class Finance_Inventory
 //				print $p->getName() . "<br/>";
 //				 $line    = self::product_line( $prod_id, false, false, null, true, $supplier_id );
 //				array_push( $table, $line );
-				$args = array("name" =>"sup_" . $supplier_id, "events" => 'onchange="inventory_change(\'' . Flavor::getPost() . '\', ' . $prod_id . ')"');
+				$args = array("name" =>"sup_" . $supplier_id, "events" => 'onchange="inventory_change(\'' . WPF_Flavor::getPost() . '\', ' . $prod_id . ')"');
 				$table[$prod_id] = array(
 					(has_post_thumbnail( $prod_id ) ? get_the_post_thumbnail( $prod_id, array( $img_size, $img_size ) ) : ""),
 					$p->getName(),

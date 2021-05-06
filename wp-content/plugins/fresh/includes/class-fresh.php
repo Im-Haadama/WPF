@@ -262,9 +262,6 @@ class Fresh {
 		$this->define( 'FRESH_DELIMITER', '|' );
 		$this->define( 'FRESH_LOG_DIR', $upload_dir['basedir'] . '/fresh-logs/' );
 		$this->define( 'FRESH_INCLUDES_URL', plugins_url() . '/fresh/includes/' ); // For js
-
-		$this->define( 'FLAVOR_INCLUDES_URL', plugins_url() . '/flavor/includes/' ); // For js
-		$this->define( 'FLAVOR_INCLUDES_ABSPATH', plugin_dir_path(__FILE__) . '../../flavor/includes/' );  // for php
 	}
 
 	/**
@@ -565,7 +562,7 @@ class Fresh {
 
 	static function getPost()
 	{
-		return Flavor::getPost();
+		return WPF_Flavor::getPost();
 	}
 
 	public function enqueue_scripts() {

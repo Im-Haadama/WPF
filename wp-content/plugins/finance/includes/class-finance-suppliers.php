@@ -54,7 +54,7 @@ class Finance_Suppliers
 			"prepare" => "Fresh_Pricelist_Item::add_prod_info",
 //			"header_fields" => array("supplier_product_code" => "code", "product_name" => "name"),
 			"import_page"=> GetUrl(),
-			"post_file" => Fresh::getPost(),
+			"post_file" => Finance::getPost(),
 			"import" => true,
 			"prepare_plug" => "Fresh_Pricelist_Item::add_prod_info",
 			"action_before_import" => array(__CLASS__, "action_before_import"),
@@ -226,7 +226,7 @@ class Finance_Suppliers
 		$ignore_list = [];
 		$args        = array(
 //			"page_number"      => GetParam( "page_number", false, -1 ),
-			"post_file" => Flavor::getPost()
+			"post_file" => WPF_Flavor::getPost()
 		);
 		if ( GetParam( "non_active", false, false ) ) {
 			$args["non_active"] = 1;
@@ -283,7 +283,7 @@ class Finance_Suppliers
 			from im_supplies 
 			where supplier = $supplier_id 
 			  and date = curdate()
-				and status = " . eSupplyStatus::NewSupply .
+				and status = 1 " .
 		       " order by id desc limit 1";
 
 		return SqlQuerySingleScalar($sql);
@@ -361,6 +361,7 @@ class Finance_Suppliers
 		$s = new Fresh_Supplier($supplier_id);
 		$result .= Core_Html::GuiHeader(1, __("Supplier pricelist") . " " . $s->getSupplierName());
 		$result .= Core_Html::GuiButton("btn_filter", __("Filter"), "pricelist_filter()");
+		if ($s->getMachineUpdate()) $result .= "This supplier list defined as been imported<br/>";
 
 		print $result;
 	}

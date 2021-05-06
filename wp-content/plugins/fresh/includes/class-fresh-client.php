@@ -2,7 +2,7 @@
 
 require_once(ABSPATH . 'wp-includes/pluggable.php');
 
-class Fresh_Client extends  Finance_Client {
+class Fresh_Client extends Finance_Client {
 
 	/**
 	 * Fresh_Client constructor.
@@ -80,31 +80,6 @@ class Fresh_Client extends  Finance_Client {
 		return $key;
 	}
 
-	static 	function gui_select_client( $id, $value, $args = null )
-	{
-		if ( ! $id ) {
-			$id = "client_select";
-		}
-
-		$events = GetArg($args, "events", null);
-		$active_days = GetArg($args, "active_days", null);
-		$new = GetArg($args, "new", false);
-
-		if ( $active_days > 0 ) {
-			$sql_where = "where id in (select client_id from im_client_accounts where DATEDIFF(now(), date) < " . $active_days;
-			if ( $new ) {
-				$sql_where .= " union select id from wp_users where DATEDIFF(now(), user_registered) < 3";
-			}
-			$sql_where .= ")";
-			$sql_where .= "order by 2";
-		} else {
-			$sql_where = "where 1 order by 2";
-		}
-
-//		$select_args = array("name" => "client_displayname(id)", "include_id" => 1, "where"=> $sql_where, "events" => $events, "value"=>$value, "datalist" => 1);
-		return Core_Html::GuiAutoList( $id, "users", $args);
-	}
-
 	static function extra_user_profile_fields( $user ) {
 		if (! is_shop_manager()) return "";
 		$u = new Fresh_Client($user->ID);
@@ -124,7 +99,7 @@ class Fresh_Client extends  Finance_Client {
 				<th><label for="customer_type"><?php _e("Customer type"); ?></label></th>
 				<td>
 					<?php
-					print Fresh_Client::gui_select_client_type("customer_type", $u->customer_type());
+					print Finance_Client::gui_select_client_type("customer_type", $u->customer_type());
 					?><br/>
 					<span class="description"><?php _e("Please select customer type."); ?></span>
 				</td>
@@ -145,7 +120,7 @@ class Fresh_Client extends  Finance_Client {
 		print Core_Html::GuiHeader( 2, "מחירונים" );
 
 		$args = [];
-		$args['post_file'] = Flavor::getPost();
+		$args['post_file'] = WPF_Flavor::getPost();
 		$args['edit'] = true;
 		print Core_Gem::GemTable("client_types", $args);
             // "SELECT rate, dry_rate AS מרווח, type AS 'שם מחירון' FROM im_client_types");
@@ -182,7 +157,7 @@ class Fresh_Client extends  Finance_Client {
 		$args = [];
 		$args["post_file"] = Fresh::getPost();
 		print Core_Html::gui_table_args( array(
-			array( "בחר לקוח", self::gui_select_client("client_select", null, $args) ),
+			array( "בחר לקוח", Finance_client::gui_select_client("client_select", null, $args) ),
 			array(
 				"בחר מחירון",
 				gui_select_client_type( "select_type_new", 1 )

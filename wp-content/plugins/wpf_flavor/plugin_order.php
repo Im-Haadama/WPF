@@ -18,7 +18,7 @@ foreach ($plugins as $plugin)
 		case "wooco":
 			$pri = 1;
 			break;
-		case "flavo":
+		case "wpf_fl":
 			$pri = 2;
 			break;
 	}

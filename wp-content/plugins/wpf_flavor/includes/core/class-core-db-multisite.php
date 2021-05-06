@@ -214,7 +214,7 @@ class Core_Db_MultiSite extends Core_MultiSite {
 
 //		if ($this->isMaster()) return true;
 //
-		$url = Flavor::getPost() . "?operation=sync_data_$table";
+		$url = WPF_Flavor::getPost() . "?operation=sync_data_$table";
 		if ( $query ) $url .= "&query=" . urlencode( $query );
 
 		$html = Core_Db_MultiSite::Execute( $url, $remote, $debug );
@@ -409,7 +409,7 @@ class Core_Db_MultiSite extends Core_MultiSite {
 //		die (1);
 
 		$result = Core_Html::GuiHeader(1, "Multi sites");
-		$args = ["post_file" => Flavor::getPost()];
+		$args = ["post_file" => WPF_Flavor::getPost()];
 		$db_prefix = GetTablePrefix();
 
 //		print "TRUNCATING<br/>";
@@ -464,7 +464,7 @@ class Core_Db_MultiSite extends Core_MultiSite {
 	{
 		$http_code = 0;
 		$db_prefix = GetTablePrefix();
-		$url = "$server" . Flavor::getPost() . "?operation=multisite_validate_anonymous";
+		$url = "$server" . WPF_Flavor::getPost() . "?operation=multisite_validate_anonymous";
 		$result = self::DoRun($url, $http_code, $user, $password);
 
 		if (check_for_error($result)) {

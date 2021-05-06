@@ -1,8 +1,8 @@
 <?php
 /**
- * Plugin Name: finance (full)
+ * Plugin Name: WPF  finance (full)
  * Plugin URI: https://e-fresh.co.il
- * Description: Bank info and detail.
+ * Description: Delivery missions, finance transactions.
  * Version: 1.0
  * Author: agla
  * Author URI: http://e-fresh.co.il
@@ -24,7 +24,7 @@ if ( ! defined( 'FINANCE_PLUGIN_DIR' ) ) {
 	define( 'FINANCE_PLUGIN_DIR', dirname(FINANCE_PLUGIN_FILE) );
 }
 require_once(ABSPATH . 'wp-admin/includes/plugin.php');
-if ( ! is_plugin_active( 'flavor/flavor.php' ) /* and current_user_can( 'activate_plugins' ) */ ) {
+if ( ! is_plugin_active( 'wpf_flavor/wpf_flavor.php' ) /* and current_user_can( 'activate_plugins' ) */ ) {
 	// Stop activation redirect and show error
 	deactivate_plugins(__FILE__);
 	return;
@@ -57,7 +57,11 @@ function run_finance() {
 	$instance->run();
 }
 
-run_finance();
+add_action('init', 'init_finance', 20);
+
+function init_finance() {
+	run_finance();
+}
 
 add_filter( 'wc_order_statuses', 'add_awaiting_shipment_to_order_statuses' );
 add_action( 'init', 'register_awaiting_shipment_order_status' );

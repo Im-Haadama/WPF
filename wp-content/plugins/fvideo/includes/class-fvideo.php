@@ -1,7 +1,7 @@
 <?php
 
 
-require_once(ABSPATH . '/wp-content/plugins/flavor/flavor.php');
+require_once(ABSPATH . '/wp-content/plugins/wpf_flavor/wpf_flavor.php');
 
 class FVideo {
 	/**
@@ -112,7 +112,7 @@ class FVideo {
 	 * WooCommerce Constructor.
 	 */
 	private function __construct( $plugin_name ) {
-		Flavor::instance();
+		WPF_Flavor::instance();
 
 		$this->admin_notices = null;
 		$this->plugin_name = $plugin_name;
@@ -122,7 +122,7 @@ class FVideo {
 		}
 		$this->auto_loader      = new Core_Autoloader( FVideo_ABSPATH );
 		$this->loader = Core_Hook_Handler::instance();
-		$this->post_file   = Flavor::getPost();
+		$this->post_file   = WPF_Flavor::getPost();
 
 		$this->init_hooks($this->loader);
 
@@ -207,7 +207,6 @@ class FVideo {
 		define_const( 'FVideo_VERSION', $this->version );
 		define_const( 'FVideo_INCLUDES', FVideo_ABSPATH . 'includes/' );
 		define_const( 'FVideo_INCLUDES_URL', plugins_url() . '/fVideo/includes/' ); // For js
-		define_const( 'FLAVOR_INCLUDES_ABSPATH', plugin_dir_path( __FILE__ ) . '../../flavor/includes/' );  // for php
 		define_const( 'FVideo_DELIMITER', '|' );
 		define_const( 'FVideo_LOG_DIR', $upload_dir['basedir'] . '/fVideo-logs/' );
 		define_const("FVideo_Torrent_Folder", $upload_dir['basedir'] . '/torrents/');

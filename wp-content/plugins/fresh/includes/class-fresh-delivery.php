@@ -178,16 +178,6 @@ class Fresh_Delivery extends Finance_Delivery {
 		return $price;
 	}
 
-	public function OrderId() {
-		if ( ! ( $this->order_id > 0 ) ) {
-			$sql = "SELECT order_id FROM im_delivery WHERE id = " . $this->ID;
-
-			$this->order_id = SqlQuerySingleScalar( $sql );
-		}
-
-		return $this->order_id;
-	}
-
 	public function getCustomerId() {
 		return $this->getOrder()->getCustomerID();
 	}
@@ -256,7 +246,7 @@ class Fresh_Delivery extends Finance_Delivery {
 
 	public static function GuiCreateNewNoOrder() {
 		$data = Core_Html::gui_table_args( array(
-			array( "לקוח:", gui_select_client("client", null, null) ),
+			array( "לקוח:", Finance_Client::gui_select_client("client", null, null) ),
 			array( "תאריך", gui_input_date( "delivery_date", "" ) ),
 			array( Core_Html::GuiButton( "btn_add_delivery", "", "הוסף תעודת משלוח" ) )
 		) );

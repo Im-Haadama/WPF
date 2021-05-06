@@ -754,7 +754,7 @@ class Finance_Order {
 	}
 
 	function infoRightBox( $edit = false ) {
-		$post_file = Flavor::getPost();
+		$post_file = WPF_Flavor::getPost();
 		if ( ! $this->WC_Order ) {
 			return new Exception( "no WC_Order" );
 		}

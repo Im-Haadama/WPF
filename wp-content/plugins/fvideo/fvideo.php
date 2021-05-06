@@ -30,7 +30,7 @@ if ( ! defined( 'FVIDEO_PLUGIN_FILE' ) ) {
 require_once(ABSPATH . 'wp-admin/includes/plugin.php');
 
 // Require parent plugin
-if ( ! is_plugin_active( 'flavor/flavor.php' ) /* and current_user_can( 'activate_plugins' ) */ ) {
+if ( ! is_plugin_active( 'wpf_flavor/wpf_flavor.php' ) /* and current_user_can( 'activate_plugins' ) */ ) {
 	// Deactivate this plugin
 	deactivate_plugins(__FILE__);
 	return;

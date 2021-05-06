@@ -51,7 +51,7 @@ class Flavor_Org_Views {
 	static function company_teams( Org_Company $company, $args ) {
 		$args["company"] = $company->getId();
 		$db_prefix       = GetTablePrefix();
-		$result          = Core_Html::GuiHeader( 1, "All the teams in the company " . $company->getName() );
+		$result          = Core_Html::GuiHeader( 1, "All teams in the company " . $company->getName() );
 		$args["query"]   = "manager = 1";
 		$args["links"]     = array( "id" => AddToUrl( array( "operation" => "team_show_edit&id=%s" ) ) );
 		$args["selectors"] = array(
@@ -140,7 +140,7 @@ class Flavor_Org_Views {
 					$workers[ $id ]["display_name"] = __( "Name" );
 				}
 			}
-			if (! isset($args["post_file"])) $args["post_file"] = Flavor::getPost();
+			if (! isset($args["post_file"])) $args["post_file"] = WPF_Flavor::getPost();
 			$args["post_file"]    .= "?company=" . $company_id;
 			$args["add_button"]   = false;
 			$args["add_checkbox"] = true;
@@ -278,7 +278,7 @@ class Flavor_Org_Views {
 	}
 
 	static public function doShowProjectMembers( $project_id ) {
-		$args              = ["post_file"=>Flavor::getPost()];
+		$args              = ["post_file"=>WPF_Flavor::getPost()];
 		$args["post_file"] .= "?team_id=" . $project_id;
 		$project           = new Org_Project( $project_id );
 

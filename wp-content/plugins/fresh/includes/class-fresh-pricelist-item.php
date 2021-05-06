@@ -171,7 +171,7 @@ class Fresh_Pricelist_Item {
 		$price = $row['price'];
 		if ($color = self::get_prod_color()) $args['style'] = 'background-color: ' . $color;
 		$args['size'] = 3;
-		$args["events"] = "onchange = \"pricelist_update_price('" . flavor::getPost() . "', " . $this->id . ")\"";
+		$args["events"] = "onchange = \"pricelist_update_price('" . WPF_Flavor::getPost() . "', " . $this->id . ")\"";
 			// Core_Gem::UpdateTableFieldEvent(Flavor::getPost(), "supplier_price_list", $this->id, "price");
 		$row['price'] = Core_Html::GuiInput("price_" . $row['id'], $price, $args);
 

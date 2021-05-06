@@ -13,7 +13,6 @@
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
-	print "aasdfasdf";
 	exit; // Exit if accessed directly.
 }
 // Define IM_PLUGIN_FILE.
@@ -25,8 +24,15 @@ if ( ! class_exists( 'Capabilites' ) ) {
 	include_once dirname( __FILE__ ) . '/includes/class-capabilites.php';
 }
 
+require_once(ABSPATH . 'wp-admin/includes/plugin.php');
+
 // Require parent plugin
-if ( require_once( dirname(dirname(__FILE__)) . '/flavor/flavor.php' ) ) ;
+if ( ! is_plugin_active( 'wpf_flavor/wpf_flavor.php' ) /* and current_user_can( 'activate_plugins' ) */ ) {
+	// Stop activation redirect and show error
+	deactivate_plugins(__FILE__);
+	return;
+}
+
 /**
  * Main instance of Capabilites.
  *

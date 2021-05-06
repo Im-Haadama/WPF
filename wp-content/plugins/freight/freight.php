@@ -22,7 +22,7 @@ if ( ! defined( 'FREIGHT_PLUGIN_FILE' ) ) {
 require_once(ABSPATH . 'wp-admin/includes/plugin.php');
 
 // Require parent plugin
-if ( ! is_plugin_active( 'flavor/flavor.php' ) /* and current_user_can( 'activate_plugins' ) */ ) {
+if ( ! is_plugin_active( 'wpf_flavor/wpf_flavor.php' ) /* and current_user_can( 'activate_plugins' ) */ ) {
 	// Deactivate this plugin
 	deactivate_plugins(__FILE__);
 	return;
@@ -47,6 +47,12 @@ function freight() {
 function run_freight() {
 	$plugin = new Freight("Freight");
 	$plugin->run();
+}
+
+add_action('init', 'init_freight', 20);
+
+function init_freight() {
+	run_freight();
 }
 
 run_freight();

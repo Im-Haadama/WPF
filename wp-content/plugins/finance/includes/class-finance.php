@@ -1,6 +1,6 @@
 <?php
 
-require_once(ABSPATH . '/wp-content/plugins/flavor/flavor.php');
+require_once(ABSPATH . '/wp-content/plugins/wpf_flavor/wpf_flavor.php');
 
 class Finance {
 	/**
@@ -115,7 +115,7 @@ class Finance {
 		}
 		$this->auto_loader      = new Core_Autoloader( FINANCE_ABSPATH );
 		$this->loader = Core_Hook_Handler::instance();
-		$this->post_file   = Flavor::getPost();
+		$this->post_file   = WPF_Flavor::getPost();
 		$this->yaad        = null;
 		$this->clients     = new Finance_Client_Accounts();
 		$this->subcontract = new Finance_Subcontract();
@@ -296,7 +296,6 @@ class Finance {
 		define_const( 'FINANCE_VERSION', $this->version );
 		define_const( 'FINANCE_INCLUDES', FINANCE_ABSPATH . 'includes/' );
 		define_const( 'FINANCE_INCLUDES_URL', plugins_url() . '/finance/includes/' ); // For js
-		define_const( 'FLAVOR_INCLUDES_ABSPATH', plugin_dir_path( __FILE__ ) . '../../flavor/includes/' );  // for php
 		define_const( 'FINANCE_DELIMITER', '|' );
 		define_const( 'FINANCE_LOG_DIR', $upload_dir['basedir'] . '/finance-logs/' );
 	}
@@ -800,7 +799,7 @@ class Finance {
 
 	static function getPost()
 	{
-		return Flavor::getPost();
+		return WPF_Flavor::getPost();
 	}
 
 	/**

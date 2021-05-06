@@ -95,7 +95,7 @@ class Capabilites {
 	 * WooCommerce Constructor.
 	 */
 	public function __construct( $plugin_name ) {
-		$this->loader = Core_Hook_Handler::instance();
+		$this->loader = null;
 		$this->plugin_name = $plugin_name;
 		$this->define_constants();
 		$this->includes(); // Loads class autoloader
@@ -110,7 +110,11 @@ class Capabilites {
 	 *
 	 * @since 2.3
 	 */
-	private function init_hooks($loader) {
+	private function init_hooks() {
+		if (! class_exists('Core_Hook_Handler')) {
+			return;
+		}
+		$this->loader = Core_Hook_Handler::instance();;
 		// register_activation_hook( WC_PLUGIN_FILE, array( 'Capabilites_Install', 'install' ) );
 		register_shutdown_function( array( $this, 'log_errors' ) );
 		add_action( 'after_setup_theme', array( $this, 'setup_environment' ) );
@@ -119,7 +123,7 @@ class Capabilites {
 		add_action( 'admin_init', array( $this, 'hide_menu_items' ), 0 );
 		add_action( 'init', array( 'Core_Shortcodes', 'init' ) );
 		add_action( 'admin_menu', __CLASS__ . '::admin_menu' );
-		$loader->AddAction( 'toggle_role', $this );
+		$this->loader->AddAction( 'toggle_role', $this );
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_scripts' ) );
 
 		GetSqlConn( ReconnectDb() );
@@ -172,8 +176,6 @@ class Capabilites {
 		$this->define( 'CAPABILITIES_VERSION', $this->version );
 		$this->define( 'CAPABILITIES_INCLUDES', plugins_url() . '/includes/' );
 		$this->define( 'CAPABILITIES_INCLUDES_URL', plugins_url() . '/capabilities/includes/' ); // For js
-		$this->define( 'FLAVOR_INCLUDES_URL', plugins_url() . '/flavor/includes/' ); // For js
-		$this->define( 'FLAVOR_INCLUDES_ABSPATH', plugin_dir_path( __FILE__ ) . '../../flavor/includes/' );  // for php
 		$this->define( 'CAPABILITIES_DELIMITER', '|' );
 		$this->define( 'CAPABILITIES_LOG_DIR', $upload_dir['basedir'] . '/capabilites-logs/' );
 	}
@@ -223,10 +225,10 @@ class Capabilites {
 		/**
 		 * Class autoloader.
 		 */
-		require_once FLAVOR_INCLUDES_ABSPATH . 'core/class-core-autoloader.php';
-		require_once FLAVOR_INCLUDES_ABSPATH . 'core/core-functions.php';
-		require_once FLAVOR_INCLUDES_ABSPATH . 'core/data/sql.php';
-		require_once FLAVOR_INCLUDES_ABSPATH . 'core/wp.php';
+//		require_once FLAVOR_INCLUDES_ABSPATH . 'core/class-core-autoloader.php';
+//		require_once FLAVOR_INCLUDES_ABSPATH . 'core/core-functions.php';
+//		require_once FLAVOR_INCLUDES_ABSPATH . 'core/data/sql.php';
+//		require_once FLAVOR_INCLUDES_ABSPATH . 'core/wp.php';
 
 		/**
 		 * Interfaces.
@@ -305,7 +307,7 @@ class Capabilites {
 //		include_once WC_CAPABILITES_INCLUDES . 'includes/class-wc-regenerate-images.php';
 //		include_once WC_CAPABILITES_INCLUDES . 'includes/class-wc-privacy.php';
 //		include_once WC_CAPABILITES_INCLUDES . 'includes/class-wc-structured-data.php';
-		include_once FLAVOR_INCLUDES_ABSPATH . 'core/class-core-shortcodes.php';
+//		include_once FLAVOR_INCLUDES_ABSPATH . 'core/class-core-shortcodes.php';
 //		include_once WC_CAPABILITES_INCLUDES . 'includes/class-wc-logger.php';
 //		include_once WC_CAPABILITES_INCLUDES . 'includes/queue/class-wc-action-queue.php';
 //		include_once WC_CAPABILITES_INCLUDES . 'includes/queue/class-wc-queue.php';
@@ -557,7 +559,7 @@ class Capabilites {
 	}
 
 	static function getPost() {
-		return Flavor::getPost();
+		return WPF_Flavor::getPost();
 	}
 
 	static function toggle_role() {

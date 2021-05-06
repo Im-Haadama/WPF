@@ -56,15 +56,11 @@ class Org_Worker extends Core_users
 	    if ($this->teams)
 		    return $this->teams;
 
-	    $data = get_user_meta($this->id, 'teams');
-	    $this->teams = @unserialize($data);
-
-
 	    $db_prefix = GetTablePrefix();
 	    $worker_id = $this->getId();
 	    $type1 = FlavorDbObjects::users;
 	    $type2 = FlavorDbObjects::team;
-	    $sql = "select id2 from ${db_prefix}links where type1=$type1 and type2=$type2 and id1=$worker_id";
+	    $sql = "select id2 from ${db_prefix}links where type1=$type1 and type2=$type2 and id1=$worker_id union select id from im_working_teams where manager = $worker_id";
 
 	    $this->teams = SqlQueryArrayScalar($sql);
 
@@ -212,7 +208,7 @@ class Org_Worker extends Core_users
 		    }
 	    }
 
-	    $type1 = FlavorDbObjects::users;
+	    $type1 = FlavorDbObjects::team;
 	    $type2 = FlavorDbObjects::sender;
 	    $id = $this->getId();
 	    $sql = "select id2 from ${db_prefix}links where type1=$type1 and type2=$type2 and id1=$id";

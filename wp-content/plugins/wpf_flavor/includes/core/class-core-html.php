@@ -1907,7 +1907,7 @@ class Core_Html {
 			if (is_array($fields)) $fields = CommaImplode($fields);
 			$sql = "select $fields from ${db_prefix}$table_id";
 			if ($where) $sql .= " where $where";
-			if ($order = GetArg($args, "order_by", null)) $sql .= $order;
+			if ($order = GetArg($args, "order_by", null)) $sql .= " " . $order;
 		}
 
 		// Fetch the data from DB or create the new row

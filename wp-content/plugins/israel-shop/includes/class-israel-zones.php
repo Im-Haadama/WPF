@@ -51,7 +51,7 @@ class Israel_Zones {
 	static function Args($type = null)
 	{
 		$args = [];
-		$args["post_file"] = Flavor::getPost();
+		$args["post_file"] = WPF_Flavor::getPost();
 		$args["import_page"] = AddToUrl(array("operation"=> "gem_do_import", "table"=>"cities"));
 		// $args["edit"] = true;
 		return $args;

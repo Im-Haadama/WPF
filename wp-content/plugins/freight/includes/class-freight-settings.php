@@ -93,7 +93,7 @@
 
 		static private function getPost()
 		{
-			return Flavor::getPost();
+			return WPF_Flavor::getPost();
 		}
 
 		public function freight_general()
@@ -108,7 +108,7 @@
 
 			$operation = GetParam("operation", false, null);
 			if ($operation) {
-				$args=array("operation"=>$operation, "post_file"=>Flavor::getPost());
+				$args=array("operation"=>$operation, "post_file"=>WPF_Flavor::getPost());
 				do_action( $operation, $args );
 				return;
 			}

@@ -80,7 +80,7 @@
 // wp_nav_menu( array( 'menu'=> Focus_Nav::instance()->get_nav(), 'theme_location'=> 'main-fresh' ) );
 $menu_location = "main-navigation";
 $menu_name = "nav";
-if (class_exists('Flavor')) $menu_name = Flavor::instance()->getNavName();
+if (class_exists( 'WPF_Flavor' )) $menu_name = WPF_Flavor::instance()->getNavName();
 //print debug_trace();
 wp_nav_menu( array( 'menu'=> $menu_name, 'theme_location'=> $menu_location ) );
 //  wp_nav_menu( array( 'menu_id'=>'nav', 'theme_location'=>'main-navigation' ) );
