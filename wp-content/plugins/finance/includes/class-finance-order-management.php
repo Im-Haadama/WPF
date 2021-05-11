@@ -184,7 +184,8 @@ class Finance_Order_Management {
 
 		// find_route_1( $start, $orders, $path_orders, false, $end );
 		foreach ( $orders as $order_id ) {
-			self::collect_baskets($baskets, $order_id);
+			if (class_exists('Fresh_ProductIterator'))
+				self::collect_baskets($baskets, $order_id);
 			update_post_meta( $order_id, "printed", 1 );
 			$O       = new Fresh_Order( $order_id );
 			$user_id = $O->getCustomerId();

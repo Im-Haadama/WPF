@@ -57,7 +57,7 @@ function run_finance() {
 	$instance->run();
 }
 
-add_action('init', 'init_finance', 20);
+add_action('plugin_loaded', 'init_finance', 20);
 
 function init_finance() {
 	run_finance();

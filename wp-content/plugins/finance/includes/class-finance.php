@@ -158,12 +158,12 @@ class Finance {
 
 		add_action( 'after_setup_theme', array( $this, 'setup_environment' ) );
 		add_action( 'after_setup_theme', array( $this, 'include_template_functions' ), 11 );
-		add_action( 'init', array( $this, 'init' ), 11 );
+		add_action( 'init', array( $this, 'init' ), 20 );
 		add_action( 'init', array( 'Core_Shortcodes', 'init' ) );
 		add_action( 'admin_notices', array($this, 'admin_notices') );
 
 		// Admin menu
-		add_action( 'admin_menu',array($this, 'admin_menu') );
+		add_action( 'admin_menu',array($this, 'admin_menu'));
 
 		GetSqlConn( ReconnectDb() );
 //		add_action( 'init', array( 'Finance_Emails', 'init_transactional_emails' ) );
@@ -846,3 +846,4 @@ class Finance_DocumentType {
 		invoice_receipt = 9, // Supplier
 		count = 10;
 }
+
