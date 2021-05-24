@@ -54,7 +54,7 @@ class Fresh_Packing {
 
 		$post_file = Fresh::getPost();
 		$result            = "";
-		$inventory_managed = (InfoGet( "inventory" ) and !$print);
+		$inventory_managed = false; // (InfoGet( "inventory" ) and !$print);
 
 		if ($supplier_id) $supplier          = new Fresh_Supplier( $supplier_id );
 		else		$supplier = null;
@@ -174,7 +174,7 @@ class Fresh_Packing {
 		$supplier_tabs = array();
 
 		$user_table = null;
-		Fresh_Order::CalculateNeeded( $needed_products, 0, $user_table, $debug_product );
+		Finance_Order_Management::instance()->CalculateNeeded( $needed_products, 0, $user_table );
 
 		if ( ! count( $needed_products ) ) {
 			$result .= __( "No needed products. Any orders in processing status?" );
@@ -295,10 +295,12 @@ class Fresh_Packing {
 		$loader->AddAction("mission_labels", $this);
 		$loader->AddFilter("mission_actions", $this);
 		$loader->AddAction("packing_download", $this);
+		$loader->AddAction("packing_missing", $this);
 
 		$loader->AddAction('inventory_save', $this);
 		WPF_Flavor::AddTop("packing", "Packing", "/wp-admin/admin.php?page=packing");
-		WPF_Flavor::AddTop("packing_printing", "Printing", "/wp-admin/admin.php?page=printing", "packing");
+		WPF_Flavor::AddTop("packing_printing", "Printing", "/wp-admin/admin.php?page=packing_printing", "packing");
+		WPF_Flavor::AddTop("packing_missing", "Missing", "/wp-admin/admin.php?page=packing_missing", "packing");
 	}
 
 	static function inventory_save()
@@ -309,6 +311,75 @@ class Fresh_Packing {
 
 		$p = new Fresh_Product($prod_id);
 		return $p->setStock($q);
+	}
+
+	static public function packing_missing() {
+		$needed = array();
+		$user_table = array();
+
+		$mission_id = GetParam("mission_id", false, null);
+		$result = array("header"=>array("select", "product name", "missing count", "status"));
+		$m = Finance_Order_Management::instance();
+		$m->CalculateNeeded( $needed, 0, $user_table, $mission_id);
+
+		if (! $m->getOrders()) {
+			print "No active orders";
+			return;
+		}
+
+
+		// var_dump($needed); print "<br/>";
+		foreach ( $needed as $id => $p ) {
+			$prod = new Finance_Product($id);
+			array_push($result, array(Core_Html::GuiCheckbox("chk_" . $id, "product_checkbox"),
+				$prod->getEditLink(true), round($p[0], 1), $prod->getPublish()));
+			// $result .= get_product_name( $id ) . " " . round( $p[0], 1 ) . "<br/>";
+			// if ($p[0]) $result .= "x" . $p[0] . "<br/>";
+		}
+
+		if (! count($result)){
+			print "All good!";
+		}
+		print Core_Html::gui_table_args($result);
+	}
+
+	static function packing_printing()
+	{
+		if ($operation = GetParam("operation", false, null)) {
+			print apply_filters($operation, null);
+			return;
+		}
+		$sql = 'SELECT posts.id as id'
+		       . ' FROM `wp_posts` posts'
+		       . " WHERE post_status LIKE '%wc-processing%' order by 1";
+
+		$result = SqlQuery( $sql );
+		$order_count = 0;
+
+		$missions = array();
+		while ( $row = SqlFetchAssoc( $result ) ) {
+			$order_count ++;
+			$id         = $row["id"];
+//			print "id=$id<br/>";
+			$o = new Finance_Order($id);
+			$mission_id = $o->getMissionId();
+			if ( ! in_array( $mission_id, $missions ) ) {
+//				print "adding $mission_id<br/>";
+				if ($mission_id) array_push( $missions, $mission_id );
+			}
+		}
+		foreach ( $missions as $mission ) {
+//			print "mid=$mission<b<!---->r/>";
+			try {
+				$m = new Mission($mission);
+				print Core_Html::GuiHyperlink(  $m->getMissionName(), AddParamToUrl(Fresh::getPost(), array("operation" => "mission_print", "mission_id" => $mission )));
+				print "<br/>";
+			} catch (Exception $exception) {
+				print $exception->getMessage() ."<br/>";
+			}
+		}
+		print "Results for $order_count active orders";
+//			printCore_Html::GuiHyperlink( "אספקות", "print.php?operation=supplies" );
 	}
 
 	static function orders_per_item( $prod_id, $multiply, $args)
@@ -546,7 +617,7 @@ class Fresh_Packing {
 
 				$args                                = array();
 				$args["events"]                      = "onchange=\"order_mission_changed('" . Fresh::getPost() . "', " . $order_id . ")\"";
-				$line[ Fresh_OrderFields::mission ]  = Flavor_Mission::gui_select_mission( "mis_" . $order_id, $mission_id, $args );
+				$line[ Fresh_OrderFields::mission ]  = Flavor_Mission_Views::gui_select_mission( "mis_" . $order_id, $mission_id, $args );
 				$line[ Fresh_OrderFields::order_id ] = Core_Html::GuiHyperlink( $order_id, get_site_url() . "/wp-admin/post.php?post=$order_id&action=edit");
 
 				// 2) Customer name with link to his deliveries
@@ -648,6 +719,7 @@ class Fresh_Packing {
 	function mission_actions($actions)
 	{
 		$actions['labels'] = Core_Html::GuiHyperlink("labels", WPF_Flavor::getPost() . '?operation=mission_labels&id=%d');
+		$actions['missing'] = Core_Html::GuiHyperlink("missing", '/wp-admin/admin.php?page=packing_missing&mission_id=%d');
 
 		return $actions;
 	}

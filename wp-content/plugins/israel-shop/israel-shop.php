@@ -26,7 +26,7 @@ require_once(ABSPATH . 'wp-admin/includes/plugin.php');
 add_action('init', 'init_israel_shop', 20);
 
 function init_israel_shop() {
-	run_finance();
+//	run_finance();
 }
 
 // Include the main class.

@@ -51,7 +51,7 @@ class Org_Worker extends Core_users
 		}
 
 	}
-    function GetAllTeams()
+    function GetAllTeams($include_managed = false)
     {
 	    if ($this->teams)
 		    return $this->teams;
@@ -60,7 +60,8 @@ class Org_Worker extends Core_users
 	    $worker_id = $this->getId();
 	    $type1 = FlavorDbObjects::users;
 	    $type2 = FlavorDbObjects::team;
-	    $sql = "select id2 from ${db_prefix}links where type1=$type1 and type2=$type2 and id1=$worker_id union select id from im_working_teams where manager = $worker_id";
+	    $sql = "select id2 from ${db_prefix}links where type1=$type1 and type2=$type2 and id1=$worker_id";
+	    if ($include_managed) $sql .= " union select id from im_working_teams where manager = $worker_id";
 
 	    $this->teams = SqlQueryArrayScalar($sql);
 

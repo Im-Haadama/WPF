@@ -70,7 +70,7 @@ class Fresh_Order extends Finance_Order
 	{
 		$needed = array();
 		$suppliers = null;
-		$this->CalculateNeeded( $needed, $this->getCustomerId() );
+		Finance_Order_Management::instance()->CalculateNeeded( $needed, $this->getCustomerId() );
 		foreach ( $needed as $prod_id => $p ) {
 			$P = new Fresh_Product($prod_id);
 			if ($s = $P->PendingSupplies($this->getMissionId())){

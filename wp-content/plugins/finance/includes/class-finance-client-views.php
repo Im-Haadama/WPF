@@ -178,7 +178,8 @@ class Finance_Client_Views {
 			$new_tran = Core_Html::GuiHeader( 1, "לא ניתן להתחבר ל Invoice4u. בדוק את ההגדרות ואת המנוי. יוזר $" );
 			$new_invoice = "";
 		}
-		$payment_info_id = SqlQuerySingleScalar( "select id from im_payment_info where email = " . QuoteText($u->get_customer_email()));
+//		$payment_info_id = SqlQuerySingleScalar( "select id from im_payment_info where email = " . QuoteText($u->get_customer_email()));
+		$payment_info_id = SqlQuerySingleScalar( "select id from im_payment_info where user_id = " . $u->getUserId());
 		if ($payment_info_id) {
 			$payment_args = array( "post_file" => WPF_Flavor::getPost(), "edit" =>true,
 			                       "fields"    =>array("id", "card_number", "exp_date_month", "exp_date_year", "id_number"),

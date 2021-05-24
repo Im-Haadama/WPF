@@ -68,7 +68,7 @@ class Finance_Suppliers
 
 		if ($supplier_id)
 			$args["new_row"] = array ("id" => Core_Html::GuiButton("btn_add_pricelist_item", "Add",
-				"supplier_add_pricelist_item('" . Fresh::getPost() . "', $supplier_id)"),
+				"supplier_add_pricelist_item('" . WPF_Flavor::getPost() . "', $supplier_id)"),
 				"product_name" => "", "price"=>Core_Html::GuiInput("price_new_row", "", array("size"=>3)));
 
 		$gem->AddVirtualTable( "pricelist", $args );

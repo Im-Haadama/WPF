@@ -48,8 +48,20 @@ class Finance_Product {
 		return get_postmeta_field( $this->id, '_price' );
 	}
 
-	static public function get_edit_link( $id ) {
+	public function getEditLink($hyper=false)
+	{
+		if ($hyper)
+			return Core_Html::GuiHyperlink($this->getName(), self::get_edit_link($this->id));
+
+		return self::get_edit_link($this->id);
+	}
+	static public function get_edit_link( $id) {
 		return "/wp-admin/post.php?post=" . $id . '&action=edit';
+	}
+
+	public function getPublish()
+	{
+		return SqlQuerySingleScalar("select post_status from wp_posts where id = " . $this->id);
 	}
 
 	function getStockManaged() {
@@ -103,4 +115,25 @@ class Finance_Product {
 		return apply_filters('vat_percent', 0);
 //		return Israel_Shop::getVatPercent();
 	}
+
+	function getName( $strip = false, $include_categ = false ) {
+		if (! ($this->id > 0)) return "Error";
+		$sql = 'SELECT post_title FROM wp_posts WHERE id = ' . $this->id;
+
+		$name = SqlQuerySingleScalar( $sql );
+		if ( $strip and strpos( $name, '(' ) ) {
+			$name = trim( substr( $name, 0, strpos( $name, '(' ) ) );
+		}
+		if ($include_categ){
+			$tags = $this->getTags(false, true);
+			foreach ($tags as $tag){
+				$t = get_term( $tag, 'product_tag');
+				if ($t)
+					$name .= " " . $t->name;
+			}
+		}
+
+		return $name;
+	}
+
 }

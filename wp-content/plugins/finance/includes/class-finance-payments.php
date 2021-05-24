@@ -139,17 +139,26 @@ class Finance_Payments {
 		// return array( 'finance_payment'      => array( 'Finance_Payments::payments',    null ));          // Payments data entry
 	}
 
-	function insert_payment_info_wrap()
-	{
-		$sql = "select post_id from wp_postmeta where meta_key = 'card_number'";
-		$orders = SqlQueryArrayScalar($sql);
-		foreach ($orders as $order)
-			$this->insert_payment_info($order);
+	function insert_payment_info_wrap() {
+		$key = __CLASS__ . "_payments";
+		// Get once a hour data from master.
+		$format = "d-G";
+//		FlavorLog(InfoGet($key));
+		if ( InfoGet( $key ) != current_time( $format ) ) {
+			FinanceLog( __FUNCTION__ );
+
+			$sql    = "select post_id from wp_postmeta where meta_key = 'card_number'";
+			$orders = SqlQueryArrayScalar( $sql );
+			foreach ( $orders as $order ) {
+				$this->insert_payment_info( $order );
+			}
+			InfoUpdate( $key, current_time( $format ) );
+		}
 	}
 
 	function insert_payment_info( $order_id )
 	{
-		MyLog(__FUNCTION__, "handling $order_id");
+		FinanceLog(__FUNCTION__, "handling $order_id");
 		if ( ! $order_id ) return;
 		if ( ! get_post_meta( $order_id, '_thankyou_action_done', true ) ) {
 

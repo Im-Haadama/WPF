@@ -48,7 +48,7 @@ class Finance_Business_Logic {
 		$loader->AddAction( 'pay_credit', $this );
 		$loader->AddAction( 'pay_user_credit', $this);
 		$loader->AddAction('credit_clear_token', $this);
-
+		$loader->AddAction("finance_get_transaction_amount", $this, 'get_transaction_amount');
 	}
 
 	public function process_payment( $order_id, $args ) : bool {
@@ -309,6 +309,11 @@ class Finance_Business_Logic {
 		if ($token) {
 			FinanceLog("trying to pay with token user " . $user->getName());
 			$transaction_info = $this->paying->TokenPay( $token, $credit_data, $user->getName(), $user->getUserId(), $amount, self::payment_subject($account_line_ids), $payment_number );
+			if  (! $transaction_info) {
+				print "Failed: can't pay. Contact support";
+				FinanceLog("no transaction info");
+				return false;
+			}
 			$transaction_id = $transaction_info['Id'];
 			if (! $transaction_id or ($transaction_info['CCode'] != 0)) {
 				$message = "Failed: " . $user->getName() . ": Got error " . $this->paying->ErrorMessage($transaction_info['CCode']) . "\n";
@@ -410,4 +415,12 @@ class Finance_Business_Logic {
 
 		return __("orders") . " " . CommaImplode($order_ids);
 	}
+
+	function get_transaction_amount()
+	{
+		$sql = "SELECT amount FROM im_business_info \n" .
+		       " WHERE id = " . GetParam( "id", true );
+		print SqlQuerySingleScalar( $sql );
+	}
+
 }

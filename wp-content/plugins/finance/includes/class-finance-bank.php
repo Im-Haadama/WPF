@@ -67,7 +67,6 @@ class Finance_Bank
 		$loader->AddAction( "finance_bank_payments", $this, "show_bank_payments" );
 		$loader->AddAction( "bank_show_create_invoice_receipt", $this, 'bank_show_create_invoice_receipt' );
 		$loader->AddAction( "bank_show_create_receipt", $this, 'bank_show_create_receipt' );
-		$loader->AddAction("finance_get_transaction_amount", $this, 'get_transaction_amount');
 		$loader->AddAction('create_bank_account', $this, 'create_bank_account');
 		$loader->AddAction("bank_link_invoice", $this, 'bank_link_invoice');
 		$loader->AddAction('bank_check_valid', $this, 'bank_check_valid', 10, 2);
@@ -219,13 +218,6 @@ class Finance_Bank
 //		print $result;
 //	}
 
-	function get_transaction_amount()
-	{
-		$sql = "SELECT amount FROM im_business_info \n" .
-		       " WHERE id = " . GetParam( "id", true );
-		print SqlQuerySingleScalar( $sql );
-	}
-
 	function handle_bank_operation($operation, $url = null) {
 		print "don't use";
 		die( 1 ); // To check if needed.
@@ -295,7 +287,7 @@ class Finance_Bank
 
 		print $multi_site->Run( $command, $site_id );
 
-		print "מעדכן שורות<br/>";
+		print "מעדכן שורות";
 		$sql = "update ${table_prefix}bank " .
 		       " set receipt = \"refund\", " .
 		       " site_id = " . $site_id .
@@ -407,38 +399,55 @@ class Finance_Bank
 		$bank_id     = GetParam( "bank_id", true );
 		$supplier_id = GetParam( "supplier_id", true );
 		$site_id     = GetParam( "site_id", true );
-		$ids         = GetParamArray( "ids" );
+		$to_account = GetParam("to_account", false, false);
 		$bank        = GetParam( "bank" );
 
-		// 1) mark the bank transaction to invoice.
-		foreach ( $ids as $id ) {
-			$command     = Finance::getPostFile() . "?operation=finance_get_transaction_amount&id=" . $id;
-			$amount      = doubleval( strip_tags( $multi_site->Run( $command, $site_id ) ) );
-			$line_amount = min( $amount, $bank );
-
-			$sql = "INSERT INTO ${table_prefix}bank_lines (line_id, amount, site_id, part_id, invoice)\n" .
-			       "VALUES (" . $bank_id . ", " . $line_amount . ", " . $site_id . ", " . $supplier_id . ", " .
-			       $id . ")";
-
-			SqlQuery( $sql );
-		}
 		$b    = Finance_Bank_Transaction::createFromDB( $bank_id );
 		$date = $b->getDate();
 
-	// 2) mark the invoices to transaction.
-		$command = Finance::getPostFile() . "?operation=finance_add_payment&ids=" . implode( ",", $ids ) . "&supplier_id=" . $supplier_id .
+		$command = Finance::getPostFile() . "?operation=finance_add_payment&supplier_id=" . $supplier_id .
 		           "&bank_id=" . $bank_id . "&date=" . $date .
 		           "&amount=" . $bank;
+
+		if ($to_account) {
+			$sql = "update ${table_prefix}bank " .
+			       " set receipt = 0, " .
+			       " site_id = " . $site_id .
+			       " where id = " . $bank_id;
+
+			SqlQuery( $sql );
+
+		} else {
+			$ids = GetParamArray( "ids" );
+
+			// 1) mark the bank transaction to invoice.
+			foreach ( $ids as $id ) {
+				$get_command     = Finance::getPostFile() . "?operation=finance_get_transaction_amount&id=" . $id;
+				$amount      = doubleval( strip_tags( $multi_site->Run( $get_command, $site_id ) ) );
+				$line_amount = min( $amount, $bank );
+
+				$sql = "INSERT INTO ${table_prefix}bank_lines (line_id, amount, site_id, part_id, invoice)\n" .
+				       "VALUES (" . $bank_id . ", " . $line_amount . ", " . $site_id . ", " . $supplier_id . ", " .
+				       $id . ")";
+
+				SqlQuery( $sql );
+			}
+			$command .= "&ids=" . implode( ",", $ids );
+
+			print $multi_site->Run( $command, $site_id );
+
+			$sql = "update ${table_prefix}bank " .
+			       " set receipt = \"" . CommaImplode( $ids ) . "\", " .
+			       " site_id = " . $site_id .
+			       " where id = " . $bank_id;
+
+			SqlQuery( $sql );
+		}
+
+	// 2) mark the invoices to transaction.
 	//			print $command;
-		print $multi_site->Run( $command, $site_id );
 
-		print "מעדכן שורות<br/>";
-		$sql = "update ${table_prefix}bank " .
-		       " set receipt = \"" . CommaImplode( $ids ) . "\", " .
-		       " site_id = " . $site_id .
-		       " where id = " . $bank_id;
-
-		return SqlQuery( $sql );
+		print "מעדכן שורות";
 	}
 
 	static function gui_select_open_supplier( $id = "supplier" ) {

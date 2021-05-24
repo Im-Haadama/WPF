@@ -167,7 +167,13 @@ class Finance_Yaad {
 		$ch = curl_init();
 		curl_setopt( $ch, CURLOPT_URL, $url );
 		curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1 );
+		curl_setopt($ch, CURLOPT_TIMEOUT_MS, 2000);
+
 		$output = curl_exec( $ch );
+		if (! $output) {
+			FinanceLog("Can't login to yaad");
+			return null;
+		}
 
 		return ParseQuery( $output );
 	}

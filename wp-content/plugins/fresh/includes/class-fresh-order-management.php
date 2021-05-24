@@ -23,7 +23,38 @@ class Fresh_Order_Management {
 //		add_action('admin_post_delivery', array(__CLASS__, 'create_delivery_note'));
 		add_action('woocommerce_view_order', array(__CLASS__, 'show_edit_order'), 10 );
 		add_action('wp_ajax_woocommerce_calc_line_taxes', array($this, 'update_prices'), 9);
+		add_action('admin_notices', array($this, 'delivered_previous_days'));
 	}
+
+	function delivered_previous_days() {
+		$debug = 0;
+		$result = "Marking orders of yesterday delivered:\n";
+		$ids    = SqlQueryArrayScalar( "SELECT * FROM `wp_posts` 
+WHERE (post_status = 'wc-awaiting-shipment' or post_status = 'wc-processing') 
+and curdate() > order_mission_date(id)" );
+
+		$message = "";
+		if ( ! $ids or ! count( $ids ) ) {
+			if ($debug) MyLog("No del found");
+			return;
+		}
+
+		foreach ( $ids as $id ) {
+			$order = new Finance_Order( $id );
+			if ($order->getStatus() == 'wc-processing') continue;
+			FinanceLog("adding $id");
+			$order->delivered( $message );
+			$result .= "Order $id $message\n";
+		}
+
+		if ( strlen( $result ) > 39) {
+			$class   = 'notice notice-info';
+
+			printf( '<div class="%1$s"><p>%2$s</p></div>', esc_attr( $class ), esc_html( $result ) );
+		}
+	}
+
+
 
 	// Change of function calc_line_taxes() from wp-content/plugins/woocommerce/includes/class-wc-ajax.php
 	function update_prices()

@@ -82,8 +82,10 @@ function supplier_selected()
 
     if (item_id !== 0 && !(item_id > 0)) {
         document.getElementById("transactions").innerHTML = "";
+        document.getElementById("link").style="display:none";
         return;
     }
+
     var site_id = selected_supplier_site_id();
     var supplier_id = selected_supplier_id();
 
@@ -95,8 +97,10 @@ function supplier_selected()
 
 function update_transactions(xmlhttp, btn)
 {
-    if (xmlhttp.response.indexOf("failed") === -1)
+    if (xmlhttp.response.indexOf("failed") === -1) {
         document.getElementById("transactions").innerHTML = xmlhttp.response; // .substr(5);
+        document.getElementById("link").style = "display:block";
+    }
     else
         alert(xmlhttp.response);
 }
@@ -147,38 +151,35 @@ function create_receipt_from_bank(post_file) {
     execute_url(request, action_back);
 }
 
-function link_invoice_bank() {
+function link_invoice_bank(to_invoice) {
     disable_btn('btn_receipt');
+    disable_btn('btn_link');
 
-    var invoice_ids = account_get_row_ids();
     var site_id = selected_supplier_site_id();
     var supplier_id = selected_supplier_id();
     var bank_id = selected_bank_id();
 
-    xmlhttp = new XMLHttpRequest();
-    xmlhttp.onreadystatechange = function () {
-        // Wait to get query result
-        if (xmlhttp.readyState === 4 && xmlhttp.status === 200)  // Request finished
-        {
-            add_message(xmlhttp.response);
-            // receipt_id = xmlhttp.responseText.trim();
-            // logging.innerHTML += "חשבונית מספר " + receipt_id;
-            // updateDisplay();
-        }
-    }
     var bank = parseFloat(get_value(document.getElementById("bank")));
     if (!(bank > 0)) {
         alert("שגיאה בסכום");
         return;
     }
+
     var request = finance_post_file + "?operation=bank_link_invoice" +
-        "&ids=" + invoice_ids.join() +
         "&site_id=" + site_id +
         "&supplier_id=" + supplier_id +
         "&bank_id=" + bank_id +
         "&bank=" + bank;
-    xmlhttp.open("GET", request, true);
-    xmlhttp.send();
+
+    if (to_invoice) {
+        let invoice_ids = account_get_row_ids();
+        request += "&ids=" + invoice_ids.join();
+    } else {
+        request += "&to_account=1";
+    }
+
+    execute_url(request, success_message);
+
 }
 
 function mark_refund_bank() {

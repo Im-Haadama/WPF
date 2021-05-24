@@ -745,6 +745,7 @@ class Finance_Salary {
 		$loader->AddAction('salary_delete', $this, 'salary_delete');
 		$loader->AddAction('show_working_row', $this, 'show_working_row_wrap');
 		$loader->AddAction('show_report', $this, 'report_wrapper');
+		$loader->AddAction('salary_check_entry', $this, 'check_entry');
 		add_action('init', array($this, 'enqueue_scripts'));
 		if (im_user_can("show_salary"))
 			$loader->AddAction('show_entry', $this, 'entry_wrapper');
@@ -794,5 +795,24 @@ class Finance_Salary {
 			      'menu_slug' => 'salary_report',
 			      'function' => array($this, 'report_wrapper')));
 
+	}
+
+	function active_workers()
+	{
+		return SqlQueryArrayScalar("SELECT distinct user_id from im_working_hours where date > DATE_SUB(NOW(), INTERVAL 1 MONTH)");
+	}
+
+	function check_entry()
+	{
+		foreach (self::active_workers() as $worker)
+		{
+			if (SqlQuerySingleScalar("Select count(*) from im_working_hours where user_id = $worker and date > DATE_SUB(NOW(), INTERVAL 1 WEEK)") == 0) {
+				print 0;
+
+				return;
+			}
+		}
+		print 1;
+		return;
 	}
 }

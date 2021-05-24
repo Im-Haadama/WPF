@@ -47,6 +47,7 @@ class Freight_Legacy {
 
 	function init_hooks($loader)
 	{
+//		FreightLog(debug_trace(10));
 		$loader->AddAction("create_ship", $this, 'create_ship_wrap');
 		$loader->AddAction("create_subcontract_delivery_invoice", $this, "create_subcontract_delivery_invoice");
 	}
@@ -134,7 +135,7 @@ class Freight_Legacy {
 			$result = "";
 			$result .=  Core_Html::GuiHeader( 1, "משלוחים לביצוע" );
 // $sql = "select post_id from wp_posts where post_status = 'wc-
-			$result .=  Flavor_Mission::delivery_table_header();
+			$result .=  Flavor_Mission_Views::delivery_table_header();
 			$result .=  $table;
 
 			$result .=  "</table>";
@@ -153,7 +154,7 @@ class Freight_Legacy {
 
 		if ( strlen( $table ) > 10 ) {
 			$result .= Core_Html::GuiHeader( 1, "משלוחים שבוצעו" );
-			$result .= Flavor_Mission::delivery_table_header();
+			$result .= Flavor_Mission_Views::delivery_table_header();
 			$result .= $table;
 			$result .= "</table>";
 		}

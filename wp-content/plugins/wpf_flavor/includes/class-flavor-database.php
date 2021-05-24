@@ -65,7 +65,7 @@ END;
 //		SqlQuery( "create index ${db_prefix}links_index1 on ${db_prefix}links (type1, type2, id1);" );
 //		SqlQuery( "create index ${db_prefix}links_index2 on ${db_prefix}links (type1, type2, id2);" );
 
-//		if (! $current) return
+		if (! $current) return
 			$this->CreateTablesFresh($version);
 
 		if ( $current == $version and ! $force ) {

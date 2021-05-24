@@ -133,7 +133,7 @@ class Fresh_Supplies {
 
 		if ( count( $supplies ) ) {
 			foreach ( $supplies as $supply ) {
-//			   print "id: " . $supply . "<br/>";
+			   print "id: " . $supply . "<br/>";
 				$s = new Fresh_Supply($supply);
 				$data .= $s->SupplyText();
 					// print_supply( $supply );
@@ -187,7 +187,7 @@ class Fresh_Supplies {
 		$args["sql"] = $sql;
 		$args["header"] = array("Id", "Supplier", "Date", "Mission");
 		$args["add_checkbox"] = true;
-		$args["selectors"] = array("supplier" => 'Fresh_Supplier::gui_select_supplier', "mission_id" => 'Flavor_Mission::gui_select_mission');
+		$args["selectors"] = array("supplier" => 'Fresh_Supplier::gui_select_supplier', "mission_id" => 'Flavor_Mission_Views::gui_select_mission');
 		$args["links"] = array("id" => Fresh_Supply::getLink("%s"));
 		$args["checkbox_class"] = self::gui_select_supply_status(null, $status);
 		$args["edit"] = false;
@@ -237,7 +237,7 @@ class Fresh_Supplies {
 			array(
 				Fresh_Supplier::gui_select_supplier( "supplier_select", null, array("events" => $event)),
 				Core_Html::gui_input_date( "date", "", date('y-m-d'),  'onchange="change_supplier()"'),
-				Flavor_Mission::gui_select_mission( "new_mission", "", array("events"=>"gui_select_mission") )
+				Flavor_Mission_Views::gui_select_mission( "new_mission", "", array("events"=>"gui_select_mission") )
 			)
 		),
 			"supply_info", $args);

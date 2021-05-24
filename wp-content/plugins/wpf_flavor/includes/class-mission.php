@@ -289,6 +289,7 @@ class Mission {
 		        " WHERE meta_key = 'mission_id' " .
 		        " AND meta_value = " . $this->id . ") ";
 		$sql .= ' order by 1';
+
 		return SqlQueryArray( $sql );
 
 	}
@@ -325,7 +326,6 @@ function show_add_mission()
 //
 //$operation   = get_param( "operation", false, null );
 //$entity_name = "mission";
-$table_name  = "im_missions";
 
 /**
  * @param null $path_id

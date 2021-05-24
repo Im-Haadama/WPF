@@ -331,6 +331,7 @@ class Finance_Accounting {
 
 		if ( ! $include_zero ) $sql .= " having balance < 0";
 
+
 		$sql_result = SqlQuery( $sql );
 
 		$data_lines         = array();
@@ -339,7 +340,7 @@ class Finance_Accounting {
 		while ( $row = SqlFetchRow( $sql_result ) ) {
 			$supplier_total = $row[0];
 //			print "st=$supplier_total" . abs($supplier_total);
-			if (! (abs($supplier_total)> 10)) continue;
+			if (! $include_zero and (! (abs($supplier_total)> 10))) continue;
 //			print "cocccc<br/>";
 			$supplier_id    = $row[1];
 			$supplier_name  = $row[2];

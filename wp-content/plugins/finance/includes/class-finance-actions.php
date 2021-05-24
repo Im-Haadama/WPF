@@ -114,10 +114,22 @@ class Finance_Actions {
 		print '<div id="logging"></div>';
 		print '<div id="transactions"></div>';
 
-		print Core_Html::gui_table_args( array(
-			array("קשר",
-				Core_Html::GuiButton( "btn_receipt", "link payment to invoice", array("action" => "link_invoice_bank()"))),
-			array( "סה\"כ", " <div id=\"total\"></div>" )), "payment_table"); //, "payment_table", true, true, $sums, "", "payment_table" ));
+		$table = array();
+		$row[0] = "קשר";
+		$row[1] = Core_Html::GuiButton( "btn_receipt", "To invoices", array("action" => "link_invoice_bank(1)"));
+		$row[2] = "<div id=\"total\"></div>";
+		array_push($table,$row);
+//		array(
+//			array("קשר",
+//				,
+//					array( "סה\"כ", " <div id=\"total\"></div>" )), "payment_table")
+//			.
+//		$table[0]=
+		print Core_Html::GuiDiv("link",
+			Core_Html::gui_table_args($table) .
+		Core_Html::GuiButton( "btn_link", "To account", array("action" => "link_invoice_bank(0)")),
+			array("style" => "display:none"));
+
 	}
 
 	function finance_add_payment()

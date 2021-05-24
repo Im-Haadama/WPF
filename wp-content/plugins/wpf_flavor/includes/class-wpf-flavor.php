@@ -142,11 +142,10 @@ class WPF_Flavor {
 	 */
 	private function init_hooks(Core_Hook_Handler $loader) {
 		$this->database = new Flavor_Database();
-	// $this->database->install($this->version);
+	    $this->database->install($this->version);
 		register_shutdown_function( array( $this, 'log_errors' ) );
 		$loader->AddAction( 'after_setup_theme', $this, 'setup_environment' );
 		$loader->AddAction( 'after_setup_theme', $this, 'include_template_functions', 11 );
-		$loader->AddAction( 'init', $this, 'init', 0 );
 		$loader->AddAction( 'init', Core_Shortcodes::instance(), 'init' );
 		$loader->AddAction('data_save_new', Core_Data::instance(), 'data_save_new');
 
@@ -164,6 +163,7 @@ class WPF_Flavor {
 
 		// WP actions.
 		add_action('init', array(Core_Shortcodes::instance(), 'init'), 100);
+		add_action('init', array($this, 'init'));
 		add_action( 'admin_enqueue_scripts', array($this, 'admin_scripts' ));
 		add_action( 'admin_notices', array($this, 'admin_notices' ));
 		add_action('admin_init', array($this, 'blog_settings'));
@@ -171,7 +171,7 @@ class WPF_Flavor {
 
 		Core_Gem::getInstance()->init_hooks($this->loader);
 		Flavor_Org_Views::instance()->init_hooks($this->loader);
-		Flavor_Mission::instance()->init_hooks($this->loader);
+		Flavor_Mission_Manager::instance()->init_hooks($this->loader);
 		Core_Data::init_hooks($this->loader);
 		add_action('init', array($this->loader, 'run'), 1000);
 
@@ -503,7 +503,7 @@ class WPF_Flavor {
 	public function init() {
 		// Before init action.
 
-		add_action('wp_loaded', 'Flavor::wp_loaded');
+		add_action('wp_loaded', __CLASS__ . '::wp_loaded');
 		do_action( 'before_flavor_init' );
 		add_filter( 'woocommerce_settings_tabs_array', __CLASS__ . '::add_settings_tab', 50 );
 		add_action( 'woocommerce_settings_tabs_wpf', __CLASS__ . '::settings_tab' );
@@ -523,13 +523,14 @@ class WPF_Flavor {
 		do_action( 'flavor_init' );
 //		add_action( 'admin_bar_menu', 'modify_admin_bar', 200 );
 
-		$url = plugins_url() . '/flavor/assets/css/';
-		wp_register_style( 'flavor_styles', $url . 'modal.css', array(), $this->version );
-		wp_enqueue_style('flavor_styles');
+//		$url = plugins_url() . '/flavor/assets/css/';
+//		wp_register_style( 'flavor_styles', $url . 'modal.css', array(), $this->version );
+//		wp_enqueue_style('flavor_styles');
+//
+//		wp_register_style( 'table_styles', $url . 'tables.css', array(), $this->version );
+//		wp_enqueue_style('table_styles');
 
-		wp_register_style( 'table_styles', $url . 'tables.css', array(), $this->version );
-		wp_enqueue_style('table_styles');
-
+		Flavor_Mission_Manager::instance()->init();
 ////		wp_register_style( 'woocommerce_admin_styles', WC_URL . '/assets/css/admin.css', array(), WC_VERSION );
 //
 //		wp_enqueue_style('woocommerce_admin_styles');

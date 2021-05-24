@@ -82,8 +82,14 @@
 			$menu->AddSubMenu('fresh', 'edit_shop_orders',
 				array('page_title' => 'Print',
 				      'menu_title' => 'Packing printing',
-				      'menu_slug' => 'printing',
-				      'function' => "Finance_Order_Management::printing"));
+				      'menu_slug' => 'packing_printing',
+				      'function' => "Fresh_Packing::packing_printing"));
+
+			$menu->AddSubMenu('fresh', 'edit_shop_orders',
+				array('page_title' => 'Missing',
+				      'menu_title' => 'Missing products',
+				      'menu_slug' => 'packing_missing',
+				      'function' => "Fresh_Packing::packing_missing"));
 
 			// General Settings //edit.php?post_type=product
 			$menu->AddSubMenu('fresh', 'edit_shop_orders',

@@ -83,7 +83,15 @@
 					      'menu_slug' => 'legacy',
 					      'function' => array($legacy, 'general_settings')));
 
+//			add_options_page( 'Freight settings', 'Example Plugin Menu', 'manage_options', 'dbi-example-plugin', __CLASS__ . '::render_settings_page' );
+//
+//			self::render_settings_page();
 		}
+
+//		static function render_settings_page()
+//		{
+//			print "AAAA";
+//		}
 
 		static function suppliers() {
 			$result = '<h3>Suppliers</h3>';
@@ -98,7 +106,7 @@
 
 		public function freight_general()
 		{
-			$result = Core_Html::GuiHeader(1, "general settings");
+			$result = Core_Html::GuiHeader(1, "Freight settings");
 			$tabs = [];
 			$args = [];
 			$args["post_file"] = self::getPost();
@@ -132,6 +140,12 @@
 				$url . "mission_types",
 				$tab == "mission_types" ? Freight_Methods::mission_types($args, $operation) : ""
 			);
+			$tabs["general"] = array(
+				"General",
+				$url . "general",
+				$tab == "general" ? self::general($args, $operation) : ""
+			);
+
 //			$tabs["debug"] = array(
 //				"Debug",
 //				$url."debug",
@@ -159,6 +173,12 @@
 			print $result;
 		}
 
+		static function general($args, $operation) {
+			$result = Core_Html::GuiHeader(2,"Switching day time");
+			$result .= "This setting determines when to finished getting orders for the next day" . "<br/>";
+			$result .= Core_Html::GuiInput("time", InfoGet("freight_switching_time", true, "12"), array("events"=>'onchange="update_switch_time()"'));
+			return $result;
+		}
 		static function help($args, $operation)
 		{
 			$result = "";

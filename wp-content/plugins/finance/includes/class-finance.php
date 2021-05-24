@@ -1,7 +1,5 @@
 <?php
 
-require_once(ABSPATH . '/wp-content/plugins/wpf_flavor/wpf_flavor.php');
-
 class Finance {
 	/**
 	 * The loader that's responsible for maintaining and registering all hooks that power
@@ -44,6 +42,9 @@ class Finance {
 	 * @var Core_Autoloader
 	 */
 	private $auto_loader;
+
+	protected $delivery_manager;
+
 
 	public function get_plugin_name() {
 		return $this->plugin_name;
@@ -114,6 +115,7 @@ class Finance {
 			die ( "not defined" );
 		}
 		$this->auto_loader      = new Core_Autoloader( FINANCE_ABSPATH );
+
 		$this->loader = Core_Hook_Handler::instance();
 		$this->post_file   = WPF_Flavor::getPost();
 		$this->yaad        = null;
@@ -193,6 +195,7 @@ class Finance {
 		$this->loader->AddAction("exists_invoice", $this, 'exists_invoice');
 
 		$i = Core_Db_MultiSite::getInstance();
+		$i->AddTable("mission_types");
 		$i->AddTable("missions");
 		$i->AddTable("cities");
 		$i->AddTable("woocommerce_shipping_zones", "zone_id" );
@@ -384,9 +387,10 @@ class Finance {
 		$sum         = array();
 		$supplier_id = GetParam( "supplier_id", true );
 		$sql         = "SELECT id, ref, amount, date FROM im_business_info WHERE part_id=" . $supplier_id .
-		               " AND document_type = 4\n" .
+		               " AND document_type in (4, 8)\n" .
 		               " and pay_date is null " .
 		               " order by 4 desc";
+
 
 		$args = array();
 		if ($debug) $args["debug"] = true;
@@ -501,6 +505,7 @@ class Finance {
 		do_action( 'before_finance_init' );
 
 		$this->shortcodes = Core_Shortcodes::instance();
+		$this->delivery_manager = new Finance_Delivery_Manager();
 
 		// Set up localisation.
 		$this->load_plugin_textdomain();
@@ -517,6 +522,8 @@ class Finance {
 		$this->shortcodes->do_init();
 
 		$this->invoices->init( $this->loader);
+		$this->delivery_manager->init($this->loader);
+
 
 //		InfoUpdate("finance_bank_enabled", 1);
 		if (InfoGet("finance_bank_enabled")) {
@@ -663,6 +670,9 @@ class Finance {
 	}
 
 	public function admin_scripts() {
+		$file = FLAVOR_INCLUDES_URL . 'js/sorttable.js';
+		wp_enqueue_script( 'sorttable', $file, null, '1.0', false );
+
 		$file = FLAVOR_INCLUDES_URL . 'core/data/data.js';
 		wp_enqueue_script( 'data', $file, null, $this->version, false );
 

@@ -34,6 +34,7 @@ class Focus_Manager {
 
 	function init()
 	{
+
 		self::create_tasks();
 	}
 

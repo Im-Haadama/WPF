@@ -442,7 +442,6 @@ class Core_Db_MultiSite extends Core_MultiSite {
 			return;
 		}
 //		self::UpdateFromRemote("multisite");
-		print "updating<br/>";
 		self::updateFromMaster();
 
 		$result .= Core_Gem::GemTable("multisite", $args);

@@ -334,7 +334,7 @@ class Fresh_Catalog {
 				if ( $details ) {
 					print "parent " . $parent . " ";
 				}
-				$alternatives = alternatives( $parent, $details );
+				$alternatives = self::alternatives( $parent, $details );
 				$count        = count( $alternatives);
 			}
 			// print " " . count($alternatives) . "<br/>";

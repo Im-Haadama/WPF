@@ -332,11 +332,12 @@ class Fresh_Supply {
 		       . "( " . $this->ID . ", " . $prod_id . ", " . $quantity . ", " . $units . ", " . $price . " )";
 
 		SqlQuery( $sql );
-		$product = new WC_Product( $prod_id );
-		if ( $product->managing_stock() ) {
-			$product->set_stock_quantity( $product->get_stock_quantity() + $quantity );
-			$product->save();
-		}
+//		print "adding  $prod_id<Br/>";
+//		$product = new WC_Product( $prod_id );
+//		if ( $product->managing_stock() ) {
+//			$product->set_stock_quantity( $product->get_stock_quantity() + $quantity );
+//			$product->save();
+//		}
 
 		return true;
 	}
@@ -484,7 +485,7 @@ class Fresh_Supply {
 
 		$row = array( "Delivery route" );
 		if ( $edit ) {
-			array_push( $row, Flavor_Mission::gui_select_mission( "mis_" . $this->ID, $this->MissionID,
+			array_push( $row, Flavor_Mission_Views::gui_select_mission( "mis_" . $this->ID, $this->MissionID,
 				array("events" => "onchange=mission_changed('" . Fresh::getPost() . "'," . $this->ID . ")" )) );
 		} else {
 			array_push( $row, $this->getMissionName() );

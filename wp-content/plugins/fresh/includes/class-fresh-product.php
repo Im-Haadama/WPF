@@ -9,7 +9,7 @@
 //require_once( FRESH_INCLUDES . "/core/options.php" );
 //require_once( FRESH_INCLUDES . "/supplies/Supply.php" );
 
-class Fresh_Product  extends Finance_Product {
+class Fresh_Product extends Finance_Product {
 
 	function is_basket() {
 		return SqlQuerySingleScalar( 'SELECT count(product_id) FROM im_baskets WHERE basket_id = ' . $this->id );
@@ -167,26 +167,6 @@ class Fresh_Product  extends Finance_Product {
 
 	function isPublished() {
 		return get_post_status( $this->id ) == "publish";
-	}
-
-	function getName( $strip = false, $include_categ = false ) {
-		if (! ($this->id > 0)) return "Error";
-		$sql = 'SELECT post_title FROM wp_posts WHERE id = ' . $this->id;
-
-		$name = SqlQuerySingleScalar( $sql );
-		if ( $strip and strpos( $name, '(' ) ) {
-			$name = trim( substr( $name, 0, strpos( $name, '(' ) ) );
-		}
-		if ($include_categ){
-			$tags = $this->getTags(false, true);
-			foreach ($tags as $tag){
-				$t = get_term( $tag, 'product_tag');
-				if ($t)
-					$name .= " " . $t->name;
-			}
-		}
-
-		return $name;
 	}
 
 	function getVatPercent() {

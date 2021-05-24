@@ -17,12 +17,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 //require_once(ABSPATH . '/wp-content/plugins/woocommerce/woocommerce.php');
-if (! class_exists("Core_Database")) {
-	print( "<a href='/wp-content/plugins/fresh/fresh.php'>must load flavor before fresh</a>" );
-
-	return;
-}
-
 if ( ! defined( 'FRESH_PLUGIN_FILE' ) ) {
 	define( 'FRESH_PLUGIN_FILE', __FILE__ );
 }
@@ -32,9 +26,6 @@ require_once(ABSPATH . 'wp-admin/includes/plugin.php');
 //if (1 == get_user_id())
 //	show_errors();
 // Include the main WooCommerce class.
-if ( ! class_exists( 'Fresh' ) ) {
-	include_once dirname( __FILE__ ) . '/includes/class-fresh.php';
-}
 /**
  * Main instance of Fresh.
  *
@@ -48,6 +39,9 @@ function fresh() {
 }
 
 function run_fresh() {
+	if ( ! class_exists( 'Fresh' ) ) {
+		include_once dirname( __FILE__ ) . '/includes/class-fresh.php';
+	}
 	$plugin = new Fresh("Fresh");
 	$plugin->run();
 }
@@ -85,20 +79,26 @@ function query_test($query)
 		var_dump($query);
 }
 
-add_action('init', 'init_fresh', 30);
+add_action('plugin_loaded', 'init_fresh', 30);
 
 function init_fresh() {
-	if ( ! is_plugin_active( 'wpf_flavor/wpf_flavor.php' ) /* and current_user_can( 'activate_plugins' ) */ ) {
-		// Deactivate this plugin
-		deactivate_plugins(__FILE__);
-		return;
+//	if (!function_exists("MyLog"))
+//		require_once(ABSPATH . "/wp-content/plugins/wpf_flavor/includes/core/fund.php");
+	if (class_exists("WPF_Flavor") and class_exists('Finance')) {
+		run_fresh();
 	}
 
-	if ( ! is_plugin_active( 'finance/finance.php' ) /* and current_user_can( 'activate_plugins' ) */ ) {
-		// Deactivate this plugin
-		deactivate_plugins(__FILE__);
-		return;
-	}
+//	if ( ! is_plugin_active( 'wpf_flavor/wpf_flavor.php' ) /* and current_user_can( 'activate_plugins' ) */ ) {
+//		// Deactivate this plugin
+//		deactivate_plugins(__FILE__);
+//		return;
+//	}
+//
+//	if ( ! is_plugin_active( 'finance/finance.php' ) /* and current_user_can( 'activate_plugins' ) */ ) {
+//		// Deactivate this plugin
+//		deactivate_plugins(__FILE__);
+//		return;
+//	}
 
-	run_fresh();
+//	run_fresh();
 }

@@ -86,13 +86,13 @@ class Finance_Settings {
 				array('page_title' => 'Missions',
 				      'menu_title' => 'Missions',
 				      'menu_slug' => 'missions',
-				      'function' => 'Flavor_Mission::missions'));
+				      'function' => 'Flavor_Mission_Views::show_missions'));
 		else
 			$menu->AddSubMenu('finance', 'read',
 				array('page_title' => 'Install woocommerce',
 				      'menu_title' => 'Missions',
 				      'menu_slug' => 'missions',
-				      'function' => 'Flavor_Mission::install_woocommerce'));
+				      'function' => 'Flavor_Mission_Views::install_woocommerce'));
 
 		WPF_Flavor::AddTop("client_accounts", "Client accounts", "/wp-admin/users.php?page=client-accounts");
 

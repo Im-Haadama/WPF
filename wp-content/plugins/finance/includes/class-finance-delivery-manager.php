@@ -18,9 +18,20 @@ class Finance_Delivery_Manager
 	public function init(Core_Hook_Handler $loader)
 	{
 		$loader->AddAction("update_shipping_methods", $this);
-		$loader->AddAction("update_shipping_methods_anonymous", $this, "update_shipping_methods");
+		$loader->AddAction("update_mission_shipping_anonymous", $this, "update_mission_shipping");
+		$key = __CLASS__ . "_last_mission_update";
+		// Get once a hour data from master.
+		$format = "d-G";
+//		FlavorLog(InfoGet($key));
+		if (InfoGet($key) != current_time($format))
+		{
+			FlavorLog(__FUNCTION__ . " sync from master");
+
+			if (self::sync_from_master())
+				InfoUpdate($key, current_time($format));
+		}
+
 		add_action('admin_menu',array($this, 'admin_menu'));
-		add_action('admin_notices', array($this, 'delivered_previous_days'));
 		add_filter('delivery_args', array($this, 'delivery_args'));
 	}
 
@@ -31,30 +42,17 @@ class Finance_Delivery_Manager
 		return self::$_instance;
 	}
 
-	static function update_shipping_methods($result = null)
-	{
-		self::sync_from_master();
-
-		// Otherwise - master - update.
-		$result = "Updating<br/>";
-		$sql = "select * from wp_woocommerce_shipping_zone_methods";
-		$sql_result = SqlQuery($sql);
-		while ($row = SqlFetchAssoc($sql_result)) {
-			$instance_id = $row['instance_id'];
-			self::update_shipping_method($instance_id);
-		}
-		print  $result;
-	}
-
 	static function sync_from_master()
 	{
-		MyLog(__METHOD__, __FUNCTION__);
+		FinanceLog(__FUNCTION__);
 		$m = Core_Db_MultiSite::getInstance();
 		if ( $m->isMaster() ) { // if not master, get info from master.
-			MyLog("master - skipped", __FUNCTION__);
+//			MyLog("master - skipped", __FUNCTION__);
 			return true;
 		}
 
+		if (! $m->UpdateFromRemote( "missions", "id", 0, "date > SUBDATE(now(), INTERVAL 1 week)")) return false;
+		if (! $m->UpdateFromRemote( "mission_types")) return false;
 		if (! $m->UpdateFromRemote( "woocommerce_shipping_zones", "zone_id" )) return false;
 		if (! $m->UpdateFromRemote( "woocommerce_shipping_zone_methods", "instance_id" )) return false;
 		if (! $m->UpdateFromRemote( "woocommerce_shipping_zone_locations", "location_id" )) return false;
@@ -73,27 +71,6 @@ class Finance_Delivery_Manager
 	 * @throws Exception
 	 */
 
-	static function update_shipping_method($instance_id) //, $date, $start, $end, $price = 0)
-	{
-		$args                = [];
-		$args["is_enabled"]  = 1;
-		$args["instance_id"] = $instance_id;
-		$method_info = SqlQuerySingleAssoc("select mission_code from wp_woocommerce_shipping_zone_methods where instance_id = $instance_id");
-		$mission_type = $method_info['mission_code'];
-		if ($mission_type)
-			$week_day = SqlQuerySingleScalar("select week_day from im_mission_types where id = $mission_type");
-		else
-			$week_day = 2;
-
-		if (! $week_day) return false;
-		$start = "13";
-		$end = "18";
-		$date = next_weekday($week_day);
-		$args["title"]       = DateDayName( $date ) . " " . date('d-m-Y', strtotime($date)) . ' ' . $start . "-". $end;
-
-		return self::update_woocommerce_shipping_zone_methods($args);
-	}
-
 	static function count_without_pickup($wc_zone){
 		$count = 0;
 		foreach ( $wc_zone['shipping_methods'] as $shipping )
@@ -109,75 +86,10 @@ class Finance_Delivery_Manager
 		return "not found";
 	}
 
-	static function update_woocommerce_shipping_zone_methods($args) {
-		$instance_id = GetArg( $args, "instance_id", null );
-		if ( ! ( $instance_id > 0 ) ) {
-			print __ ( "Error: #R1 invalid instance_id" );
-			return false;
-		}
-
-		// Updating directly to db. and prepare array to wp_options
-		$sql           = "update wp_woocommerce_shipping_zone_methods set ";
-		$table_list    = array( "is_enabled", "method_order" ); // Stored in the wp_woocommerce_shipping_zone_methods table
-		$update_table  = false;
-		$update_option = false;
-		$option_id     = 'woocommerce_flat_rate_' . $instance_id . '_settings';
-		$options       = get_wp_option( $option_id );
-
-		foreach ( $args as $k => $v ) {
-			if ( ! in_array( $k, $table_list ) ) {
-				$options[ $k ] = $v;
-				$update_option = true;
-				continue;
-			}
-			$sql          .= $k . "=" . QuoteText( $v ) . ", ";
-			$update_table = true;
-		}
-		if ( $update_table ) {
-			$sql = rtrim( $sql, ", " );
-			$sql .= " where instance_id = " . $instance_id;
-			if ( ! SqlQuery( $sql ) ) {
-				return false;
-			}
-		}
-
-		if ( $update_option ) {
-			return update_wp_option( 'woocommerce_flat_rate_' . $instance_id . '_settings', $options );
-		}
-		return false;
-	}
-
 	function admin_menu()
 	{
 	}
 
-	function delivered_previous_days() {
-		$debug = 0;
-		$result = "Marking orders of yesterday delivered:\n";
-		$ids    = SqlQueryArrayScalar( "SELECT * FROM `wp_posts` 
-WHERE (post_status = 'wc-awaiting-shipment' or post_status = 'wc-processing') 
-and curdate() > order_mission_date(id)" );
-
-		$message = "";
-		if ( ! $ids or ! count( $ids ) ) {
-			if ($debug) MyLog("No del found");
-			return;
-		}
-
-		foreach ( $ids as $id ) {
-			$order = new Finance_Order( $id );
-			if ($order->getStatus() == 'wc-processing') continue;
-			FinanceLog("adding $id");
-			$order->delivered( $message );
-			$result .= "Order $id $message\n";
-		}
-
-		if ( strlen( $result ) > 39) {
-			$class   = 'notice notice-info';
-
-			printf( '<div class="%1$s"><p>%2$s</p></div>', esc_attr( $class ), esc_html( $result ) );
-		}
-	}
 	function delivery_args($args)
 	{
 		array_push($args["fields"], 'has_vat');

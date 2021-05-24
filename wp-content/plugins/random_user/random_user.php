@@ -62,7 +62,22 @@ function random_user($atts)
 		<td>Question</td>
 		<td><input id="question" value="<?php print $question; ?>"></td>
 	</tr>
+<div id="loader" class="loader" style="display: none"></div>
+    <style>
+        .loader {
+            border: 16px solid #f3f3f3; /* Light grey */
+            border-top: 16px solid #3498db; /* Blue */
+            border-radius: 50%;
+            width: 120px;
+            height: 120px;
+            animation: spin 2s linear infinite;
+        }
 
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
 </table>
 
     <button id="btn_send" onclick="random_user_submit()">Get the answer</button>
@@ -158,6 +173,10 @@ function random_user($atts)
 
         function check_result(xmlhttp)
         {
+            let loader = document.getElementById("loader");
+
+            loader.style = 'display: none';
+
             return ! report_error(xmlhttp.response);
         }
 
@@ -179,6 +198,9 @@ function random_user($atts)
 
         function execute_url(url, finish_action, obj, xml) {
             let xhp = new XMLHttpRequest();
+            let loader = document.getElementById("loader");
+
+            loader.style = 'display: block';
 
             if (xml) xhp.overrideMimeType('text/xml');
 

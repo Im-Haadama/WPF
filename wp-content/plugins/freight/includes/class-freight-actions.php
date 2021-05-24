@@ -32,6 +32,7 @@ class Freight_Actions {
 		$loader->AddAction('order_update_field', $this);
 		$loader->AddAction("freight_do_import", $this);
 		$loader->AddAction("freight_do_import_baldar", $this);
+		$loader->AddAction("update_switch_time", $this);
 
 		$loader->AddAction("mission_clean", $this);
 		$loader->AddAction("show_import", $this);
@@ -125,6 +126,7 @@ class Freight_Actions {
 
 	function print_mission()
 	{
+		$multi_site = Core_Db_MultiSite::getInstance();
 		$id = GetParam("id", true);
 		print Core_Html::HeaderText();
 		// The route stops.
@@ -132,15 +134,17 @@ class Freight_Actions {
 		$m = Freight_Mission_Manager::get_mission_manager($id);
 		print $m->dispatcher($args);
 
-		// Supplies to collect
-		if (class_exists(('Fresh_Supplies'))) {
-			$supplies = Fresh_Supplies::mission_supplies( $id );
-			foreach ( $supplies as $supply_id ) {
-				$s = new Fresh_Supply( $supply_id );
-				print $s->Html( $args );
-			}
-		}
-//		die(0);
+		print $multi_site->GetAll(WPF_Flavor::getPost() . "?operation=get_local_supplies_anonymous&mission_ids=$id");
+
+//		// Supplies to collect
+//		if (class_exists(('Fresh_Supplies'))) {
+//			$supplies = Fresh_Supplies::mission_supplies( $id );
+//			foreach ( $supplies as $supply_id ) {
+//				$s = new Fresh_Supply( $supply_id );
+//				print $s->Html( $args );
+//			}
+//		}
+////		die(0);
 	}
 
 	static function order_update_driver_comment()
@@ -215,5 +219,10 @@ class Freight_Actions {
 
 		print Core_Html::GuiHeader(1, "Import date: " . date('Y-m-d h:i', substr($info['info_key'], 14)));
 		print $info['info_data'];
+	}
+
+	function update_switch_time($params)
+	{
+		InfoUpdate("freight_switching_time", $params["value"]);
 	}
 }

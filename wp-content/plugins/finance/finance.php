@@ -24,16 +24,13 @@ if ( ! defined( 'FINANCE_PLUGIN_DIR' ) ) {
 	define( 'FINANCE_PLUGIN_DIR', dirname(FINANCE_PLUGIN_FILE) );
 }
 require_once(ABSPATH . 'wp-admin/includes/plugin.php');
+
 if ( ! is_plugin_active( 'wpf_flavor/wpf_flavor.php' ) /* and current_user_can( 'activate_plugins' ) */ ) {
 	// Stop activation redirect and show error
 	deactivate_plugins(__FILE__);
 	return;
 }
 
-// Include the main WooCommerce class.
-if ( ! class_exists( 'Finance' ) ) {
-	include_once dirname( __FILE__ ) . '/includes/class-finance.php';
-}
 /**
  * Main instance of Finance.
  *
@@ -52,16 +49,16 @@ if ( ! class_exists( 'Finance' ) ) {
 
 function run_finance() {
 //	print "runner: ". FINANCE_INCLUDES . "<br/>";
+	if (! class_exists("Finance"))
+	{
+		include_once dirname( __FILE__ ) . '/includes/class-finance.php';
+	}
 	$instance = Finance::instance();
 
 	$instance->run();
 }
 
 add_action('plugin_loaded', 'init_finance', 20);
-
-function init_finance() {
-	run_finance();
-}
 
 add_filter( 'wc_order_statuses', 'add_awaiting_shipment_to_order_statuses' );
 add_action( 'init', 'register_awaiting_shipment_order_status' );
@@ -104,3 +101,9 @@ function register_awaiting_shipment_order_status() {
 }
 
 add_filter( 'wc_product_sku_enabled', '__return_false' );
+
+function init_finance() {
+	if ( ( ! class_exists( "Finance" ) ) and class_exists( "WPF_Flavor" ) )
+		run_finance();
+
+}

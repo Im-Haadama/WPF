@@ -35,6 +35,8 @@ class Freight_Methods {
 		$loader->AddAction("toggle_shipment_enable", $this);
 		$loader->AddAction("shipment_update_mc", $this);
 
+		self::update_mission_shipping_if_needed();
+
 		Core_gem::getInstance()->AddTable("mission_types", $loader);
 	}
 
@@ -128,13 +130,6 @@ class Freight_Methods {
 		return SqlQuery("update wp_woocommerce_shipping_zone_methods set is_enabled = $enable where instance_id = $instance");
 	}
 
-	function update_zone_missions()
-	{
-		$result = "Updating...<br/>";
-
-		return $result;
-	}
-
 	static function shipment_update_mc()
 	{
 		$instance = GetParam("instance", true);
@@ -163,6 +158,24 @@ class Freight_Methods {
 
 		$result .= Core_Gem::GemTable("mission_types", $args);
 		return $result;
+	}
+
+	function update_mission_shipping_if_needed()
+	{
+		$switch_time = InfoGet("freight_switching_time");
+		$last_switch = InfoGet("freight_last_switch");
+//		FreightLog(__FUNCTION__ . $last_switch . " " . strtotime($last_switch));
+//		InfoUpdate("freight_last_switch", null); // For debug
+
+//		FreightLog($switch_time . " " . current_time("G") . " " . $last_switch . " " . time());
+
+		if (((current_time("G") >= $switch_time) and $last_switch != current_time("Y-m-d")) // Daily switch
+		    or ((time() - strtotime($last_switch) > 86400))) // More then a day
+		{
+			Freight_Mission_Manager::update_mission_shipping();
+			InfoUpdate("freight_last_switch", current_time("Y-m-d"));
+		}
+
 	}
 }
 

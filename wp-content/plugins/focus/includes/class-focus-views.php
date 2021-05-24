@@ -225,11 +225,11 @@ class Focus_Views {
 						"team"       => "Focus_Views::gui_select_team",
 						"priority"   => "Focus_Views::gui_select_priority",
 						"created" => "Core_Html::GuiShowDynamicDateTime",
-						"mission_id" => "Flavor_Mission::gui_select_mission",
+						"mission_id" => "Flavor_Mission_Views::gui_select_mission",
 						"status" => "Focus_Views::gui_select_status"
 					);
 					if ( self::OptionEnabled( "missions" ) ) {
-						$args["selectors"]["mission_id"] = "Flavor_Mission::gui_select_mission";
+						$args["selectors"]["mission_id"] = "Flavor_Mission_Views::gui_select_mission";
 					}
 
 					$args["header_fields"] = array(
@@ -639,7 +639,6 @@ class Focus_Views {
 			array( "my_projects", "My projects", null ),
 			array( "repeating_tasks", "Repeating tasks", null ),
 			array( "missions", "Missions", null )
-
 		);
 
 		if ( $companies = $worker->GetAllCompanies( ) ) {
@@ -745,13 +744,12 @@ class Focus_Views {
 			$result .= $table;
 			$result .= self::task_filters();
 		} else {
-
+			// If no task assigned to me show tasks assigned to my teams.
 			if ( ! $include_team ) {
 				return self::my_work( $args, "Active tasks assigned to my teams", true, $user_id );
 			}
 			$result .= ETranslate("Horray, no tasks!") . "<br/>";
 			$result .= Core_Html::GuiHyperlink("Let's create task", AddToUrl("operation", "gem_add_tasklist"));
-
 		}
 
 		return $result;
@@ -1935,11 +1933,11 @@ class Focus_Views {
 		$args['form_table'] = 'tasklist';
 
 		// Todo: check last update time
-		if ( $mission and function_exists( "Flavor_Mission::gui_select_mission" ) ) {
+		if ( $mission and function_exists( "Flavor_Mission_Views::gui_select_mission" ) ) {
 			array_push( $args["fields"], "location_name", "location_address", "mission_id" );
 			$i = new Core_Db_MultiSite();
 			$i->UpdateFromRemote( "missions", "id", 0, null, null );
-			$args["selectors"]["mission_id"]              = "Flavor_Mission::gui_select_mission";
+			$args["selectors"]["mission_id"]              = "Flavor_Mission_Views::gui_select_mission";
 			$args["header_fields"]["mission_id"]          = "Mission";
 			$args["mandatory_fields"]["location_name"]    = true;
 			$args["mandatory_fields"]["location_address"] = true;

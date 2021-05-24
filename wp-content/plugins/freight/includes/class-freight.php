@@ -23,13 +23,14 @@ class Freight {
 
 	protected $database;
 	protected $legacy;
+	protected $views;
 
 	/**
 	 * Plugin version.
 	 *
 	 * @var string
 	 */
-	public $version = '1.4.5';
+	public $version = '1.4.6';
 
 	private $plugin_name;
 
@@ -114,9 +115,11 @@ class Freight {
 		$this->auto_loader = new Core_Autoloader(FREIGHT_ABSPATH);
 		$this->loader = Core_Hook_Handler::instance();
 		$this->settings = new Freight_Settings();
+		$this->views = new Freight_Views();
+
+		// For testing define('FREIGHT_LEGACY_USER', 1);
 		if (defined('FREIGHT_LEGACY_USER')) {
 			$this->legacy = new Freight_Legacy(FREIGHT_LEGACY_USER);
-			$this->legacy->init_hooks($this->loader);
 		}
 
 		$this->init_hooks($this->loader);
@@ -155,6 +158,8 @@ class Freight {
 		GetSqlConn(ReconnectDb());
 		Freight_Methods::instance()->init($loader);
 		Freight_Actions::instance()->init_hooks($loader);
+		$this->views->init_hooks($loader);
+		if ($this->legacy) $this->legacy->init_hooks($loader);
 	}
 
 	function mission_markers()
@@ -511,9 +516,6 @@ class Freight {
 
 	public function admin_scripts()
     {
-	    $file = FLAVOR_INCLUDES_URL . 'js/sorttable.js';
-	    wp_enqueue_script( 'sorttable', $file, null, '1.0', false );
-
 	    // Should be loaded by flavor
 //	    $file = FLAVOR_INCLUDES_URL . 'core/data/data.js';
 //	    wp_enqueue_script( 'data', $file, null, $this->version, false );
@@ -524,6 +526,7 @@ class Freight {
         $file = FREIGHT_INCLUDES_URL . 'js/admin.js';
 	    wp_register_script( 'freight_admin', $file, null, $this->version, false);
 	    wp_enqueue_script('freight_admin');
+		wp_add_inline_script('freight_admin', 'let freight_post="' . self::getPost() . '";', 'before');
 
 		$file = FREIGHT_INCLUDES_URL . 'js/legacy.js';
 		wp_register_script( 'legacy', $file);

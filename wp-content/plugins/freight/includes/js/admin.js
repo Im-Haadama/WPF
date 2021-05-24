@@ -177,3 +177,10 @@ function freight_import(post_file, div)
 
 }
 
+function update_switch_time()
+{
+    let time = get_value_by_name("time");
+    let operation = freight_post + '?operation=update_switch_time&value=' + encodeURI(time);
+    execute_url(operation);
+
+}

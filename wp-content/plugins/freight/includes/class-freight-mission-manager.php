@@ -91,7 +91,7 @@ class Freight_Mission_Manager
 		FreightLog(__FUNCTION__);
 		// Try cache
 		$data = InfoGet("mission_$mission_id");
-		if ($data) {
+		if (false and $data) {
 			FreightLog("using cache");
 			return unserialize($data);
 		}
@@ -208,13 +208,12 @@ class Freight_Mission_Manager
 
 	static function dispatcher_wrap()
 	{
+		dd("AAA");
 		$operation = GetParam("operation", false, null);
 		$header = __("Dispatch mission") ;
 		$week = GetParam("week", false, null);
 		if ($week)
 			$header .= __("Missions of week") . " " . $week;
-
-		self::update_missions_from_master();
 
 		$result = Core_Html::GuiHeader(1, $header);
 
@@ -291,6 +290,7 @@ group by pm.meta_value, p.post_status");
 			// Set the name;
 
 			$lat_long = Freight_Mission_Manager::get_lat_long($address);
+			if (! $lat_long) $lat_long = array(32, 34);
 			$output .='<marker id="' . $pri . '" name="' . $name . '" address="' . urlencode($address) . '" type="Delivery"'.
 			' lat="' . $lat_long[0]. '" lng="' . $lat_long[1] . '" ';
 			$output .='/>' . PHP_EOL;
@@ -495,6 +495,7 @@ group by pm.meta_value, p.post_status");
 
 		$output   = self::$multi_site->GetAll( $data_url, false, $debug );
 
+//		print $output;
 		// Parse the output
 		$rows = self::parse_output($output);
 
@@ -703,6 +704,9 @@ group by pm.meta_value, p.post_status");
 		$result = GetContent( $s );
 
 		$j = json_decode( $result );
+		if (! isset ($j->results[0])) {
+			return null;
+		}
 		$lat = $j->results[0]->geometry->location->lat;
 		$long = $j->results[0]->geometry->location->lng;
 		InfoUpdate("lat_long".  $address, $lat . ":" . $long);
@@ -985,37 +989,6 @@ group by pm.meta_value, p.post_status");
 		return $result;
 	}
 
-	static function print_deliveries( $mission_id, $selectable = false, $debug = false ) {
-		$m = new Mission($mission_id);
-		$orders = $m->getOrders();
-		$data = "";
-
-		$prev_user = - 1;
-		foreach ($orders as $order) {
-//		while ( $order = SqlFetchRow( $orders ) ) {
-			$order_id   = $order[0];
-//			print "order: $order_id<br/>";
-			if ($debug) MyLog(__FUNCTION__ . ': $order_id');
-			$o          = new Finance_Order( $order_id );
-			$is_group   = false; // $order[1];
-			$order_user = $order[1];
-			if ( $debug ) print "order " . $order_id . "<br/>";
-
-//			if (get_post_meta($order_id, "delivered")) continue;
-			if ( ! $is_group ) {
-				$data .= $o->PrintHtml( $selectable, $mission_id );
-				continue;
-			} else {
-				if ( $order_user != $prev_user ) {
-					$data      .= $o->PrintHtml( $selectable );
-					$prev_user = $order_user;
-				}
-			}
-		}
-
-		return $data;
-	}
-
 	static function delivered($site_id, $type, $id, $debug = false)
 	{
 		$debug = false;
@@ -1161,4 +1134,99 @@ group by pm.meta_value, p.post_status");
 
 		return $result;
 	}
+
+	static function create_missions()
+	{
+		$types = SqlQueryArrayScalar("select id from im_mission_types");
+		foreach ($types as $type) {
+			Mission::CreateFromType($type);
+		}
+		return true;
+	}
+
+	static function update_shipping_methods($result = null)
+	{
+		FreightLog(__FUNCTION__);
+		// Otherwise - master - update.
+		$sql = "select * from wp_woocommerce_shipping_zone_methods";
+		$sql_result = SqlQuery($sql);
+		while ($row = SqlFetchAssoc($sql_result)) {
+			$instance_id = $row['instance_id'];
+			self::update_shipping_method($instance_id);
+		}
+	}
+
+	static function update_shipping_method($instance_id) //, $date, $start, $end, $price = 0)
+	{
+		$args                = [];
+		$args["is_enabled"]  = 1;
+		$args["instance_id"] = $instance_id;
+		$method_info = SqlQuerySingleAssoc("select mission_code from wp_woocommerce_shipping_zone_methods where instance_id = $instance_id");
+		$mission_type = $method_info['mission_code'];
+		if ($mission_type)
+			$week_day = SqlQuerySingleScalar("select week_day from im_mission_types where id = $mission_type");
+		else
+			$week_day = 2;
+
+		if (! $week_day) return false;
+		$start = "13";
+		$end = "18";
+		$date = next_weekday($week_day);
+		$args["title"]       = DateDayName( $date ) . " " . date('d-m-Y', strtotime($date)) . ' ' . $start . "-". $end;
+
+		return self::update_woocommerce_shipping_zone_methods($args);
+	}
+
+	static function update_woocommerce_shipping_zone_methods($args) {
+		$instance_id = GetArg( $args, "instance_id", null );
+		if ( ! ( $instance_id > 0 ) ) {
+			print __ ( "Error: #R1 invalid instance_id" );
+			return false;
+		}
+
+		// Updating directly to db. and prepare array to wp_options
+		$sql           = "update wp_woocommerce_shipping_zone_methods set ";
+		$table_list    = array( "is_enabled", "method_order" ); // Stored in the wp_woocommerce_shipping_zone_methods table
+		$update_table  = false;
+		$update_option = false;
+		$option_id     = 'woocommerce_flat_rate_' . $instance_id . '_settings';
+		$options       = get_wp_option( $option_id );
+
+		foreach ( $args as $k => $v ) {
+			if ( ! in_array( $k, $table_list ) ) {
+				$options[ $k ] = $v;
+				$update_option = true;
+				continue;
+			}
+			$sql          .= $k . "=" . QuoteText( $v ) . ", ";
+			$update_table = true;
+		}
+		if ( $update_table ) {
+			$sql = rtrim( $sql, ", " );
+			$sql .= " where instance_id = " . $instance_id;
+			if ( ! SqlQuery( $sql ) ) {
+				return false;
+			}
+		}
+
+		if ( $update_option ) {
+			return update_wp_option( 'woocommerce_flat_rate_' . $instance_id . '_settings', $options );
+		}
+		return false;
+	}
+
+	// Update in master site mission and shipments.
+	static public function update_mission_shipping()
+	{
+		FreightLog(__FUNCTION__);
+		$multi = Core_Db_MultiSite::getInstance();
+
+		if (! $multi->isMaster()) return;
+
+		Freight_Mission_Manager::create_missions();
+		Freight_Mission_Manager::update_shipping_methods();
+		FreightLog(__FUNCTION__ . " done");
+	}
+
+
 }

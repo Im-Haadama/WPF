@@ -5,15 +5,10 @@ class Freight_Zones {
 
 	static function settings($args, $operation)
 	{
-		$isMaster = Core_Db_MultiSite::getInstance()->isMaster();
 
 		$result                = "";
 		// print "is_master=$isMaster<br/>";
-
-		if (! $isMaster) {
-//			$result .= "Updating from master";
-			Finance_Delivery_Manager::sync_from_master();
-		}
+		$isMaster = Core_Db_MultiSite::getInstance()->isMaster();
 
 		$operation = null;
 		$args["post_file"] = Freight::getPost();

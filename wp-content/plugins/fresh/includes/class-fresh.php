@@ -11,7 +11,6 @@ class Fresh {
 	 */
 	protected $loader;
 	protected $auto_loader;
-	protected $delivery_manager;
 	protected $supplies;
 	protected $supplier_balance;
 	protected $totals;
@@ -297,6 +296,7 @@ class Fresh {
 
 	function handle_operation($operation)
 	{
+		die("USED???");
 		$input = null;
 		$result = apply_filters( $operation, $input, null);
 		if ( $result !== null) return $result;
@@ -323,7 +323,7 @@ class Fresh {
 
 				// Robot operations:
 			case "update_shipping_methods_anonymous":
-				return $this->delivery_manager->update_shipping_methods();
+//				return $this->delivery_manager->update_shipping_methods();
 
 		}
 		return false;
@@ -486,7 +486,6 @@ class Fresh {
 
 		// Set up localisation.
 		$this->load_plugin_textdomain();
-		$this->delivery_manager = new Finance_Delivery_Manager();
 		$this->supplies = new Fresh_Supplies();
 		$this->supplier_balance = Fresh_Supplier_Balance::instance();
 		$this->totals = Fresh_Totals::instance();
@@ -501,7 +500,6 @@ class Fresh {
 		$this->supplies->init_hooks($this->loader);
 		$this->supplies->init();
 		Fresh_Basket::init($this->loader);
-		$this->delivery_manager->init($this->loader);
 
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 		Core_Importer::instance();
