@@ -75,6 +75,7 @@ class Focus_Database extends Core_Database
 		primary key,
 	team_name varchar(40) charset utf8 null,
 	manager int null,
+	company_id int,
 	is_active bit default b'1' null
 );
 
@@ -183,6 +184,7 @@ engine=InnoDB;
 		primary key,
 	team_name varchar(40) charset utf8 null,
 	manager int null,
+	company_id int,
 	is_active bit default b'1' null
 )");
 
