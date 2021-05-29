@@ -1,0 +1,8 @@
+#!/bin/bash
+folder="html"
+if [ $# -gt 0 ]
+then
+  folder=$1
+fi
+cd /var/www/$folder/wp-content/uploads/wc-logs
+exec bash
