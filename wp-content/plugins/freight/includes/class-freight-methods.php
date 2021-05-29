@@ -162,20 +162,18 @@ class Freight_Methods {
 
 	function update_mission_shipping_if_needed()
 	{
+		$day_format = 'Y-m-d';
 		$switch_time = InfoGet("freight_switching_time");
 		$last_switch = InfoGet("freight_last_switch");
-//		FreightLog(__FUNCTION__ . $last_switch . " " . strtotime($last_switch));
-//		InfoUpdate("freight_last_switch", null); // For debug
+		$current_hour = current_time("G");
+		$current_date = current_time($day_format);
 
-//		FreightLog($switch_time . " " . current_time("G") . " " . $last_switch . " " . time());
-
-		if (((current_time("G") >= $switch_time) and $last_switch != current_time("Y-m-d")) // Daily switch
-		    or ((time() - strtotime($last_switch) > 86400))) // More then a day
+		if (($current_hour >= $switch_time) and ($last_switch != $current_date)) // Switch in the afternoon.
+			// Make sure using cron that there is traffic to the site.
 		{
 			Freight_Mission_Manager::update_mission_shipping();
 			InfoUpdate("freight_last_switch", current_time("Y-m-d"));
 		}
-
 	}
 }
 

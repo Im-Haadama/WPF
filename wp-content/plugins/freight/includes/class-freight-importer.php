@@ -65,7 +65,7 @@ class Freight_Importer {
 		$doc = new DOMDocument();
 
 		// Load the html contents into the DOM
-		$doc->loadHTML($html);
+		@$doc->loadHTML($html);
 		$db_prefix = GetTablePrefix();
 
 //		$all_cities = SqlQueryArrayScalar("select city_name from ${db_prefix}cities");
@@ -81,7 +81,6 @@ class Freight_Importer {
 				$order_id = $links->nodeValue;
 //				print $order_id . "<br/>";
 			}
-			FreightLog($order_id);
 			$client_name = '';
 
 			//Loop through each <p> tag within the li, then extract the node value

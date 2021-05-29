@@ -642,12 +642,13 @@ group by pm.meta_value, p.post_status");
 
 	static function geodecode_address($text)
 	{
-		FreightLog(__FUNCTION__ . " " . $text);
-		$r = null; // InfoGet("geodecode_city" . $text);
-
+		// Check cache
+		$r = InfoGet("geodecode_city" . $text);
 		if ($r) {
 			return unserialize($r);
 		}
+
+		// Get from google
 		$url = "https://maps.googleapis.com/maps/api/geocode/json?address=" . urlencode( $text ).
 		     "&key=" . MAPS_KEY . "&language=iw";
 
@@ -667,9 +668,7 @@ group by pm.meta_value, p.post_status");
 		$street_number = '';
 
 		foreach ($j->results as $result) {
-//			var_dump($result); print "<br/>";
 			foreach ($result->address_components as $comp) {
-//				var_dump($comp); print "<br/>";
 				if (in_array("locality", $comp->types )) {
 					$city = $comp->long_name;
 				}
@@ -686,6 +685,10 @@ group by pm.meta_value, p.post_status");
 		$address = array("city" => $city,
 		                 "address_1" => $street_number . " " . $address_1,
 		                 "address_2" => $address_2);
+
+		FreightLog(__FUNCTION__ . " $city $street_number $address_1");
+
+		// Save the cache
 		InfoUpdate("geodecode_city". $text, serialize($address));
 		return $address;
 	}
