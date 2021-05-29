@@ -103,7 +103,15 @@ function register_awaiting_shipment_order_status() {
 add_filter( 'wc_product_sku_enabled', '__return_false' );
 
 function init_finance() {
-	if ( ( ! class_exists( "Finance" ) ) and class_exists( "WPF_Flavor" ) )
+	if ( ( ! class_exists( "Finance" ) ) and class_exists( "WPF_Flavor" ) and class_exists( 'WC_Customer')) {
 		run_finance();
+	}
+}
 
+add_action('admin_notices', 'finance_depend', 20);
+
+function finance_depend()
+{
+	if (! class_exists(('WC_Customer')))
+		echo '<div class="notice notice-warning">Finance plugin needs Woocommerce. Make sure it\'s running</div>';
 }
