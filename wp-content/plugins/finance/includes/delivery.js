@@ -291,9 +291,11 @@ function delivery_save_or_edit(post_file, operation) {
 function delivery_add_line(post_file, user_id, add_vat, has_checkbox)
 {
     let  table = document.getElementById("del_table");
-    let id = table.rows[table.rows.length - 1].cells[1].id;
+    let id_col = (has_checkbox ? 1 : 0);
+    let id = table.rows[table.rows.length - 1].cells[id_col].id;
     let row_number = id.substr(id.lastIndexOf("_") + 1);
     row_number ++;
+    if (! (row_number > 0)) row_number = 1;
 
     let new_row = table.insertRow();
     if (has_checkbox) new_row.insertCell(); // checkbox

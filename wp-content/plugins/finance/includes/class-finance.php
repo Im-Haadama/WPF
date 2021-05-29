@@ -856,4 +856,3 @@ class Finance_DocumentType {
 		invoice_receipt = 9, // Supplier
 		count = 10;
 }
-
