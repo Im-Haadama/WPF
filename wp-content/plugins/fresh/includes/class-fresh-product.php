@@ -299,7 +299,8 @@ class Fresh_Product extends Finance_Product {
 
 //		print "v1=" . $args["value"] . "<br/>";
 		// return GuiSelectTable( $id, "im_products", $args);
-		return Core_Html::GuiAutoList($id, "products_w_drafts", $args);
+		$show_draft = GetArg($args, "show_draft", false);
+		return Core_Html::GuiAutoList($id, $show_draft ? "products_w_drafts" : "products", $args);
 	}
 
 	function PublishItem($price = 0) {
