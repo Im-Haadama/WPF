@@ -163,7 +163,7 @@ charset=utf8;
 " );
 		}
 
-			$current = self::CheckInstalled("Finance", "tables");
+			$current = self::CheckInstalled( "tables");
 
 		if ($current == $version and ! $force) return true;
 
@@ -240,7 +240,7 @@ charset=utf8;
 
 	function CreateFunctions($version, $force = false)
 	{
-		$current = self::CheckInstalled("Finance", "functions");
+		$current = self::CheckInstalled("functions");
 
 		if ($current == $version and ! $force) return true;
 
