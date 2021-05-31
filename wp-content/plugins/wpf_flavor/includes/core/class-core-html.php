@@ -1976,6 +1976,7 @@ class Core_Html {
 
 		$result = SqlQuery( $sql );
 		while ( $row = SqlFetchAssoc($result ) ) {
+			$row = apply_filters("datalist_alter", $row);
 //		var_dump($row); print "<br/>";
 			// print "key = " . $row[$id_field];
 			array_push($values, $row);
