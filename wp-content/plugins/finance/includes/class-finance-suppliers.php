@@ -64,6 +64,7 @@ class Finance_Suppliers
 			"edit_cols"=> array("product_name"=>1,"price"=>1),
 			"col_width"=> array("price"=>3),
 			"v_key" => "supplier_id",
+			"show_draft" => true,
 			"add_checkbox" => true);
 
 		if ($supplier_id)
