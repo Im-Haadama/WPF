@@ -141,16 +141,18 @@ class Fresh_Pricelist_Item {
 		return $s->getSupplierName();
 	}
 
-	static public function add_prod_info($row, $edit = true) {
+	static public function add_prod_info($row, $args) {
 		$create_info = GetParam( "create_products", false, false );
 		$supplier_id = GetParam( "supplier_id", true );
+		$edit = GetArg($args, "edit", false);
+		$show_draft = GetArg($args, "show_draft", false);
 
 		$pl_id = $row["id"];
 		if (! ($pl_id > 0)) return $row; // New row
 
 		$item = new Fresh_Pricelist_Item( $pl_id );
 
-		$row = $item->AddProdInfo( $row, $edit, $create_info, $supplier_id );
+		$row = $item->AddProdInfo( $row, $edit, $create_info, $supplier_id, $show_draft );
 		return $row;
 	}
 
@@ -161,7 +163,7 @@ class Fresh_Pricelist_Item {
 		return SqlQuery($sql);
 	}
 
-	public function AddProdInfo($row, $edit, $create_info, $supplier_id)
+	public function AddProdInfo($row, $edit, $create_info, $supplier_id, $show_draft)
 	{
 		$catalog = new Fresh_Catalog();
 
@@ -184,8 +186,6 @@ class Fresh_Pricelist_Item {
 //			if (! $p->isPublished()) $p->PublishItem($calculated_price);
 			SqlQuery("update im_supplier_price_list set product_id = $linked_prod_id where id = " .$this->id);
 
-			$map_id  = null;
-
 			array_push( $row, $p->getName() );
 			array_push($row, gui_select_tags("tag_" . $linked_prod_id, $p->getTags(), array("events" => "onchange=\"product_tag('" . Fresh::getPost() . "', $linked_prod_id)\"")));
 			array_push($row, Core_Html::GuiCheckbox("pub_" . $linked_prod_id, $p->isPublished(), array("events" => "onchange=\"product_publish('" . Fresh::getPost() . "', $linked_prod_id)\"")));
@@ -206,7 +206,8 @@ class Fresh_Pricelist_Item {
 				array_push($row, Fresh_Category::Select("categ_" . $row['id'], "categories", null));
 				array_push($row, Core_Html::GuiButton("btn_" . $row['id'], "Add Product", array("action" => "create_product('". Fresh::getPost() ."', $supplier_id, " . $row['id'] .")")));
 			} else {
-				array_push($row, Fresh_Product::gui_select_product("prd" . $this->id, "", array("events" => 'onchange=pricelist_option_selected(this)')),
+				array_push($row, Fresh_Product::gui_select_product("prd" . $this->id, "",
+					array("show_draft" => $show_draft, "events" => 'onchange=pricelist_option_selected(this)')),
 				"",
 				"",
 				"",
