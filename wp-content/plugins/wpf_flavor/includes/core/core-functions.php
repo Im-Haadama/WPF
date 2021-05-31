@@ -649,9 +649,11 @@ function AddFilter($tag, $function_to_add, int $priority = 10, int $accepted_arg
  */
 function next_weekday($week_day)
 {
-	$delta = ($week_day - date('w')); 	if ($delta < 2) $delta += 7;
-	return date('Y-m-d', strtotime ('today +' . $delta . 'days'));
+	$delta = ($week_day - current_time('w')); 	if ($delta < 2) $delta += 7;
+	$td = new DateTime('today +' . $delta . 'days', wp_timezone());
+	return $td->format('Y-m-d');
 }
+
 
 /**
  * @param $post_id
