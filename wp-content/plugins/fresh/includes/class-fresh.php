@@ -146,6 +146,7 @@ class Fresh {
 		add_filter( 'woocommerce_cart_item_price', 'im_show_nonsale_price', 10, 2 );
 //		add_filter( 'woocommerce_order_button_text', 'im_custom_order_button_text' );
 		add_action( 'init', 'custom_add_to_cart_quantity_handler' );
+		add_filter('datalist_alter', __CLASS__ . "::datalist_alter");
 //	Todo: Had error function 'my_custom_checkout_field_update_order_meta' not found	add_action( 'woocommerce_checkout_update_order_meta', 'my_custom_checkout_field_update_order_meta' );
 
 		add_action( 'init', array( 'Core_Shortcodes', 'init' ) );
@@ -668,6 +669,15 @@ class Fresh {
 	{
 		new Fresh_Settings();
 	}
+
+	static public function datalist_alter($row)
+	{
+		$product = new Fresh_Product($row['ID']);
+
+		$row['post_title'] = $product->getName(false, true);
+
+		return $row;
+	}
 }
 
 function category_content_func($atts, $content, $tag)
@@ -1078,4 +1088,9 @@ abstract class eSupplyStatus {
 	const Supplied = 5;
 	const Merged = 8;
 	const Deleted = 9;
+}
+
+function FreshLog($message)
+{
+	MyLog($message);
 }
