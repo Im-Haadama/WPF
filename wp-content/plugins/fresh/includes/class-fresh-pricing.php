@@ -70,8 +70,6 @@ class Fresh_Pricing {
 			if ( $rate >= 0 ) {
 				$buy = $p->getBuyPrice();
 				if ( $buy ) {
-					MyLog( "buy : $buy rate: $rate" );
-
 					return round( ( $buy * ( 100 + $rate ) ) / 100, 1 );
 				}
 			}

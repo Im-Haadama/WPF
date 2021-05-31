@@ -27,6 +27,7 @@ class Fresh_Order_Management {
 	}
 
 	function delivered_previous_days() {
+		FreshLog(__FUNCTION__);
 		$debug = 0;
 		$result = "Marking orders of yesterday delivered:\n";
 		$ids    = SqlQueryArrayScalar( "SELECT * FROM `wp_posts` 
