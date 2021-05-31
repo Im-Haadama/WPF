@@ -34,9 +34,6 @@ require_once(ABSPATH . 'wp-admin/includes/plugin.php');
  * @return Fresh
   */
 
-function fresh() {
-	return Fresh::instance();
-}
 
 function run_fresh() {
 	if ( ! class_exists( 'Fresh' ) ) {
