@@ -128,8 +128,7 @@ if (class_exists("WC_Payment_Gateway")) {
                 }
 
 				$id_number =  $wpdb->get_var( "SELECT id_number FROM im_payment_info WHERE user_id = $current_user_id" );
-				//$valid_id = (! class_exists('Israel_Shop')) or
-                $valid_id = Israel_Shop::ValidID($id_number);
+				$valid_id = (! class_exists('Israel_Shop')) or Israel_Shop::ValidID($id_number);
 
 //                update_usermeta($current_user_id, 'credit_token', 'invoice4u00');
 				$token = get_user_meta($current_user_id, 'credit_token');
