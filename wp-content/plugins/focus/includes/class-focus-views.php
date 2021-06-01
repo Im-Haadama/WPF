@@ -252,15 +252,17 @@ class Focus_Views {
 						"team"             => "Team"
 					);
 
-					if ((! $narrow)  || ($action == "gem_add_tasklist"))
-					$args["fields"]        = array(
-						"id",
-						"task_title",
-						"task_description", // Needed for task title
-						"team",
-						"project_id",
-						"priority"
-					);
+					if ((! $narrow)  || ($action == "gem_add_tasklist")) {
+						$args["fields"] = array(
+							"id",
+							"task_title",
+							"task_description", // Needed for task title
+							"team",
+							"project_id",
+							"priority"
+						);
+						if (GetParam("mission")) array_push($args["fields"], "mission_id");
+					}
 					else
 						$args["fields"]        = array(
 							"id",
@@ -976,15 +978,16 @@ class Focus_Views {
 		$args["col_width"]    = array( "task_description" => '30%' );
 		$args["prepare_plug"] = __CLASS__ . "::prepare_row";
 
-		$args["post_action"]  = self::getPost() .
-		                        $table = Core_Gem::GemTable( "tasklist", $args );
+		$args["post_action"]  = self::getPost();
+		$table = Core_Gem::GemTable( "tasklist", $args );
 
 		if ( $table ) {
 			$result .= $table;
 			$this->result_count = $args["count"];
 		}
 
-		$result .= " " . Core_Html::GuiHyperlink( "Add delivery", AddToUrl( "operation", "show_new_task&mission=1" ) );
+		$result .= " " . Core_Html::GuiHyperlink( "Add", AddToUrl( "operation", "gem_add_tasklist" ) );
+		$result .= " " . Core_Html::GuiHyperlink( "Add delivery", AddToUrl( "operation", "gem_add_tasklist&mission=1" ) );
 
 		return $result;
 	}
