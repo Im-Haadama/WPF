@@ -99,7 +99,7 @@ class Fresh_Client extends Finance_Client {
 				<th><label for="customer_type"><?php _e("Customer type"); ?></label></th>
 				<td>
 					<?php
-					print Finance_Client::gui_select_client_type("customer_type", $u->customer_type());
+					print self::gui_select_client_type("customer_type", $u->customer_type());
 					?><br/>
 					<span class="description"><?php _e("Please select customer type."); ?></span>
 				</td>
