@@ -99,6 +99,7 @@ class Finance_Yaad {
 		$params["Tyear"]  = $credit_info['exp_date_year'];
 		$rc = $this->CallServer( 'https://icom.yaad.net/p3/', $params );
 		self::SaveTransaction($rc, $user_id, $payment_number);
+		FinanceLog(StringVar($rc));
 		return $rc;
 	}
 
