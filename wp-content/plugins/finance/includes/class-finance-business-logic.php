@@ -410,15 +410,11 @@ class Finance_Business_Logic {
 	function payment_subject($accoount_ids)
 	{
 		$sql = "select transaction_ref from im_client_accounts where id in (" . CommaImplode($accoount_ids). ")";
-		FinanceLog($sql);
 		$ids = SqlQueryArrayScalar($sql);
-		FinanceLog(__FUNCTION__ . CommaImplode($ids));
 		if (! $ids) die("Failed: deliveries not found");
 
 		$sql = "select order_id from im_delivery where id in (" . CommaImplode($ids). ")";
-		FinanceLog($sql);
 		$order_ids = SqlQueryArrayScalar($sql);
-		FinanceLog(__FUNCTION__ . CommaImplode($order_ids));
 		if (! $order_ids) die ("Failed: orders not found");
 
 		return __("orders") . " " . CommaImplode($order_ids);
