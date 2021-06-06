@@ -186,7 +186,7 @@ class Fresh_Pricelist_Item {
 //			if (! $p->isPublished()) $p->PublishItem($calculated_price);
 			SqlQuery("update im_supplier_price_list set product_id = $linked_prod_id where id = " .$this->id);
 
-			array_push( $row, $p->getName() );
+			array_push( $row, Core_Html::GuiHyperlink($p->getName(), $p->getEditLink() ));
 			array_push($row, gui_select_tags("tag_" . $linked_prod_id, $p->getTags(), array("events" => "onchange=\"product_tag('" . Fresh::getPost() . "', $linked_prod_id)\"")));
 			array_push($row, Core_Html::GuiCheckbox("pub_" . $linked_prod_id, $p->isPublished(), array("events" => "onchange=\"product_publish('" . Fresh::getPost() . "', $linked_prod_id)\"")));
 			array_push( $row, $calculated_price);
