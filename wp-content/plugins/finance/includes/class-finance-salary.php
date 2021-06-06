@@ -658,7 +658,7 @@ class Finance_Salary {
 			$email = $u->CustomerEmail();
 			$r     = WPF_Flavor::getPost() . "?operation=get_balance_email&date=" .
 			         date( 'Y-m-j', strtotime( "last day of " . $year . "-" . $month ) ) . "&email=" . $email;
-			// print $r;
+//			 print $r . "<br/>";
 			$b = strip_tags( Core_Db_MultiSite::sExecute( $r, 4 ) );
 			//print "basket: " . $b . "<br/>";
 

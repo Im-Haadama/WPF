@@ -28,12 +28,20 @@ class Finance_Client_Accounts
 	public function init_hooks($loader)
 	{
 		$loader->AddAction("get_client_open_account", $this);
-
+		$loader->AddAction("get_balance_email", $this);
 	}
 
+	function get_balance_email()
+	{
+		$date = GetParam("date");
+		$email = GetParam("email");
+
+		$user = Finance_Client::getUserByEmail($email);
+		if (! $user) { print "user not found"; }
+		print $user->balance($date);
+	}
 	function get_client_open_account()
 	{
-		print "AAA";
 		if (! TableExists("client_accounts")) return "";
 		if (! $this->multisite) {
 			print "failed: multisite not configured";

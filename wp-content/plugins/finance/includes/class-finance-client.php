@@ -180,10 +180,12 @@ class Finance_Client {
 		                             " and meta.post_id = posts.ID");
 	}
 
-	public function balance() {
+	public function balance($date = null) {
 		$sql = 'select sum(transaction_amount) '
 		       . ' from im_client_accounts '
 		       . ' where client_id = ' . $this->user_id;
+
+		if ($date) $sql .= " and date <= $date ";
 
 		return round( SqlQuerySingleScalar( $sql ), 2 );
 	}
@@ -237,4 +239,11 @@ class Finance_Client {
 		return Core_Html::GuiAutoList( $id, "users", $args);
 	}
 
+	static function getUserByEmail($email)
+	{
+		$user = get_user_by("email", $email);
+		if (! $user) return null;
+
+		return new Finance_Client($user->id);
+	}
 }
