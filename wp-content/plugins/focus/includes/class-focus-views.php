@@ -1304,6 +1304,7 @@ class Focus_Views {
 		$template_args["header"]        = true;
 		$template_args["drill"]         = true;
 		$template_args["edit"]          = false;
+		$template_args["add_button"] = true;
 		$template_args["actions"]       = array(
 			array(
 				"delete",
