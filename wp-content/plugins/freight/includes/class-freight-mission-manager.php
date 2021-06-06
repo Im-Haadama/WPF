@@ -408,7 +408,7 @@ group by pm.meta_value, p.post_status");
 							Core_Html::GuiHyperlink( $order_id, "/wp-admin/post.php?post=$order_id&action=edit" ));
 						$new_row = array_fill(0, DispatchTableFields::max,'');
 						$new_row[DispatchTableFields::order_number] = $url;
-						$new_row[DispatchTableFields::customer_name] = $edit_user;
+						$new_row[DispatchTableFields::customer_name] = $user_name;
 						$new_row[DispatchTableFields::city] = $city;
 						$new_row[DispatchTableFields::address_1] = $address_1;
 						$new_row[DispatchTableFields::address_2] = $address_2;
