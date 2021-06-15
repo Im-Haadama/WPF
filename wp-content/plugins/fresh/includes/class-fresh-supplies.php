@@ -186,7 +186,7 @@ class Fresh_Supplies {
 		$args["sql"] = $sql;
 		$args["header"] = array("Id", "Supplier", "Date", "Mission");
 		$args["add_checkbox"] = true;
-		$args["selectors"] = array("supplier" => 'Fresh_Supplier::gui_select_supplier', "mission_id" => 'Flavor_Mission_Views::gui_select_mission');
+		$args["selectors"] = array("supplier" => 'Finance_Supplier::gui_select_supplier', "mission_id" => 'Flavor_Mission_Views::gui_select_mission');
 		$args["links"] = array("id" => Fresh_Supply::getLink("%s"));
 		$args["checkbox_class"] = self::gui_select_supply_status(null, $status);
 		$args["edit"] = false;
@@ -234,7 +234,7 @@ class Fresh_Supplies {
 				Core_Html::GuiHeader( 2, "בחר משימה" )
 			),
 			array(
-				Fresh_Supplier::gui_select_supplier( "supplier_select", null, array("events" => $event)),
+				Finance_Supplier::gui_select_supplier( "supplier_select", null, array( "events" => $event)),
 				Core_Html::gui_input_date( "date", "", date('y-m-d'),  'onchange="change_supplier()"'),
 				Flavor_Mission_Views::gui_select_mission( "new_mission", "", array("events"=>"gui_select_mission") )
 			)
@@ -286,7 +286,7 @@ class Fresh_Supplies {
 
 	function create_supply_from_file() {
 		$supplier_id = GetParam( "supplier_id" );
-		$S = new Fresh_Supplier($supplier_id);
+		$S = new Finance_Supplier($supplier_id);
 		print ETranslate( "Creating supply for" ) . " " . $S->getSupplierName() . " <br/>";
 
 		if (! isset($_FILES['fileToUpload']))

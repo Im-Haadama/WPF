@@ -56,7 +56,7 @@ class Fresh_Packing {
 		$result            = "";
 		$inventory_managed = false; // (InfoGet( "inventory" ) and !$print);
 
-		if ($supplier_id) $supplier          = new Fresh_Supplier( $supplier_id );
+		if ($supplier_id) $supplier          = new Finance_Supplier( $supplier_id );
 		else		$supplier = null;
 
 		$checkbox_class = "product_checkbox" . $supplier_id;
@@ -235,7 +235,7 @@ class Fresh_Packing {
 						if ($supplier_id == $debug_supplier) {
 							$result .= "Checking debug supplier $debug_supplier<br/>";
 						}
-						$supplier = new Fresh_Supplier( $row[0] );
+						$supplier = new Finance_Supplier( $row[0] );
 					} else {
 						$supplier = null;
 					}
@@ -285,7 +285,7 @@ class Fresh_Packing {
 		$result = Core_Html::HeaderText();
 		foreach ($tabs as $key => $tab)
 		{
-			$s = new Fresh_Supplier($key);
+			$s = new Finance_Supplier($key);
 			$result .= $tab[2];
 		}
 		print $result;

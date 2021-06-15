@@ -672,6 +672,9 @@ class Fresh {
 
 	static public function datalist_alter($row)
 	{
+		if (! isset($row['ID'])) {
+			return $row;
+		}
 		$product = new Fresh_Product($row['ID']);
 
 		$row['post_title'] = $product->getName(false, true);

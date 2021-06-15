@@ -52,7 +52,7 @@ class Fresh_Pricelist_Item {
 		$this->sale_price            = $result["sale_price"];
 		$this->category              = $result["category"];
 		$this->picture_path          = $result["picture_path"];
-		$this->supplier = new Fresh_Supplier($this->supplier_id);
+		$this->supplier = new Finance_Supplier($this->supplier_id);
 	}
 
 	public function getPreviousPrice()
@@ -136,7 +136,7 @@ class Fresh_Pricelist_Item {
 	}
 
 	public function getSupplierName() {
-		$s = new Fresh_Supplier( $this->getSupplierId() );
+		$s = new Finance_Supplier( $this->getSupplierId() );
 
 		return $s->getSupplierName();
 	}

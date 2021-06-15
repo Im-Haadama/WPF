@@ -226,7 +226,7 @@ class Fresh_Catalog {
 		$pricelist = Fresh_Pricelist::Get( $pricelist_id );
 
 		$supplier_id = $pricelist["supplier_id"];
-		$Supplier = new Fresh_Supplier($supplier_id);
+		$Supplier = new Finance_Supplier($supplier_id);
 		$supplier_product_name = Fresh_Pricelist::StripProductName($pricelist["product_name"]);
 
 		$sql = "INSERT INTO im_supplier_mapping (product_id, supplier_id, supplier_product_name, supplier_product_code, pricelist_id)"
@@ -424,7 +424,7 @@ class Fresh_Catalog {
 
 	static function SelectOption( $product_id, $pricelist_id ) {
 		$pricelist = Fresh_Pricelist::Get( $pricelist_id );
-		$Supplier = new Fresh_Supplier($pricelist["supplier_id"]);
+		$Supplier = new Finance_Supplier($pricelist["supplier_id"]);
 		$Product = new Fresh_Product($product_id);
 
 		// Remove supplier category

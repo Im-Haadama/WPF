@@ -49,7 +49,7 @@ class Fresh_Supplier_Balance {
 
 	static function get_supplier_transactions( $supplier_id ) {
 		$result = "";
-		$s = new Fresh_Supplier($supplier_id);
+		$s = new Finance_Supplier($supplier_id);
 		$result .= Core_Html::GuiHeader(1, $s->getSupplierName());
 		$args = array();
 		$selectors = array();
