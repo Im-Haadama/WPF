@@ -20,6 +20,22 @@ class Finance_Accounting {
 		$menu->AddMenu("הנהלת חשבונות", "הנהלת חשבונות", "edit_shop_orders", "accounting", array(__CLASS__, 'accounting'));
 		Core_Gem::getInstance()->AddTable( "business_info" );
 	}
+
+	static function monthly_report($month)
+	{
+		$report = "";
+		$report .= Core_Html::GuiHeader( 1, "מציג תוצאות לחודש המתחיל ביום " . $month );
+		$report .= Core_Html::GuiHeader(2, "הכנסות");
+		$next_month = date( 'Y-m-d', strtotime('+1 month', strtotime($month)));
+		$sql = "select sum(total), sum(fee) from im_delivery where date >= '$month' and date < '$next_month'";
+		$data = SqlQuerySingle($sql);
+
+		$report .= 'Deliveries (include vat): ' . $data[1] . "<br/>";
+		$report .= 'Goods : ' . $data[0] . "<br/>";
+		$report .= Core_Html::GuiHeader(2, "הוצאות");
+
+		return $report;
+	}
 	static function weekly_report( $week ) {
 		$report = "";
 		$report .= Core_Html::GuiHeader( 1, "מציג תוצאות לשבוע המתחיל ביום " . $week );
@@ -249,6 +265,7 @@ class Finance_Accounting {
 		$selected_tab = GetParam("st_suppliers", false, "weekly");
 
 		$tabs = array(array("weekly", "Weekly summary", "ws"),
+			array("monthly", "Monthly summary", "ms"),
 			array("supplier_transactions", "Suppliers accounts", "st"),
 			array("supplier_invoices", "Supply invoices", "si"));
 
@@ -275,9 +292,22 @@ class Finance_Accounting {
 				$tabs[0][2] = $tab_content;
 				break;
 
+			case "monthly":
+				$tab_content = "";
+				$month = GetParam("month", false, date( "Y-m-d", strtotime('1-' . date('m') . '-' . date('Y'))) );
+				if ( date( 'Y-m-d' ) > date( 'Y-m-d', strtotime( $month . "+1 month" ) ) ) {
+					$tab_content .= Core_Html::GuiHyperlink( "חודש הבא", AddToUrl("month", date( 'Y-m-d', strtotime( $month . " +1 month" ) ) )) . " ";
+				}
+
+				$tab_content .= Core_Html::GuiHyperlink( "חודש קודם", AddToUrl("month",  date( 'Y-m-d', strtotime( $month . " -1 month" ) ) ));
+				$tab_content .= Finance_Accounting::monthly_report($month);
+				$tabs[1][2] = $tab_content;
+				break;
+
+
 			case "supplier_transactions":
 				$tab_content = self::SupplierTransactions(GetParam("include_zero", false, false));
-				$tabs[1][2] = $tab_content;
+				$tabs[2][2] = $tab_content;
 //				if ($ms->getLocalSiteID() != 2) { // Makolet
 //					ardray_push( $tabs, array( "", "",  ) );
 //					array_push( $tabs, array(
@@ -289,7 +319,7 @@ class Finance_Accounting {
 				break;
 
 			case "supplier_invoices":
-				$tabs[2][2] = Finance_Invoices::Table( GetUrl());
+				$tabs[3][2] = Finance_Invoices::Table( GetUrl());
 				break;
 
 			case "subcontract": // Added by different class. Todo: add a filter(?)
