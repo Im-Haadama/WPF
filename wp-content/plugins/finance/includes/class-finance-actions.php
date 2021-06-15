@@ -10,6 +10,7 @@ class Finance_Actions {
 		$loader->AddAction( "bank_create_pay", $this );
 		$loader->AddAction("finance_add_payment", $this);
 		$loader->AddAction("delivery_send_mail", $this);
+		$loader->AddAction("finance_check_card", $this);
 	}
 
 	function account_add_trans()
@@ -143,7 +144,7 @@ class Finance_Actions {
 		               "VALUES(" . $supplier_id . ", '" . $date . "' ," . $amount . ", " . $bank_id . ", " . Finance_DocumentType::bank . ")";
 		SqlQuery( $sql );
 
-		$S = new Fresh_Supplier($supplier_id);
+		$S = new Finance_Supplier($supplier_id);
 		$result = "התווסף תשלום בסך " . $amount . " לספק " . $S->getSupplierName() . "<br/>";
 
 		$sql = "update im_business_info\n" .
@@ -174,6 +175,17 @@ class Finance_Actions {
 //		$id = GetParam("id", true);
 		$delivery = new Finance_Delivery(0, $id);
 		return $delivery->send_mail( $track_email);
+	}
+
+	function finance_check_card()
+	{
+		$user_id = GetParam("user_id", true);
+		$bl = new Finance_Business_Logic();
+		$args = array("check_only"=>true,
+			"amount"=>10,
+			"payment_number"=>1,
+			"user"=>$user_id);
+		$bl->pay_user_credit_wrap($args);
 	}
 
 }

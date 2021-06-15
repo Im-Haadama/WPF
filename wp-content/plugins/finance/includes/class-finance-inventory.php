@@ -188,7 +188,7 @@ class Finance_Inventory
 				print "skipping invalid supplier. $supplier_id<br/>";
 				continue;
 			}
-			$Supplier = new Fresh_Supplier($supplier_id);
+			$Supplier = new Finance_Supplier($supplier_id);
 
 			if ($include_counted or !$Supplier->getLastCount() or ((strtotime('now') - strtotime($Supplier->getLastCount())) > 2592000)) // One month
 				$status_table[$supplier_id] = array("id" => $supplier_id, "supplier_name" => $Supplier->getSupplierName(), "count_date" => $Supplier->getLastCount());
@@ -207,7 +207,7 @@ class Finance_Inventory
 		$year = GetArg($params, "year",null);
 		$supplier_id = GetArg($params, "supplier_id", null);
 
-		$supplier = new Fresh_Supplier($supplier_id);
+		$supplier = new Finance_Supplier($supplier_id);
 
 		$result = Core_Html::GuiHeader(1, __("Inventory of supplier"). " " . $supplier->getSupplierName()) ." " . __("for") . " 31-dec-" . $year ."<br/>";
 		$result .= "עדכון של הערך של העמודה השמאלית יעדכן את המלאי הזמין למכירה.<br/>";

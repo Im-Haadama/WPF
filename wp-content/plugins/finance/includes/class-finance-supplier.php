@@ -6,7 +6,7 @@
  * Date: 01/01/19
  * Time: 19:43
  */
-class Fresh_Supplier {
+class Finance_Supplier {
 	private $id;
 
 	public function __construct( $_id ) {
@@ -31,7 +31,7 @@ class Fresh_Supplier {
 			return null;
 		}
 
-		return new Fresh_Supplier( $id );
+		return new Finance_Supplier( $id );
 	}
 
 	/**

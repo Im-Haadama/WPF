@@ -235,16 +235,20 @@ class Finance_Business_Logic {
 	function pay_user_credit_wrap($args)
 	{
 		$customer_id = GetArg($args, "user");
+		$user = new Finance_Client( $customer_id );
+
 		if (null == $customer_id) {
 			print "Failed: no customer id";
 			die (1);
 		}
 		$amount = GetArg($args, "amount");
 		$payment_number = GetArg($args, "payment_number");
+		$check_only = GetArg($args, "check_only");
 
 		if (! $this->Paying_Connect()) return false;
 
-		$sql = 'select 
+		if (! $check_only) {
+			$sql = 'select 
 		id, 
 		date,
 		round(transaction_amount, 2) as transaction_amount,
@@ -261,25 +265,29 @@ class Finance_Business_Logic {
 		order by date asc
 		';
 
-		// If amount not specified, try to pay the balance.
-		$user = new Finance_Client($customer_id);
+			// If amount not specified, try to pay the balance.
 
-		if ($amount == 0)
-			$amount = $user->balance();
-
-		$rows = SqlQueryArray($sql);
-		$current_total = 0;
-
-		$paying_transactions = [];
-		foreach ($rows as $row) {
-			$trans_amount = $row[2];
-			if (($trans_amount + $current_total) < ($amount + 15)) {
-				array_push($paying_transactions, $row[0]);
-				$current_total += $trans_amount;
+			if ( $amount == 0 ) {
+				$amount = $user->balance();
 			}
-		}
 
-		$change = $amount - $current_total;
+			$rows          = SqlQueryArray( $sql );
+			$current_total = 0;
+
+			$paying_transactions = [];
+			foreach ( $rows as $row ) {
+				$trans_amount = $row[2];
+				if ( ( $trans_amount + $current_total ) < ( $amount + 15 ) ) {
+					array_push( $paying_transactions, $row[0] );
+					$current_total += $trans_amount;
+				}
+			}
+
+			$change = $amount - $current_total;
+		} else {
+			$paying_transactions = null;
+			$change = 0;
+		}
 
 		$credit_data = SqlQuerySingleAssoc("select * from im_payment_info where user_id = $customer_id");
 		if (! $credit_data) {
@@ -287,7 +295,7 @@ class Finance_Business_Logic {
 			return false;
 		}
 
-		$rc = $this->pay_user_credit($user, $credit_data, $paying_transactions, $amount, $change, $payment_number);
+		$rc = $this->pay_user_credit($user, $credit_data, $paying_transactions, $amount, $change, $payment_number, $check_only);
 		if (! $rc) {
 			print "Failed: " . $this->getErrorMessage();
 		}
@@ -297,7 +305,7 @@ class Finance_Business_Logic {
 //		}
 	}
 
-	function pay_user_credit(Finance_Client $user, $credit_data, $account_line_ids, $amount, $change = 0, $payment_number = 1)
+	function pay_user_credit(Finance_Client $user, $credit_data, $account_line_ids, $amount, $change = 0, $payment_number = 1, $check_only = false)
 	{
 //		print __FUNCTION__;
 		FinanceLog(__FUNCTION__ . " " . $user->getName() . " " . $amount);
@@ -307,9 +315,9 @@ class Finance_Business_Logic {
 
 		$token = get_user_meta($user->getUserId(), 'credit_token', true);
 
-		if ($token) {
+		if (!$check_only and $token) {
 			FinanceLog("trying to pay with token user " . $user->getName());
-			$transaction_info = $this->paying->TokenPay( $token, $credit_data, $user->getName(), $user->getUserId(), $amount, self::payment_subject($account_line_ids), $payment_number );
+			$transaction_info = $this->paying->TokenPay( $token, $credit_data, $user->getName(), $user->getUserId(), $amount, self::payment_subject($account_line_ids), $payment_number, $check_only );
 			if  (! $transaction_info) {
 				print "Failed: can't pay. Contact support";
 				FinanceLog("no transaction info");
@@ -329,14 +337,16 @@ class Finance_Business_Logic {
 		} else {
 			FinanceLog("trying to pay with credit info " . $user->getName());
 			// First pay. Use local store credit info, create token and delete local info.
-			$transaction_info = $this->paying->CreditPay($credit_data, $user->getName(), $user->getUserId(), $amount, self::payment_subject($account_line_ids), $payment_number);
+			$transaction_info = $this->paying->CreditPay($credit_data, $user->getName(), $user->getUserId(), $amount, self::payment_subject($account_line_ids), $payment_number, $check_only);
 			FinanceLog("back");
 			// info: Id, CCode, Amount, ACode, Fild1, Fild2, Fild3
-			if (($transaction_info['CCode'] != 0)) {
+			if ((($transaction_info['CCode'] != 0) and ($check_only and $transaction_info['CCode'] != 600))) {
 				FinanceLog(__FUNCTION__ . $transaction_info['CCode']);
 				$this->error_message .= "Got error " . $this->paying->ErrorMessage($transaction_info['CCode']) . "\n";
 				return false;
 			}
+			if ($check_only)  return true;
+
 			$transaction_id = $transaction_info['Id'];
 			if (! $transaction_id){
 				print "No transaction id";
@@ -400,7 +410,6 @@ class Finance_Business_Logic {
 		InfoUpdate($info_key, current_time("Y-m-d"));
 	}
 
-
 	function credit_clear_token()
 	{
 		$client_id = GetParam("id");
@@ -409,6 +418,7 @@ class Finance_Business_Logic {
 
 	function payment_subject($accoount_ids)
 	{
+		if (! $accoount_ids) return "no info";
 		$sql = "select transaction_ref from im_client_accounts where id in (" . CommaImplode($accoount_ids). ")";
 		$ids = SqlQueryArrayScalar($sql);
 		if (! $ids) die("Failed: deliveries not found");

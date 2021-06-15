@@ -71,7 +71,7 @@ class Finance_Yaad {
 	 *
 	 * @return array
 	 */
-	function CreditPay($credit_info, string $user_name, int $user_id, float $amount, string $payment_subject, int $payment_number = 1) : ?array
+	function CreditPay($credit_info, string $user_name, int $user_id, float $amount, string $payment_subject, int $payment_number = 1, $check_only = false) : ?array
 	{
 		FinanceLog(__FUNCTION__ . " " . $credit_info['card_number'] . " $amount $payment_subject");
 		// General
@@ -82,6 +82,7 @@ class Finance_Yaad {
 		$params["Tmonth"] = $credit_info['exp_date_month'];
 		$params["Tyear"]  = $credit_info['exp_date_year'];
 		$params["UserId"] = $credit_info['id_number'];
+		if ($check_only) $params["J5"] = "J2";
 
 		//		FinanceLog(StringVar($params));
 		$rc = $this->CallServer( 'https://icom.yaad.net/p3/', $params );
@@ -89,7 +90,7 @@ class Finance_Yaad {
 		return $rc;
 	}
 
-	public function TokenPay( string $token, array $credit_info, string $user_name, int $user_id, float $amount, string $payment_subject, int $payment_number = 1) {
+	public function TokenPay( string $token, array $credit_info, string $user_name, int $user_id, float $amount, string $payment_subject, int $payment_number = 1, $check_only = false) {
 		$params = array();
 		self::SetPayInfo($params);
 		self::SetTransactionInfo($params, $user_name, $credit_info['id_number'], $amount, $payment_subject, $payment_number);
@@ -97,6 +98,7 @@ class Finance_Yaad {
 		$params["CC"] = $token;
 		$params["Tmonth"] = $credit_info['exp_date_month'];
 		$params["Tyear"]  = $credit_info['exp_date_year'];
+		if ($check_only) $params["J5"] = "J2";
 		$rc = $this->CallServer( 'https://icom.yaad.net/p3/', $params );
 		self::SaveTransaction($rc, $user_id, $payment_number);
 		FinanceLog(StringVar($rc));
@@ -165,14 +167,19 @@ class Finance_Yaad {
 			return null;
 		}
 
-		$ch = curl_init();
-		curl_setopt( $ch, CURLOPT_URL, $url );
-		curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1 );
-		curl_setopt($ch, CURLOPT_TIMEOUT_MS, 2000);
+//		$ch = curl_init();
+//		curl_setopt( $ch, CURLOPT_URL, $url );
+//		curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1 );
+//		curl_setopt($ch, CURLOPT_TIMEOUT_MS, 2000);
+//
+//		$output = curl_exec( $ch );
 
-		$output = curl_exec( $ch );
+		$output = GetContent($url);
 		if (! $output) {
-			FinanceLog("Can't login to yaad");
+			$message = "Can't call yaad action " .  $request_params['action'];
+			if (isset($request_params['Token'])) $message .= " has token";
+			FinanceLog($message);
+			FinanceLog(StringVar($output));
 			return null;
 		}
 

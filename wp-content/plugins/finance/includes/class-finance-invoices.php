@@ -91,7 +91,7 @@ class Finance_Invoices {
 	}
 
 	static function get_supplier_name( $supplier_id ) {
-		$s = new Fresh_Supplier( $supplier_id );
+		$s = new Finance_Supplier( $supplier_id );
 
 		return $s->getSupplierName();
 	}
@@ -108,7 +108,7 @@ class Finance_Invoices {
 			"document_type" => "Document type"
 		);
 		$args["selectors"]        = array(
-			"part_id"       => "Fresh_Supplier::gui_select_supplier",
+			"part_id"       => "Finance_Supplier::gui_select_supplier",
 			"document_type" => __CLASS__ . "::gui_select_document_type"
 		);
 		$args["fields"]           = array( "part_id", "date", "ref", "amount", "net_amount", "document_type" );
@@ -200,7 +200,7 @@ class Finance_Invoices {
 		$args = self::Args();
 		$args["edit"] = 1;
 		$args["skip_id"] = true;
-		$args["selectors"] = array("part_id" => "Fresh_Supplier::gui_select_supplier", "document_type" => __CLASS__ . "::gui_select_document_type");
+		$args["selectors"] = array("part_id" => "Finance_Supplier::gui_select_supplier", "document_type" => __CLASS__ . "::gui_select_document_type");
 		$args["transpose"] = true;
 		$args["header_fields"] = array("Id", "Supplier", "Date", "Week", "Amount", "Reference", "Delivery fee", "Project", "Is active", "Pay date", "Document type", "Net amount", "Invoice file", "Invoice",
 			"Occasional supplier");

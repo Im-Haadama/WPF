@@ -344,7 +344,7 @@ class Finance_Bank
 		if (! $this->getUser()->can("cfo"))
 			return "no permissions";
 		$args              = self::Args();
-		$args["selectors"] = array( "part_id" => "Fresh_Supplier::gui_select_supplier" );
+		$args["selectors"] = array( "part_id" => "Finance_Supplier::gui_select_supplier" );
 
 		print Core_Gem::GemAddRow( "bank_transaction_types", "Transaction types", $args );
 		return true;

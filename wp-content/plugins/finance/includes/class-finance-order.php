@@ -828,7 +828,7 @@ class Finance_Order {
 		if (class_exists('Fresh_Order')) {
 			$order  =  new Fresh_Order($this->order_id);
 			if ($supply_points = $order->SuppliersOnTheGo()) {
-				$supplier         = new Fresh_Supplier( $supply_points[0] );
+				$supplier         = new Finance_Supplier( $supply_points[0] );
 				$supplier_address = $supplier->getAddress();
 			}
 		}
@@ -840,7 +840,7 @@ class Finance_Order {
 //		array_push($fields, )
 //		if ($supply_points = $this->SuppliersOnTheGo($mission_id) ) {
 //					$order = new Fresh_Order( $order_id );
-//						$supplier = new Fresh_Supplier( $supply_points[0] );
+//						$supplier = new Finance_Supplier( $supply_points[0] );
 //						$this->AddPrerequisite( $order_id, $supplier->getAddress() );
 //					}
 //				}

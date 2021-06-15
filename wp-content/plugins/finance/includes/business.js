@@ -243,3 +243,9 @@ function bank_create_account(post_file, div)
 {
     execute_url(post_file + '?operation=create_bank_account', show_response, div);
 }
+
+function business_check_card(customer_id)
+{
+    let url = finance_post_file + '?operation=finance_check_card&user_id=' + customer_id;
+    execute_url(url, success_message);
+}

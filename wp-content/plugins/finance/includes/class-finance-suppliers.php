@@ -359,7 +359,7 @@ class Finance_Suppliers
 	{
 		$result = "";
 		$supplier_id = GetParam("supplier_id");
-		$s = new Fresh_Supplier($supplier_id);
+		$s = new Finance_Supplier($supplier_id);
 		$result .= Core_Html::GuiHeader(1, __("Supplier pricelist") . " " . $s->getSupplierName());
 		$result .= Core_Html::GuiButton("btn_filter", __("Filter"), "pricelist_filter()");
 		if ($s->getMachineUpdate()) $result .= "This supplier list defined as been imported<br/>";
