@@ -22,6 +22,7 @@ class Freight_Actions {
 	{
 //		print debug_trace(10); print "---------------------<br/>";
 		$loader->AddAction("order_save_pri", $this, 'order_save_pri');
+		$loader->AddAction("order_save_prios", $this, 'order_save_prios');
 		$loader->AddAction("mission_update_type", $this, 'mission_update_type');
 //		$loader->AddAction("mission_details", $this, 'mission_details');
 		$loader->AddAction("freight_do_add_delivery", $this);
@@ -38,12 +39,32 @@ class Freight_Actions {
 		$loader->AddAction("show_import", $this);
 	}
 
+	static function order_save_prios()
+	{
+		$data = GetParamArray("data");
+		for ($i = 0; $i < count($data); $i += 3)
+		{
+			$order_id = $data[$i];
+			$site_id = $data[$i+1];
+			$pri = $data[$i+2];
+			if (! self::do_set_pri($order_id, $site_id, $pri))
+				return false;
+		}
+
+		return true;
+	}
+
 	static function order_save_pri()
 	{
 		$order_id = GetParam("order_id", true);
 		$site_id = GetParam("site_id", true);
 		$pri = GetParam("pri", true);
 
+		return self::do_set_pri($order_id, $site_id, $pri);
+	}
+
+	static function do_set_pri($order_id, $site_id, $pri)
+	{
 		//			print info_get("mission_order_priority_" . $site_id . '_' .$order_id);
 		// TEMP: Remove duplicates.
 		InfoDelete("mission_order_priority_" . $site_id . '_' .$order_id);
@@ -51,7 +72,6 @@ class Freight_Actions {
 		if ($pri > 0)
 			return InfoUpdate("mission_order_priority_" . $site_id . '_' .$order_id, $pri);
 		return false;
-
 	}
 
 	static function mission_update_type()
