@@ -920,3 +920,9 @@ function start_download($File, $size)
 	header("Content-Length: " . $size);
 	header("Connection: close");
 }
+
+function swap( &$a, &$b ) {
+	$x = $a;
+	$a = $b;
+	$b = $x;
+}
