@@ -175,8 +175,10 @@ class WPF_Flavor {
 		Core_Data::init_hooks($this->loader);
 		add_action('init', array($this->loader, 'run'), 1000);
 
+//		FlavorLog(__FUNCTION__);
+//		FlavorLog(get_user_id());
 		// For production
-		if ((get_user_id() == 1 or get_user_id() == 2)  and defined("DEBUG_USER")) wp_set_current_user(DEBUG_USER);
+		if ((get_user_id() == 1 or get_user_id() == 824)  and defined("DEBUG_USER")) wp_set_current_user(DEBUG_USER);
 	}
 
 	public function blog_settings()

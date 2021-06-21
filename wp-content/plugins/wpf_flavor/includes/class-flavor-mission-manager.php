@@ -86,7 +86,7 @@ class Flavor_Mission_Manager {
 
 	static function print_deliveries( $mission_id, $selectable = false, $debug = false ) {
 		$m = new Mission($mission_id);
-		$orders = $m->getOrders();
+		$orders = $m->getOrders(/*array('wc-pending')*/);
 		$data = "";
 
 		$prev_user = - 1;

@@ -279,12 +279,16 @@ class Mission {
 		return SqlQuery( "update im_missions set mission_type = $type where id = " . $this->id);
 	}
 
-	function getOrders()
+	function getOrders($more_status = null)
 	{
 		$sql  = 'SELECT posts.id, order_user(posts.id) '
 		        . ' FROM `wp_posts` posts'
 		        . ' WHERE ' .
-		        " `post_status` in ('wc-awaiting-shipment', 'wc-processing') and " .
+		        " `post_status` in ('wc-awaiting-shipment', 'wc-processing'";
+
+		if ($more_status) $sql .= ", " . CommaImplode($more_status, true);
+
+		$sql .= ") and " .
 		        " id in (select post_id from wp_postmeta " .
 		        " WHERE meta_key = 'mission_id' " .
 		        " AND meta_value = " . $this->id . ") ";
