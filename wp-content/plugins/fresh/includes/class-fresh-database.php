@@ -137,8 +137,6 @@ order by 1;");
 
 		SqlQuery("alter table im_supplier_price_list add product_id integer(11)");
 
-		SqlQuery("alter table ${db_prefix}mission_types add default_price float");
-
 		SqlQuery("create table im_client_types
 (
 	id int auto_increment
