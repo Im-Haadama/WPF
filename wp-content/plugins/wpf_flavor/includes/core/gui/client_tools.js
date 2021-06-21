@@ -140,6 +140,7 @@ function data_set_active(post_file, id)
 function execute_url(url, finish_action, obj, xml) {
     let xhp = new XMLHttpRequest();
 
+    if (! xhp) alert("can't");
     if (xml) xhp.overrideMimeType('text/xml');
 
     xhp.onreadystatechange = function () {
