@@ -525,7 +525,13 @@ class Freight {
 
         $file = FREIGHT_INCLUDES_URL . 'js/admin.js';
 	    wp_register_script( 'freight_admin', $file, null, $this->version, false);
-	    wp_enqueue_script('freight_admin');
+
+		$params = array(
+			'admin_post' => get_site_url() . Freight::getPost()
+		);
+		wp_localize_script('freight_admin', 'freight_admin_params', $params);
+
+		wp_enqueue_script('freight_admin');
 		wp_add_inline_script('freight_admin', 'let freight_post="' . self::getPost() . '";', 'before');
 
 		$file = FREIGHT_INCLUDES_URL . 'js/legacy.js';
