@@ -24,29 +24,34 @@ abstract class OrderTableFields
 	const fee = 11;
 	const comments = 12;
 	const external_order_id = 13;
-	const max = 14;
+	const order_status = 15;
+	const max = 15;
 }
 
 abstract class DispatchTableFields
 {
 	const order_number = 0;
-	const customer_name = 1;
-	const city = 2;
-	const address_1 = 3;
-	const address_2 = 4;
-	const comments = 5;
-	const external_id = 6;
-	const phone = 7;
-	const delivered = 8;
-	const eta = 9;
-	const acc_km = 10;
-	const priority = 11;
-	const max = 12;
+	const order_status = 1;
+	const customer_name = 2;
+	const city = 3;
+	const address_1 = 4;
+	const address_2 = 5;
+	const comments = 6;
+	const external_id = 7;
+	const phone = 8;
+	const delivered = 9;
+	const eta = 10;
+	const acc_km = 11;
+	const priority = 12;
+	const max = 13;
 }
 
 class Freight_Mission_Manager
 {
 	private $mission_id;
+	private $zoom;
+	private $center;
+	private $distance_matrix;
 
 	// Data from sites: Point order ids and site ids
 	private $point_orders;
@@ -60,7 +65,6 @@ class Freight_Mission_Manager
 	private $stop_points;
 
 	static Core_MultiSite $multi_site;
-
 
 	function instance()
 	{
@@ -79,6 +83,7 @@ class Freight_Mission_Manager
 		$this->point_sites         = array();
 		$this->point_orders        = array();
 		$this->path                = null;
+		$this->distance_matrix = array();
 	}
 
 	static public function get_mission_manager($mission_id)
@@ -91,7 +96,7 @@ class Freight_Mission_Manager
 		FreightLog(__FUNCTION__);
 		// Try cache
 		$data = InfoGet("mission_$mission_id");
-		if (false and $data) {
+		if ($data) {
 			FreightLog("using cache");
 			return unserialize($data);
 		}
@@ -268,6 +273,9 @@ group by pm.meta_value, p.post_status");
 			print 'Failed: no points';
 			return null;
 		}
+		$center_long = 0;
+		$center_lat = 0;
+		$count = 0;
 
 		foreach ($points as $orders)
 		{
@@ -290,11 +298,18 @@ group by pm.meta_value, p.post_status");
 			// Set the name;
 
 			$lat_long = Freight_Mission_Manager::get_lat_long($address);
+			$center_long += $lat_long[1]; $center_lat+=$lat_long[0]; $count++;
+
 			if (! $lat_long) $lat_long = array(32, 34);
-			$output .='<marker id="' . $pri . '" name="' . $name . '" address="' . urlencode($address) . '" type="Delivery"'.
-			' lat="' . $lat_long[0]. '" lng="' . $lat_long[1] . '" ';
-			$output .='/>' . PHP_EOL;
+			$id = $point[OrderTableFields::order_id] . '_' . $point[OrderTableFields::site_id];
+			$output .='<marker id="' . $id . '" pri="' . $pri . '" address="' . urlencode($address . " " . $order[OrderTableFields::external_order_id]) . '" type="Delivery"'.
+			' lat="' . $lat_long[0]. '" lng="' . $lat_long[1] . '" '
+			          .'/>' . PHP_EOL;
 		}
+
+		$output .= '<marker id="center"' .
+		          ' lat="' . ($center_lat / $count) . '" lng="' . ($center_long / $count) . '" '
+		          .'/>' . PHP_EOL;
 
 		$output .='</markers>';
 
@@ -333,6 +348,7 @@ group by pm.meta_value, p.post_status");
 		$path_info = [];
 		$path_info['header'] = array(
 			__( "Order number" ),
+			__( "Order status"),
 			__( "Customer name" ),
 			__( "City"),
 			__( "Address 1" ),
@@ -406,8 +422,10 @@ group by pm.meta_value, p.post_status");
 
 						$url = (($type == "supplies") ? Core_Html::GuiHyperlink($order_id, "/wp-admin/admin.php?page=supplies&operation=show_supply&id=$order_id") :
 							Core_Html::GuiHyperlink( $order_id, "/wp-admin/post.php?post=$order_id&action=edit" ));
+						$order_status = $order_info[OrderTableFields::max];
 						$new_row = array_fill(0, DispatchTableFields::max,'');
 						$new_row[DispatchTableFields::order_number] = $url;
+						$new_row[DispatchTableFields::order_status] = self::getStatus($order_info);
 						$new_row[DispatchTableFields::customer_name] = $user_name;
 						$new_row[DispatchTableFields::city] = $city;
 						$new_row[DispatchTableFields::address_1] = $address_1;
@@ -456,8 +474,10 @@ group by pm.meta_value, p.post_status");
 
 //			$args["hide_cols"] = array( OrderTableFields::client_number - 1 => 1 );
 			$result            .= Core_Html::gui_table_args( $path_info, "dispatch_" . $the_mission, $args );
+			$result .= Core_Html::GuiButton("btn_number", "Set seq", "freight_set_seq($the_mission)");
+			$result .= Core_Html::GuiButton("btn_number", "Reset seq", "freight_reset_seq($the_mission)");
 			if (($end_address = $m->getEndAddress()))
-				$total_distance += round(self::get_distance($prev, $m->getEndAddress()) / 1000, 1);
+				$total_distance += round(self::get_distance($prev, $end_address) / 1000, 1);
 
 			$result .= Core_Html::GuiHeader(1, __("Total distance") . " $total_distance") .
 				Core_Html::GuiHeader(1, __("Number of points") . " $point_number");
@@ -480,8 +500,9 @@ group by pm.meta_value, p.post_status");
 		// Build the path
 		if ($build or !$this->path) {
 			$this->path = array($mission->getStartAddress());
+			self::calculate_center();
 			self::find_route_1( array_diff( $this->stop_points, array( $mission->getStartAddress() ) ), // Remove start address if appears in points.
-				false, $mission->getEndAddress() );
+				$mission->getEndAddress() );
 			// return null;
 		}
 		return $this->lines_per_point;
@@ -516,8 +537,10 @@ group by pm.meta_value, p.post_status");
 		$dom = \Dom\str_get_html( $output );
 		foreach ( $dom->find( 'tr' ) as $row ) {
 			$new_row = [];
-			for ($i = 0; $i < OrderTableFields::max; $i++)
+			for ($i = 0; $i <= OrderTableFields::max; $i++){
 				$new_row[$i] = TableGetText($row, $i);
+//				print $new_row[$i] . "<br/>";
+			}
 
 //			var_dump($new_row); print "<br/>";
 			array_push($rows, $new_row);
@@ -525,7 +548,6 @@ group by pm.meta_value, p.post_status");
 
 		return $rows;
 	}
-
 
 	static function getPost()
 	{
@@ -716,32 +738,42 @@ group by pm.meta_value, p.post_status");
 		return array($lat, $long);
 	}
 
-	static function get_distance( $address_a, $address_b ) {
-		if ( 0) {
-			print "a: " . $address_a . "<br/>";
-			print "b: " . $address_b . "<br/>";
-		}
+	function get_center_distance($address): float {
+		$lat_long = self::get_lat_long($address);
+		return sqrt(($lat_long[0] - $this->center[0]) ** 2 +($lat_long[1] - $this->center[1]) ** 2);
+	}
+
+	function get_distance( $address_a, $address_b ) {
 		if ( rtrim( $address_a ) == rtrim( $address_b ) ) {
 			return 0;
 		}
+		if (isset($this->distance_matrix[$address_a][$address_b])) return $this->distance_matrix[$address_a][$address_b];
+
 		$sql = "SELECT distance FROM im_distance WHERE address_a = '" . EscapeString( $address_a ) . "' AND address_b = '" .
 		       EscapeString( $address_b ) . "'";
 		// print $sql . " ";
 		$ds  = SqlQuerySingleScalar( $sql );
 
 		if ( $ds > 0 ) {
+			if (! isset($this->distance_matrix[$address_a])) $this->distance_matrix[$address_a] = array();
+			$this->distance_matrix[$address_a][$address_b] = $ds;
 			return $ds;
 		}
 		$r = self::do_get_distance( $address_a, $address_b );
 		if (! $r or ! is_array($r)) {
-//			print "no distance $address_a $address_b<br/>";
-//			print debug_trace(10); print "<br/>";
-			// One is invalid
 			return -1;
 		}
 		$distance = $r[0];
 		$duration = $r[1];
+
+//		$walk = self::do_get_distance( $address_a, $address_b, 'walking' );
+//		if ($walk[1] < $duration) {
+//			$distance = $walk[0];
+//			$duration = $walk[1];
+//		}
 		if ( $distance > 0 ) {
+			if (! isset($this->distance_matrix[$address_a])) $this->distance_matrix[$address_a] = array();
+			$this->distance_matrix[$address_a][$address_b] = $distance;
 			$sql1 = "insert into im_distance (address_a, address_b, distance, duration) VALUES 
 				('" . EscapeString( $address_a ) . "', '" .
 			        EscapeString(  $address_b ) . "', $distance, $duration)";
@@ -756,7 +788,8 @@ group by pm.meta_value, p.post_status");
 		return - 1;
 	}
 
-	function find_route_1( $rest, $print, $end )
+//	function
+	function find_route_1( $rest, $end )
 	{
 		if (! $rest or ! is_array($rest)) return;
 		if ( count( $rest ) == 1 ) {
@@ -767,34 +800,65 @@ group by pm.meta_value, p.post_status");
 
 		$best_cost = self::evaluate_path( $this->path, $end );
 
-		if ($print) {
-			print "first guess route<br/>";
-			print_path( $this->path );
-		}
+		// Try to put the last points next to neighbour.
+		$continue = 5;
+		$new_path = $this->path;
 
-		// Continue as long as switching adjacent nodes makes the route shorter
-		// Disable for now, because the preq is not implemented here.
-		$switched  = false;
-		while ( $switched ) {
-			$switched = false;
-			for ( $switch_node = 1; $switch_node < count( $path ) - 1; $switch_node ++ ) {
-				$alternate_path = $path;
-				swap( $alternate_path[ $switch_node ], $alternate_path[ $switch_node + 1 ] );
-				$temp_cost = evaluate_path( $node, $alternate_path, $end );
-				if ( $temp_cost < $best_cost ) {
-					if ( $print ) {
-						print "Best: " . $temp_cost . " " . $switch_node . " " . $path[ $switch_node ] . " " .
-						      $path[ $switch_node + 1 ] . "<br/>";
-					}
-					$switched = true;
-					swap( $path[ $switch_node ], $path[ $switch_node + 1 ] );
-					$best_cost = $temp_cost;
-				}
+		while ($continue) {
+			$point = end( $new_path );
+			$close = $this->close_to( $point );
+			$index = array_search( $close, $new_path );
+			unset_by_value( $new_path, $point );
+			array_splice( $new_path, $index + 1, 0, $point );
+
+			$cost = self::evaluate_path($new_path, $end);
+			if ($cost < $best_cost) {
+				FreightLog(__FUNCTION__ . " cost $best_cost new_cost $cost");
+				$this->path = $new_path;
+				$best_cost = $cost;
+			} else {
+				$continue--;
 			}
 		}
+
+
+//		$alter_path = [];
+//		$this->find_route_alter($rest, $alter_path);
+
+//		$best_cost = self::evaluate_path( $this->path, $end );
+
+//		for ($i = 0; $i < count($this->path) - 1; $i++)
+//		{
+//			$next_dis = self::get_distance($this->path[$i], $this->path[$i+1]);
+//			for ($j = $i + 2; $j < count($this->path); $j++) {
+//				if (self::get_distance($this->path[$i], $this->path[$j]) < $next_dis) {
+//
+//				}
+//			}
+//		}
+//		// Continue as long as switching adjacent nodes makes the route shorter
+//		// Disable for now, because the preq is not implemented here.
+//		$switched  = false;
+//		while ( $switched ) {
+//			$switched = false;
+//			for ( $switch_node = 1; $switch_node < count( $this->path ) - 1; $switch_node ++ ) {
+//				for ( $delta = 1; $delta < $switch_node; $delta ++) {
+//					FreightLog("switch $switch_node $delta");
+//					$alternate_path = $this->path;
+//					$other = ($switch_node + $delta) % count($this->path);
+//					swap( $alternate_path[ $switch_node ], $alternate_path[ $other ] );
+//					$temp_cost = self::evaluate_path( $alternate_path, $end );
+//					if ( $temp_cost < $best_cost ) {
+//						$switched = true;
+//						FreightLog( "switching " . $this->path[ $switch_node ] . " " . $this->path[ $switch_node + 1 ] );
+//						swap( $this->path[ $switch_node ], $this->path[ $other ] );
+//						$best_cost = $temp_cost;
+//					}
+//				}
+//			}
+//		}
 	}
 
-	// Make sure that point doesn't appear twice
 	function find_route( $rest, &$path ) {
 		FreightLog(__FUNCTION__ . count($rest));
 
@@ -838,11 +902,11 @@ group by pm.meta_value, p.post_status");
 
 		foreach ( $candidates as $candidate ) {
 			$candidate_priority = self::order_get_pri( $this->point_orders[ $candidate ]);
-			$candidate_distance = self::get_distance( $current_node, $candidate );
+			$candidate_distance = self::get_distance( $current_node, $candidate ) + 30000 * (self::get_center_distance($candidate));
 			if (($candidate_priority < $selected_priority) // Better priority
 			    or (($candidate_priority == $selected_priority) and ($candidate_distance < $selected_distance)) // Same priority.
 				or (false))
-				/// It's  a collection. ignore the prio
+				/// It's  a pickup. ignore the prio
 			{
 				$selected          = $candidate;
 				$selected_distance = $candidate_distance;
@@ -855,7 +919,7 @@ group by pm.meta_value, p.post_status");
 		return $this->find_route($rest, $path);
 	}
 
-	static function evaluate_path( $elements, $end ) {
+	function evaluate_path( $elements, $end ) {
 //	if ( $end < 1 ) {
 //		print "end is " . $end . "<br/>";
 //	}
@@ -913,7 +977,7 @@ group by pm.meta_value, p.post_status");
 		SqlQuery( "update im_missions set path = \"" . EscapeString(CommaImplode($path, true)) . "\" where id = " . $missions );
 	}
 
-	static function do_get_distance( $a, $b ) {
+	static function do_get_distance( $a, $b, $mode = null ) {
 		// $start = new DateTime();
 		if ( trim($a) == trim($b) ) {
 			return 0;
@@ -922,38 +986,22 @@ group by pm.meta_value, p.post_status");
 
 		if ( is_null( $b ) or strlen( $b ) < 1 ) return null;
 
-//	debug_time1("google start");
 		$s = "https://maps.googleapis.com/maps/api/directions/json?origin=" . urlencode( $a ) . "&destination=" .
 		     urlencode( $b ) . "&key=" . MAPS_KEY . "&language=iw";
 
+		if ($mode) $s .= "&mode=$mode";
+
 		// print $s;
 		$result = GetContent( $s );
-//	debug_time1("google end");
 
 		$j = json_decode( $result );
 
-		if ( ! $j or ! isset( $j->routes[0] ) ) {
-//			print "Can't find distance between '" . $a . "' and '" . $b . "'<br/>";
-
-			return null;
-		}
+		if ( ! $j or ! isset( $j->routes[0] ) ) return null;
 
 		$v = $j->routes[0]->legs[0]->distance->value;
 		$t = $j->routes[0]->legs[0]->duration->value;
 
-//	$end = new DateTime();
-//
-//	$delta = $start->diff($end)->format("%s");
-//	// var_dump($delta); print "<br/>"; // ->format("%s");
-//	// print "diff: " . $sec . "<br/>";
-//	if ($delta > 0) {
-//		print "בדוק כתובות" . $a . " " . $b . "<br/>";
-//	}
-		if ( $v > 0 ) {
-			return array( $v, $t );
-		}
-
-//		print "can't find distance between " . $a . " " . $b . "<br/>";
+		if ( $v > 0 ) return array( $v, $t );
 
 		return null;
 	}
@@ -1080,7 +1128,7 @@ group by pm.meta_value, p.post_status");
 				$result = "/wp-admin/admin.php?page=missions&week=2021-02-21&operation=mission_dispatch&id=" . $id;
 			case "external_order":
 				if ($id > '170000') { // baldar
-					$result = "http://84.228.229.231/smartphone/TaskDetails.aspx?dlv=$id";
+					$result = "http://89.208.0.62/smartphone/TaskDetails.aspx?dlv=$id";
 				}
 		}
 		if ($link) return Core_Html::GuiHyperlink($id, $result);
@@ -1231,5 +1279,77 @@ group by pm.meta_value, p.post_status");
 		FreightLog(__FUNCTION__ . " done");
 	}
 
+	static function getStatus($order_info)
+	{
+		$order_status = $order_info[OrderTableFields::order_status];
+		if ($order_status == 'wc-processing') return "V";
+//		return "X";
 
+		$order_id = $order_info[OrderTableFields::order_id];
+		if ($order_info[OrderTableFields::site_id] == self::$multi_site->getLocalSiteID())
+		return Core_Html::GuiHyperlink("+",
+		                                    wp_nonce_url( admin_url( 'admin-ajax.php?action=woocommerce_mark_order_status&status=processing&order_id=' .
+		                                                             $order_id ), 'woocommerce-mark-order-status' )
+		                                    );
+
+		return "X";
+	}
+
+	function map_center()
+	{
+		$min_long = 360;
+		$max_long = 0;
+		$min_lat = 360;
+		$max_lat = 0;
+		foreach ($this->stop_points as $point) {
+			$long_lat = self::get_lat_long($point);
+			if (! $long_lat) continue;
+			if ($long_lat[0] > $max_lat) $max_lat = $long_lat[0];
+			if ($long_lat[0] < $min_lat) $min_lat = $long_lat[0];
+			if ($long_lat[1] > $max_long) $max_long = $long_lat[1];
+			if ($long_lat[1] < $min_long) $min_long = $long_lat[1];
+		}
+		$max_size = max($max_long - $min_long, $max_lat - $min_lat) * 6378137;
+
+		$this->zoom = round(log($max_size / 1128.497220, 2), 0);
+		return ($min_lat + $max_lat) / 2 . ", " .
+		       ($min_long + $max_long) / 2;
+	}
+
+	function zoom()
+	{
+		if ($this->zoom > 0 and $this->zoom< 20)
+		return $this->zoom;
+		return 12;
+	}
+
+	function calculate_center()
+	{
+		$this->center = array(0, 0);
+		$count = 0;
+		foreach ($this->stop_points as $point)
+		{
+			$lat_long = self::get_lat_long($point);
+			$this->center[0] += $lat_long[0];
+			$this->center[1] += $lat_long[1];
+			$count ++;
+		}
+		if (! $count) return;
+		$this->center[0] /= $count;
+		$this->center[1] /= $count;
+	}
+
+	function close_to($address_b)
+	{
+		$close = null;
+		$distance = null;
+		foreach ($this->distance_matrix as $address_a => $values){
+			if (isset($this->distance_matrix[$address_a][$address_b]) and (! $distance or $distance > $this->distance_matrix[$address_a][$address_b]))
+			{
+				$distance =$this->distance_matrix[$address_a][$address_b];
+				$close = $address_a;
+			}
+		}
+		return $close;
+	}
 }
