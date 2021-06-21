@@ -25,7 +25,7 @@ class Finance_Delivery_Manager
 //		FlavorLog(InfoGet($key));
 		if (InfoGet($key) != current_time($format))
 		{
-			FlavorLog(__FUNCTION__ . " sync from master");
+			FinanceLog(__FUNCTION__ . " sync from master");
 
 			if (self::sync_from_master())
 				InfoUpdate($key, current_time($format));

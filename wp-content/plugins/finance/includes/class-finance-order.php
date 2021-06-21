@@ -834,6 +834,8 @@ class Finance_Order {
 		}
 		array_push($fields, $supplier_address);
 
+		array_push($fields, $this->getStatus());
+
 		// Check if we need to collect something on the go
 //			if ( $site_id == $multisite->getLocalSiteID() and $order_site != "supplies" ) {
 //				$order = self::getOrder($order_id);
