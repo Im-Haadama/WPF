@@ -37,10 +37,6 @@ class Freight_Database extends Core_Database {
 
 		SqlQuery("alter table ${db_prefix}mission_types add default_price float");
 
-		SqlQuery("alter table ${db_prefix}mission_types add start_address varchar(200) charset utf8, add end_address varchar(200) charset utf8;");
-
-
-
 		SqlQuery("alter table im_multisite
 	add pickup_address varchar(50) not null;
 
