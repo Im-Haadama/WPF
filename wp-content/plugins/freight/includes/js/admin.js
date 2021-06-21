@@ -184,3 +184,66 @@ function update_switch_time()
     execute_url(operation);
 
 }
+
+function freight_set_seq(id)
+{
+    let table = document.getElementById("dispatch_" + id);
+    let post_file = freight_admin_params['admin_post'];
+
+    let i = 1;
+    let col_idx = 12;
+    let last_pri = 0;
+    let data = [];
+
+    while (i < table.rows.length)
+    {
+        let pri_sel = table.rows[i].cells[col_idx].firstElementChild;
+        if (pri_sel.value == 100){
+            pri_sel.value = ++last_pri;
+            let order_id = pri_sel.id.substr(3, pri_sel.id.indexOf('_') - 3);
+            if (order_id > 0) {
+
+                let site_id = pri_sel.id.substr(pri_sel.id.indexOf('_') + 1);
+
+                data.push(order_id);
+                data.push(site_id);
+                data.push(pri_sel.value);
+            }
+        }
+        i ++;
+    }
+    url = freight_post + "?operation=order_save_prios&data=" + data.join();
+
+    execute_url(url)
+}
+
+function freight_reset_seq(id)
+{
+    let table = document.getElementById("dispatch_" + id);
+    let post_file = freight_admin_params['admin_post'];
+
+    let i = 1;
+    let col_idx = 12;
+    let data = [];
+
+    while (i < table.rows.length)
+    {
+        let pri_sel = table.rows[i].cells[col_idx].firstElementChild;
+        if (pri_sel.value != 100){
+            pri_sel.value = 100;
+            let order_id = pri_sel.id.substr(3, pri_sel.id.indexOf('_') - 3);
+            if (order_id > 0) {
+                let site_id = pri_sel.id.substr(pri_sel.id.indexOf('_') + 1);
+
+                data.push(order_id);
+                data.push(site_id);
+                data.push(pri_sel.value);
+            }
+        }
+        i ++;
+    }
+    url = freight_post + "?operation=order_save_prios&data=" + data.join();
+
+    execute_url(url)
+
+}
