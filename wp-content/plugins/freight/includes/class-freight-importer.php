@@ -161,6 +161,8 @@ class Freight_Importer {
 				$deliveries_info[$key]['order_id'] = SqlQuerySingleScalar("select post_id from wp_postmeta where meta_key='external_order_id' and meta_value=$external_id");
 				$deliveries_info[$key]['status'] = 'D' . $external_id;
 				$duplicate++;
+				$o = new Finance_Order($deliveries_info[$key]['order_id']);
+				$o->setMissionID($mission_id);
 				continue;
 			}
 			$O = Finance_Order::CreateOrder(1, $mission_id,  null, $the_shipping, '', 10, $delivery_info);
