@@ -908,6 +908,8 @@ class Core_Html {
 
 		// add_checkbox should be used on multiple rows view.
 		$add_checkbox = GetArg( $args, "add_checkbox", false );
+		$add_delete = GetArg( $args, "add_delete", false );
+
 		// debug_var($add_checkbox . " " . $id);
 		$checkbox_class  = GetArg( $args, "checkbox_class", null );
 		// print "cc= $checkbox_class id=$id<br/>";
@@ -1028,6 +1030,9 @@ class Core_Html {
 
 			if ( is_array( $line ) ) {
 				$add_checkbox_line = $add_checkbox;
+				if ($add_delete)
+					$data .= "<td><input type='button' onclick='delete_row(this)'/></td>";
+
 				foreach ( $line as $cell_id => $cell ) {
 					//				print $line_id . " " . $cell_id ." " . $args["col_width"][$cell_id] . "<br/>";
 					$field  = ( $transpose ? $line_id : $cell_id ); // print "field: $field ";
@@ -1037,8 +1042,8 @@ class Core_Html {
 //								( $row_id === "header" ) ? $e = 'onchange="select_all_toggle(this, \'' . $checkbox_class . '\')"' : $checkbox_events );
 						$data .= "<td>" . Core_Html::GuiCheckbox("chk_$row_id", 0, array("checkbox_class" => $checkbox_class, "events"=>$checkbox_events)) . "</td>";
 						$add_checkbox_line = false;
-
 					}
+
 					// print "show: "; var_dump($args["show_cols"]); print "<br/>";
 					$show = ( ( ( ( ! $show_cols ) or isset( $show_cols[ $field ] ) ) // Positive
 					            and ! ( isset( $args["hide_cols"] ) and isset( $args["hide_cols"][ $field ] ) ) )  // Negative
