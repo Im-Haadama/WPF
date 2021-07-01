@@ -23,16 +23,19 @@ if ( ! defined( 'ISRAEL_ZONES_PLUGIN_FILE' ) ) {
 
 require_once(ABSPATH . 'wp-admin/includes/plugin.php');
 
-add_action('init', 'init_israel_shop', 20);
+if ( ! is_plugin_active( 'wpf_flavor/wpf_flavor.php' ) /* and current_user_can( 'activate_plugins' ) */ ) {
+	// Stop activation redirect and show error
+	deactivate_plugins(__FILE__);
+	return;
+}
+
+add_action('plugin_loaded', 'init_israel_shop', 20);
 
 function init_israel_shop() {
-//	run_finance();
-}
+	if ( ( ! class_exists( "Israel_Shop" ) ) and class_exists( "WPF_Flavor" ) and class_exists( 'WC_Customer')) {
+		run_israel_shop();
+	}}
 
-// Include the main class.
-if ( ! class_exists( 'Israel_Shop' ) ) {
-	include_once dirname( __FILE__ ) . '/includes/class-israel-shop.php';
-}
 
 /**
  * Main instance of Fresh.
@@ -43,12 +46,12 @@ if ( ! class_exists( 'Israel_Shop' ) ) {
  */
 
 function run_israel_shop() {
-	if ( ! is_plugin_active( 'wpf_flavor/wpf_flavor.php' ) /* and current_user_can( 'activate_plugins' ) */ ) {
-		// Stop activation redirect and show error
-		deactivate_plugins(__FILE__);
-		return;
+	if (! class_exists("Israel_Shop"))
+	{
+		include_once dirname( __FILE__ ) . '/includes/class-israel-shop.php';
 	}
-	$i = new Israel_Shop("israel_shop");
-	$i->init();
+	$instance = Israel_Shop::instance();
+
+	$instance->init();
 }
 

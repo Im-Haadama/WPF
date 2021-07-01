@@ -85,7 +85,8 @@ class Israel_Shop
 	{
 		$database = new Israel_Database();
 		$database->install($this->version);
-		$this->zones->run(5);
+		$this->init_hooks();
+		// $this->zones->run(5);
 	}
 
 	function init_hooks()
@@ -97,9 +98,9 @@ class Israel_Shop
 
 		add_action('vat_add_category', array($this, 'vat_add_category'));
 		add_action('vat_remove_category', array($this, 'vat_remove_category'));
-		AddAction('israel_data_update', array($this, 'data_update'));
-		add_filter('vat_percent', __CLASS__ . ":vat_percent");
-		add_filter('vat_from_total', __CLASS__ . ":vat_from_total");
+		add_action('israel_data_update', array($this, 'data_update'));
+		add_filter('vat_percent', __CLASS__ . "::vat_percent");
+		add_filter('vat_from_total', __CLASS__ . "::vat_from_total");
 	}
 
 	public function data_update()
