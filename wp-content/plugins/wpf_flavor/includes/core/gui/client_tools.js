@@ -455,3 +455,9 @@ function next_page(xmlhttp, page) {
         window.location = add_param_to_url(page, 'new', new_id);
     }  else alert(xmlhttp.response);
 }
+
+function delete_row(button)
+{
+    let tr = button.closest('tr');
+    tr.hidden = true;
+}
