@@ -19,6 +19,8 @@ function calcDelivery() {
     {
         // let line_type = get_line_type(i);
         if (! table.rows[i].cells.length) continue; // Skip empty line
+        if (table.rows[i].hidden) continue;
+
 
         var line_total = 0;
         var vat_percent = 17; // Todo: read from settings
@@ -79,6 +81,7 @@ function delivery_delete(post_file)
 }
 
 function delivery_save_or_edit(post_file, operation) {
+    calcDelivery();
     document.getElementById('btn_do').disabled = true;
 
     var table = document.getElementById('del_table');
@@ -103,6 +106,7 @@ function delivery_save_or_edit(post_file, operation) {
 
     for (let line_number = 1; line_number < table.rows.length; line_number++)
     {
+        if (table.rows[line_number].hidden) continue;
         let id = table.rows[line_number].cells[id_col].id;
         let order_line = id.substr(id.lastIndexOf("_") + 1);
 

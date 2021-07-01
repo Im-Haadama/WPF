@@ -35,7 +35,7 @@ class Finance_Delivery
 		$loader->AddAction("delivery_save", __CLASS__,  'save_wrap'); // POST: create delivery
 		$loader->AddAction("delivery_edit", __CLASS__,  'edit_wrap'); // POST: update delivery
 		$loader->AddAction("delivery_delete", __CLASS__,  "delete_wrap");
-		$loader->AddAction("delivery_delete_lines", __CLASS__,  "delete_lines_wrap");
+//		$loader->AddAction("delivery_delete_lines", __CLASS__,  "delete_lines_wrap");
 		$loader->AddAction("delivery_get_price", __CLASS__,  'get_price');
 
 		// Complete order
@@ -292,7 +292,7 @@ class Finance_Delivery
 		              "edit_cols" => array("quantity"=>1, "price"=>1),
 		              "checkbox_class"=>"delivery_lines",
 		              "hide_cols" => array("prod_id"=> 1),
-		              "add_checkbox" => $edit
+		              "add_delete" => $edit
 		);
 
 		$args = apply_filters("delivery_args", $args);
@@ -312,7 +312,9 @@ class Finance_Delivery
 			$html .= Core_Html::GuiLabel( "order_id", $this->order_id, array( "hidden" => true ) );
 			if ( $edit ) {
 				$html .= Core_Html::GuiButton("btn_add_line", "Add Line", "delivery_add_line('" . WPF_Flavor::getPost() . "', $user_id, $vat, 1)");
-				$html .= Core_Html::GuiButton( "btn_delete", "Delete Lines", "delete_items('delivery_lines', '" . $post_file . "', 'delivery_delete_lines')" );
+//				$html .= Core_Html::GuiButton( "btn_delete", "Delete Lines", "delete_items('delivery_lines', '" . $post_file . "', 'delivery_delete_lines')" );
+//				$html .= Core_Html::GuiButton("btn_delete", "Delete lines", array("action"=> 'hide_lines(\'del_table\')'));
+
 
 				$html .= "<div>" . Core_html::GuiCheckbox("chk_send_email", true) . ETranslate("Send email") .
 				         Core_Html::GuiButton( "btn_do", "Save", "delivery_save_or_edit('" . WPF_Flavor::getPost() . "', 'delivery_edit')" ) . "</div>";
@@ -589,6 +591,7 @@ class Finance_Delivery
 	public function CreateOrUpdateDelivery($order_id, $total, $vat, $lines, $edit, $fee, $delivery_id = null,
 		$_draft = false	) {
 		$draft = $_draft ? 1 : 0;
+		FinanceLog(__FUNCTION__);
 
 		if ( $edit ) {
 			$sql = "UPDATE im_delivery SET vat = " . $vat . ", " .
@@ -610,6 +613,7 @@ class Finance_Delivery
 			SqlQuery( $sql );
 			$delivery_id = SqlInsertId();
 		}
+		FinanceLog($sql);
 
 		if ( ! ( $delivery_id > 0 ) ) {
 			FinanceLog("Failed: no delivery id");
@@ -619,6 +623,7 @@ class Finance_Delivery
 		$user = new Finance_Client($this->getUserId());
 
 		if ( $edit ) {
+			FinanceLog("update transaction");
 			$user->update_transaction( $total, $delivery_id);
 			Finance::update_transaction( $delivery_id, $total, $fee );
 		} else { // New!
@@ -688,27 +693,27 @@ class Finance_Delivery
 		die(0);
 	}
 
-	static public function delete_lines_wrap()
-	{
-		$delivery_id = GetParam("delivery_id", false);
-		$order_id = GetParam("order_id", false);
-		if (! $order_id and ! $delivery_id) {
-			print "failed: no id supplied";
-			die (1);
-		}
-		FinanceLog(__FUNCTION__ . " $delivery_id");
-		$d = new Finance_Delivery( $order_id, $delivery_id );
-		if (! $d->delivery_id) {
-			FinanceLog("no delivery for order $order_id");
-			print "no delivery for order $order_id";
-			return false;
-		}
-
-		$ids = GetParamArray("ids", true);
-		foreach ($ids as $item_id)
-			$d->DeleteLine($item_id);
-		die(0);
-	}
+//	static public function delete_lines_wrap()
+//	{
+//		$delivery_id = GetParam("delivery_id", false);
+//		$order_id = GetParam("order_id", false);
+//		if (! $order_id and ! $delivery_id) {
+//			print "failed: no id supplied";
+//			die (1);
+//		}
+//		FinanceLog(__FUNCTION__ . " $delivery_id");
+//		$d = new Finance_Delivery( $order_id, $delivery_id );
+//		if (! $d->delivery_id) {
+//			FinanceLog("no delivery for order $order_id");
+//			print "no delivery for order $order_id";
+//			return false;
+//		}
+//
+//		$ids = GetParamArray("ids", true);
+//		foreach ($ids as $item_id)
+//			$d->DeleteLine($item_id);
+//		die(0);
+//	}
 
 	public function Delete() {
 		if (! $this->delivery_id) return;
