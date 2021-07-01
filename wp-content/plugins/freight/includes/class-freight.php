@@ -160,6 +160,11 @@ class Freight {
 		Freight_Actions::instance()->init_hooks($loader);
 		$this->views->init_hooks($loader);
 		if ($this->legacy) $this->legacy->init_hooks($loader);
+
+		add_action('rest_api_init', function() {
+			register_rest_route( 'freight/v1', '/freight/',
+				array( 'methods' => 'GET', 'callback' => array($this, 'json_api' )) );
+		});
 	}
 
 	function mission_markers()
@@ -569,6 +574,12 @@ class Freight {
 		print $result;
 	}
 
+	function json_api()
+	{
+		$m = Freight_Mission_Manager::get_mission_manager(1134);
+		print $m->json();
+
+	}
 }
 
 function FreightLog($message, $print = false)

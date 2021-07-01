@@ -422,7 +422,6 @@ group by pm.meta_value, p.post_status");
 
 						$url = (($type == "supplies") ? Core_Html::GuiHyperlink($order_id, "/wp-admin/admin.php?page=supplies&operation=show_supply&id=$order_id") :
 							Core_Html::GuiHyperlink( $order_id, "/wp-admin/post.php?post=$order_id&action=edit" ));
-						$order_status = $order_info[OrderTableFields::max];
 						$new_row = array_fill(0, DispatchTableFields::max,'');
 						$new_row[DispatchTableFields::order_number] = $url;
 						$new_row[DispatchTableFields::order_status] = self::getStatus($order_info);
@@ -1281,7 +1280,7 @@ group by pm.meta_value, p.post_status");
 
 	static function getStatus($order_info)
 	{
-		$order_status = $order_info[OrderTableFields::order_status];
+		@$order_status = $order_info[OrderTableFields::order_status];
 		if ($order_status == 'wc-processing') return "V";
 //		return "X";
 
@@ -1352,4 +1351,10 @@ group by pm.meta_value, p.post_status");
 		}
 		return $close;
 	}
+
+	function json()
+	{
+		return json_encode($this->stop_points);
+	}
+
 }
