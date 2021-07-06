@@ -78,6 +78,9 @@ class Finance_Settings {
 		$menu->AddSubMenu( "finance", "promote_users",
 			array( 'page_title' => 'Multi site', 'function' => array( Core_Db_MultiSite::getInstance(), 'admin_page' ) ) );
 
+//		$menu->AddSubMenu( "finance", "promote_users",
+//			array( 'page_title' => 'Manage inbox', 'function' => array( 'Finance_Accounting', 'manage_inbox' ) ) );
+
 		$menu->AddSubMenu( "users.php", "edit_shop_orders",
 			array( 'page_title' => 'Client accounts', 'function' => array( "Finance_Client_Views", 'admin_page' ) ) );
 
