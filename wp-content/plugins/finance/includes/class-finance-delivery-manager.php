@@ -17,8 +17,6 @@ class Finance_Delivery_Manager
 
 	public function init(Core_Hook_Handler $loader)
 	{
-		$loader->AddAction("update_shipping_methods", $this);
-		$loader->AddAction("update_mission_shipping_anonymous", $this, "update_mission_shipping");
 		$key = __CLASS__ . "_last_mission_update";
 		// Get once a hour data from master.
 		$format = "d-G";
