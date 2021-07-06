@@ -42,7 +42,11 @@ class Finance_Subcontract {
 			array( 0, 'SumNumbers' )
 		);
 		$table = self::calc_makolet( $year, $month );
-		$result .= Core_Html::gui_table( $table, "", true, true, $sums );
+//		$result .= Core_Html::gui_table( $table, "", true, true, $sums );
+		$args = [];
+		$args["hide_cols"] = array(9 => 1);
+		$args["accumulation_row"] = &$sums;
+		$result .= Core_Html::gui_table_args( $table, "", $args );
 
 //	foreach ( $driver_array as $key => $value ) {
 //		$result .= $key . " " . $value . "<br/>";
@@ -70,9 +74,9 @@ class Finance_Subcontract {
 		$db_prefix = GetTablePrefix("delivery_lines");
 
 		$sql = "select d.id, client_from_delivery(d.id), d.date, order_id, total, vat, round(reduce_vat(fee),2), " .
-		       " round(total-vat-reduce_vat(fee),2), payment_receipt " .
-		       " from im_delivery d" .
-		       " join im_business_info i " .
+		       " round(total-vat-reduce_vat(fee),2), payment_receipt, internal " .
+		       " from ${db_prefix}delivery d" .
+		       " join ${db_prefix}business_info i " .
 		       " where month(d.date)=" . $month . " and year(d.date)=" . $year . " and i.ref = d.id and i.is_active = 1 ";
 
 		$result = SqlQuery( $sql );
@@ -95,14 +99,20 @@ class Finance_Subcontract {
 		$driver_array = array();
 
 		while ( $row = mysqli_fetch_row( $result ) ) {
+			$del_id = $row[0];
 			if ($row[7] == 0 or $row[7] == $row[4]) continue;
 			$row[0] = Core_Html::GuiHyperlink( $row[0], "/fresh/delivery/get-delivery.php?id=" . $row[0] );
-			if ( $row[6] == 0 ) {
-				print $row[0] . "<br/>";
-				$sql1   = "SELECT round(reduce_vat(line_price),2) FROM ${db_prefix}delivery_lines WHERE delivery_id = " . $row[0] . " AND product_name LIKE '%משלוח%'";
-				$row[6] = SqlQuerySingleScalar( $sql1 );
-				$row[7] = $row[4] - $row[5] - $row[6];
+			if (! $row[5]) { // TEMP: VAT BUG
+				$row[5] = round(SqlQuerySingleScalar("select sum(vat) from im_delivery_lines where delivery_id = $del_id and product_name != 'משלוח'"), 2);
 			}
+			$internal = $row[9];
+			if ($internal) $row[6] = 0;
+//			if ( $row[6] == 0 ) {
+//				print $row[0] . "<br/>";
+//				$sql1   = "SELECT round(reduce_vat(line_price),2) FROM ${db_prefix}delivery_lines WHERE delivery_id = " . $row[0] . " AND product_name LIKE '%משלוח%'";
+//				$row[6] = SqlQuerySingleScalar( $sql1 );
+//				$row[7] = $row[4] - $row[5] - $row[6];
+//			}
 //		$id =  $row[0];
 
 			// $row = array($id, $row[1]);
@@ -287,9 +297,3 @@ class Finance_Subcontract {
 
 	}
 }
-//function SumNumbers( &$s, $a ) {
-//	$n = floatval( $a );
-//	if ( is_numeric( $s ) and is_numeric( $n ) ) {
-//		$s = round( $s + $n, 2 );
-//	}
-//}
