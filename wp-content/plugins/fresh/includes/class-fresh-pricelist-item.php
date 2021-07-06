@@ -168,7 +168,7 @@ class Fresh_Pricelist_Item {
 		$catalog = new Fresh_Catalog();
 
 		$post_file = Fresh::getPost();
-		$link_data = $catalog->GetProdID( $this->id);
+		$link_data = $catalog->GetProdID( $this->id, false, true);
 		array_push($row, Core_Html::GuiButton("del_" . $this->id, "X", "pricelist_delete('$post_file', $this->id)"));
 		$price = $row['price'];
 		if ($color = self::get_prod_color()) $args['style'] = 'background-color: ' . $color;
@@ -180,7 +180,8 @@ class Fresh_Pricelist_Item {
 		if ( $link_data ) {
 			if ($create_info) return null; // Show just new products (not mapped).
 
-			$linked_prod_id = $link_data[0];
+			$linked_prod_id = $link_data[0][0];
+			$link_id = $link_data[0][1];
 			$p       = new Fresh_Product( $linked_prod_id );
 			$calculated_price = Fresh_Pricing::calculate_price($this->getPrice(), $supplier_id);
 //			if (! $p->isPublished()) $p->PublishItem($calculated_price);
@@ -200,6 +201,9 @@ class Fresh_Pricelist_Item {
 				array("events"=>array("onchange=\"product_change_saleprice('" . Fresh::getPost() . "', $linked_prod_id)\"", 'onkeypress="moveNext(this)"'), "size"=>5)));
 			$n = Fresh_Packing::orders_per_item( $linked_prod_id, 1, array());
 			array_push( $row, $n );
+			array_push($row, Core_Html::GuiButton("unl_" . $this->id, '<i class="fas fa-unlink"></i>',
+				"execute_url('$post_file?operation=remove_map&id=" . $link_id . "', location_reload)"));
+
 			array_push($row, Core_Html::GuiCheckbox("aut_$linked_prod_id", $p->auto_update(), array("events"=>"onchange=\"product_auto_update('" . Fresh::getPost() . "', $linked_prod_id)\"")));
 		} else {
 			if ($create_info) {

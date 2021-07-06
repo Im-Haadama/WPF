@@ -49,7 +49,7 @@ class Finance_Suppliers
 		              and ((select machine_update from im_suppliers where id = supplier_id) = 0 or  
 		              date >= supplier_last_pricelist_date(supplier_id))",
 			"fields" => array("id", "product_name", "price", "date"),
-			"extra_header" => array("Delete", "linked product", "tag", "published", "calculated price", "price", "sale price", "open orders", "auto update"),
+			"extra_header" => array("Delete", "linked product", "tag", "published", "calculated price", "price", "sale price", "open orders", "unlink","auto update"),
 			"order"=>"order by id",
 			"prepare" => "Fresh_Pricelist_Item::add_prod_info",
 //			"header_fields" => array("supplier_product_code" => "code", "product_name" => "name"),
@@ -197,6 +197,7 @@ class Finance_Suppliers
 //		$result .= "page number: " . $args["page_number"] . "<br/>";
 //		$result .= "page: " . $args["page"] . "<br/>";
 		$args["page_number"] = -1;
+		$args["add_button"] = true;
 		$args["only_active"] = GetParam("only_active", false, 1);
 		$result .= Core_Gem::GemTable("suppliers", $args);
 
@@ -347,8 +348,8 @@ class Finance_Suppliers
 			$args["links"] = array("product_id" => Fresh_Product::get_edit_link('%d'));
 			$args["id_field"] = "map_id";
 			$args["actions"] = array(
-				array("draft", Fresh::getPost() . '?operation=draft_by_map_id&map_id=%d;action_hide_row'),
-				array("remove_map", Fresh::getPost() . '?operation=remove_map&id=%d;action_hide_row'));
+				array("draft", Finance::getPost() . '?operation=draft_by_map_id&map_id=%d;action_hide_row'),
+				array("remove_map", Finance::getPost() . '?operation=remove_map&id=%d;action_hide_row'));
 			$args["class"] = "sortable";
 			$result .= Core_Html::gui_table_args($rows, "draftable_products", $args);
 		}

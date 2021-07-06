@@ -514,14 +514,8 @@ class Fresh_Catalog {
 	// Or null? if not exists.
 	// TOdo: rewrite...
 
-	static function GetProdID( $pricelist_id, $include_hide = false ) # Returns prod id if this supplier product mapped
+	static function GetProdID( $pricelist_id, $include_hide = false, $include_map_id = false) # Returns prod id if this supplier product mapped
 	{
-		$debug = false; // ($pricelist_id == 748228);
-		if ( $debug ) {
-			MyLog("debugging pricelist id $pricelist_id");
-			$debug = true;
-		}
-
 		$result_ids = array();
 
 		// find products mapped by id.
@@ -531,34 +525,30 @@ class Fresh_Catalog {
 		$result = SqlQuery( $sql );
 		if ( $result ) {
 			while ( $row = mysqli_fetch_row( $result ) ) {
+				if ($include_map_id)
+					array_push( $result_ids, $row );
+				else
 				array_push( $result_ids, $row[0] );
-				if ( $debug ) {
-					MyLog( $sql );
-					MyLog( $row[0] . " direct link to $pricelist_id " . implode( ",", $result_ids ) );
-				}
 			}
 		}
 
 		// find products mapped by name
 		$result       = Fresh_Pricelist::Get( $pricelist_id );
 		$product_name = $result["product_name"];
-		if ($debug)
-			print "handling $product_name";
 
 		if (strlen($product_name)) {
-			$product_name = Fresh_Pricelist::StripProductName($product_name, $debug);
+			$product_name = Fresh_Pricelist::StripProductName($product_name);
 			$sql = "SELECT product_id, id FROM im_supplier_mapping " .
 			       " WHERE supplier_product_name like '%$product_name%'" .
 			       " AND supplier_id = " . $result["supplier_id"];
 
-			if ($debug) MyLog($sql);
 			if ( ! $include_hide ) $sql .= " and product_id > 0";
 
 			$result = SqlQuery( $sql );
 			if ( $result ) {
 				while ( $row = mysqli_fetch_row( $result ) ) {
-					if ( ! in_array( $row[0], $result_ids ) ) array_push( $result_ids, $row[0] );
-					if ( $debug ) MyLog( "name link to $pricelist_id " . $row[0] );
+					if ($include_map_id) array_push( $result_ids, $row);
+					else array_push( $result_ids, $row[0] );;
 				}
 			}
 		}
