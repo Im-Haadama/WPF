@@ -34,6 +34,8 @@ class Freight_Actions {
 		$loader->AddAction("freight_do_import", $this);
 		$loader->AddAction("freight_do_import_baldar", $this);
 		$loader->AddAction("update_switch_time", $this);
+		$loader->AddAction("update_shipping_methods", $this);
+		$loader->AddAction("update_mission_shipping_anonymous", $this, "update_mission_shipping");
 
 		$loader->AddAction("mission_clean", $this);
 		$loader->AddAction("show_import", $this);
@@ -209,7 +211,7 @@ class Freight_Actions {
 //		if (! $file_name and !isset($_FILES["fileToUpload"]["tmp_name"])) {
 //			$file_name = '/var/www/html/28-1-2021.csv';
 //			// print "No file selected";
-//			// return;
+//			// return;read_mail
 //		}
 
 		$file_name = $_FILES["fileToUpload"]["tmp_name"];
@@ -244,5 +246,10 @@ class Freight_Actions {
 	function update_switch_time($params)
 	{
 		InfoUpdate("freight_switching_time", $params["value"]);
+	}
+
+	function update_shipping_methods()
+	{
+		Freight_Mission_Manager::update_shipping_methods();
 	}
 }
