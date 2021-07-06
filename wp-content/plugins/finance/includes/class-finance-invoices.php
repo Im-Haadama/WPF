@@ -97,6 +97,7 @@ class Finance_Invoices {
 	}
 
 	static function invoice_add( ) {
+
 		$args = [];
 		$args["edit"]             = true;
 		$args["header_fields"]    = array(
@@ -121,6 +122,16 @@ class Finance_Invoices {
 			"net_amount"    => 1
 		);
 		$args["post_file"]        = self::getPost();
+
+		// Set values given
+		$values = [];
+		if ($document_type = GetParam("document_type")) $values["document_type"] = $document_type;
+		if ($part_id = GetParam("part_id")) $values["part_id"] = $part_id;
+		if ($date = GetParam("date")) $values["date"] = $date;
+		if (count($values)){
+			$args["values"] = $values;
+		}
+
 
 		print Core_Gem::GemAddRow( "business_info", "invoices", $args );
 	}
