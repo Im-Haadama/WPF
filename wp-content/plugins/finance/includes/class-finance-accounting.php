@@ -1,5 +1,8 @@
 <?php
 
+//require ABSPATH . '/vendor/autoload.php';
+//
+//use Laminas\Mail\Storage\Pop3;
 
 class Finance_Accounting {
 
@@ -11,7 +14,6 @@ class Finance_Accounting {
 		}
 		return self::$_instance;
 	}
-
 
 	function init_hooks($loader)
 	{
@@ -36,6 +38,7 @@ class Finance_Accounting {
 
 		return $report;
 	}
+
 	static function weekly_report( $week ) {
 		$report = "";
 		$report .= Core_Html::GuiHeader( 1, "מציג תוצאות לשבוע המתחיל ביום " . $week );
@@ -399,6 +402,170 @@ class Finance_Accounting {
 		$result .= Core_html::GuiHyperlink("הצג גם מאופסים", AddToUrl("include_zero", true));
 
 		return $result;
+	}
+
+	static function manage_inbox()
+	{
+		$result = Core_Html::GuiHeader(1, "inbox");
+		foreach (array('FINANCE_HOST', 'FINANCE_USER', 'FINANCE_PASSWORD') as $var)
+		if (! defined($var)) {
+			$result .= "Define $var in config file";
+			print $result;
+			return;
+		}
+		$result .= self::read_inbox(FINANCE_HOST, FINANCE_USER, FINANCE_PASSWORD);
+
+		print $result;
+	}
+
+	static function read_inbox( $host, $user, $pass, $debug = false) {
+		$count  = 0;
+		$result = "";
+
+		echo "trying $host<br/>";
+
+		$mail = new Pop3( [
+			'host'     => $host,
+			'user'     => $user,
+			'password' => $pass,
+//			'port' => 995,
+			'ssl'      => 'SSL'
+		] );
+
+		$msg_cnt = $mail->countMessages();
+		echo $msg_cnt . " messages found\n";
+//		foreach ($mail as $message) {
+//			printf("Mail from '%s': %s\n", $message->from, $message->subject);
+//		}
+
+//		if ( ! $inbox ) {
+//			print "can't open mailbox<br/>";
+//		 print $host . "<br/>";
+//		 print $user . "<br/>";
+//		 print $pass . "<br/>";
+//			return false;
+//		}
+
+		print $msg_cnt . " messages in the inbox<br/>";
+
+//		$emails = imap_search( $inbox, 'ALL', SE_UID );
+
+		print "<table>";
+// for($i = 1; $i <= $msg_cnt; $i++) {
+		foreach ( $mail as $email ) {
+			$count ++;
+
+//		if ($count > 10) {
+//			print "debug<br/>";
+//			die(3);
+//		}
+//			$i       = imap_msgno( $inbox, $email );
+//			$header  = imap_headerinfo( $inbox, $i );
+			$subject = $email->subject;
+			$date = $email->date;
+			if (strtotime($date) < (strtotime('today') - 365*24*60*60)) continue;
+			if (! strstr($subject, "חשבונית")) continue;
+			print "<tr><td>$subject</td></tr>";
+//			$sender  = $email->
+		}
+		print "</table>";
+
+//		$date    = header_date( $header );
+//		$handled = false;
+//
+////	 print "Sender: $sender. Subject: $subject<br/>";
+//		$l = substr( $sender, 0, 4 );
+//		// print "\n" . $l . " " . $subject . "\n";
+	}
+
+	function nop() {
+		{
+			switch ( strtolower( $sender ) ) {
+				case "yab02@orange.net.il": // Amir ben yehuda
+					if ( strstr( $subject, "רשימה" ) ) {
+						handle_pricelist( $subject, $inbox, "amir", $date, $i, true );
+						$handled = true;
+					}
+					break;
+
+				case "batya_l@maabarot.com":
+				case "yaakov.aglamaz@gmail.com":
+				case "yaakov@im-haadama.co.il":
+				case "limor_s@maabarot.com": // Sadot
+					if ( strstr( $subject, "מחירון" ) ) {
+						$handled = handle_pricelist( $subject, $inbox, "sadot", $date, $i );
+						break;
+					}
+					if ( strstr( $subject, "הזמנה" ) ) {
+						$handled = handle_supply( $subject, $inbox, "sadot", $date, $i );
+						break;
+					}
+					break;
+				case "office@yevulebar.co.il": // yb
+					//    print "start yb $subject<br/>";
+					if ( strstr( $subject, "מלאי" ) ) {
+						$handled = handle_pricelist( $subject, $inbox, "yb", $date, $i, null, $debug );
+					}
+					break;
+
+				case "info@im-haadama.co.il":
+				case "yaakov@im-haadama.co.il":
+					if ( strstr( $subject, "מספר" ) and strstr( $subject, "משלוח" ) ) {
+						handle_automail( $subject, $inbox, "delivery", $i );
+						$handled = true;
+					}
+					if ( strstr( $subject, "מלקוח" ) ) {
+						handle_automail( $subject, $inbox, "הזמנות", $i );
+						$handled = true;
+					}
+					break;
+				case "notify@google.com‏": // Doesn't catch. See below
+					if ( strstr( $subject, "שורשים" ) ) {
+						handle_google( $subject, $inbox, "yosef", $date, $i );
+						$handled = true;
+					}
+					if ( strstr( $subject, "בן יהודה" ) ) {
+						handle_google( $subject, $inbox, "amir", $date, $i );
+						$handled = true;
+					}
+					break;
+//		case "office@organya.co.il":
+//			if (strstr($subject, "מחירון")){
+//				$handled = handle_pricelist($subject, $inbox, "organya", $date, $i);
+//			}
+//			break;
+
+				default:
+
+			}
+			if ( $sender == "notify@google.com" ) {
+				if ( strstr( $subject, "שורשים" ) ) {
+					// handle_google( $subject, $inbox, "yosef", $date, $i );
+
+					// print "<tr><td>" . $subject . "</td>";
+					$handled = true;
+				}
+				if ( strstr( $subject, "בן יהודה" ) ) {
+					// print "<tr><td>" . $subject . "</td>";
+					// print "amir<br/>";
+					handle_google( $subject, $inbox, "amir", $date, $i );
+					$handled = true;
+				}
+			}
+			if ( ! $handled ) {
+				print "<td>" . $sender . "</td><td>" . $subject . "</td><td>not handled<td/></tr>";
+			}
+		}
+		print "</table>";
+
+
+// Since we update manually on site 2, auto update just site 1.
+//for ($site_id = 1; $site_id <= 1; $site_id++)
+//	if ($changed_price[$site_id]) {
+//		$html = run_in_server($site_id, "/catalog/catalog-auto-update.php?no_header");
+//		print $html;
+//	}
+		imap_expunge( $inbox );
 	}
 
 }
