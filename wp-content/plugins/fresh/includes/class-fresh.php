@@ -23,7 +23,7 @@ class Fresh {
 	 *
 	 * @var string
 	 */
-	public $version = '1.4.4';
+	public $version = '1.4.8';
 
 	private $plugin_name;
 
@@ -161,9 +161,6 @@ class Fresh {
 		// Don't show "do you have coupon?"
 		remove_action( 'woocommerce_before_checkout_form', 'woocommerce_checkout_coupon_form', 10 );
 
-		// Make sessions longer
-		add_filter( 'auth_cookie_expiration', 'wcs_users_logged_in_longer' );
-
 		// Save payment info
 		add_action("admin_init", array(__CLASS__, "admin_load"));
 		add_action('admin_print_styles', 'wp_payment_list_admin_styles');
@@ -207,10 +204,27 @@ class Fresh {
 		Fresh_Bundles::instance()->init_hooks($this->loader);
 		Fresh_Views::init_hooks($this->loader);
 		Fresh_Accounting::instance()->init_hooks($loader);
+		Fresh_Suppliers::instance()->init_hooks();
 
 		add_action('wp_enqueue_scripts', array($this, 'remove_add'), 2222);
+		add_filter('dgwt/wcas/product/html_price', array($this, 'get_price'), 10, 3);
+		add_filter('dgwt/wcas/product/name', array($this, 'get_name'), 10, 2);
 
 	}
+
+	function get_price($price, $prod_id, $obj)
+	{
+		$customer_type = current_user_type();
+		return Fresh_Pricing::get_price_by_type($prod_id, $customer_type);
+	}
+
+	function get_name($name, $prod_id)
+	{
+		$p = new Fresh_Product($prod_id);
+		return $p->getName(false, true);
+	}
+
+
 
 //	static function init_my_account_links( $menu_links ){
 //
@@ -733,12 +747,7 @@ function cart_update_price()
 
 	MyLog( "cart start " . $user_info);
 
-	if ($user_id = get_user_id()){
-		$user = new Fresh_Client($user_id);
-		$client_type = $user->customer_type( );
-	} else {
-		$client_type = 0;
-	}
+	$client_type = current_user_type();
 //	MyLog("ct=$client_type");
 
 	foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
@@ -1001,11 +1010,6 @@ function wp_payment_list_admin_styles()
 }
 /*-- End add css & js-- */
 
-function wcs_users_logged_in_longer( $expire ) {
-	// 1 month in seconds
-	return 2628000;
-}
-
 add_filter( 'woocommerce_register_post_type_product', 'cinch_add_revision_support' );
 
 function cinch_add_revision_support( $args ) {
@@ -1016,6 +1020,15 @@ function cinch_add_revision_support( $args ) {
 
 /* - Start Product Comment-- */
 
+function current_user_type()
+{
+	if ($user_id = get_user_id()){
+		$user = new Fresh_Client($user_id);
+		return $user->customer_type( );
+	}
+
+	return 0;
+}
 function on_action_cart_updated( $cart_updated ){
     global $wpdb;
 

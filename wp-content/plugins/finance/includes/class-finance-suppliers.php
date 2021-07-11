@@ -48,7 +48,7 @@ class Finance_Suppliers
 		              supplier_id = %d
 		              and ((select machine_update from im_suppliers where id = supplier_id) = 0 or  
 		              date >= supplier_last_pricelist_date(supplier_id))",
-			"fields" => array("id", "product_name", "price", "date"),
+			"fields" => apply_filters("finance_supplier_fields", array("id", "product_name", "price", "date")),
 			"extra_header" => array("Delete", "linked product", "tag", "published", "calculated price", "price", "sale price", "open orders", "unlink","auto update"),
 			"order"=>"order by id",
 			"prepare" => "Fresh_Pricelist_Item::add_prod_info",
