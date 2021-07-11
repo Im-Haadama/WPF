@@ -116,7 +116,7 @@ class Finance_Product {
 //		return Israel_Shop::getVatPercent();
 	}
 
-	function getName( $strip = false, $include_categ = false ) {
+	function getName( $strip = false, $include_tags = false ) {
 		if (! ($this->id > 0)) return "Error";
 		$sql = 'SELECT post_title FROM wp_posts WHERE id = ' . $this->id;
 
@@ -124,7 +124,7 @@ class Finance_Product {
 		if ( $strip and strpos( $name, '(' ) ) {
 			$name = trim( substr( $name, 0, strpos( $name, '(' ) ) );
 		}
-		if ($include_categ){
+		if ($include_tags){
 			$tags = $this->getTags(false, true);
 			foreach ($tags as $tag){
 				$t = get_term( $tag, 'product_tag');
