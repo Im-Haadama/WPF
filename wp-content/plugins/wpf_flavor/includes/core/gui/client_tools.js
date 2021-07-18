@@ -137,30 +137,74 @@ function data_set_active(post_file, id)
     execute_url(url, load_page);
 }
 
-function execute_url(url, finish_action, obj, xml) {
+function execute_url(url, finish_action, obj, xml, progress) {
     let xhp = new XMLHttpRequest();
+    var intervalId = undefined;
 
     if (! xhp) alert("can't");
     if (xml) xhp.overrideMimeType('text/xml');
+    if (progress) clear_progress(progress);
 
     xhp.onreadystatechange = function () {
         // Wait to get query result
-        if (xhp.readyState == 4 && xhp.status == 200)  // Request finished
+        if (xhp.readyState === 4 && xhp.status === 200)  // Request finished
         {
+            if (undefined !== intervalId)
+            {
+                clearInterval(intervalId);
+            }
             if (finish_action)
-                return finish_action(xhp, obj);
+                return finish_action(xhp, obj, progress);
 
             else report_error(xhp.response);
         }
-        if (xhp.readyState == 4 && xhp.status == 500)  // Request finished
+        if (xhp.readyState === 4 && xhp.status === 500)  // Request finished
         {
             alert("Server error. Contact support");
             return false;
         }
     }
+    if (undefined !== progress)
+    {
+        // Clean progress in server.
+        execute_url(add_param_to_url(url, "prob&clean_progress=1", 1));
+        show_progress(progress, "Starting<br/>");
+        intervalId = window.setInterval( function () {
+            show_progress(progress,execute_url_sync(add_param_to_url(url, "prob", 1)) + "<br/>");
+            }, 1000);
+    }
+
     xhp.open("GET", url, true);
     xhp.send();
 }
+
+function execute_url_sync(url)
+{
+    let request = new XMLHttpRequest();
+    request.open('GET', url, false);  // `false` makes the request synchronous
+    if (! request) return "";
+    request.send(null);
+
+    if (request.status === 200) {
+        return request.responseText;
+    }
+}
+
+function show_progress(div, message)
+{
+    let d = document.getElementById(div);
+    if (message.length) {
+        if (d) d.innerHTML = message;
+        else alert(message);
+    }
+}
+
+function clear_progress(div)
+{
+    // let d = document.getElementById(div);
+    // d.innerHTML = '';
+}
+
 
 function execute_url_post(url, post, finish_action)
 {
@@ -188,16 +232,16 @@ function action_hide_rows(xmlhttp, checkbox_class)
     }
 }
 
-function check_result(xmlhttp)
+function check_result(xmlhttp, progress)
 {
-    return ! report_error(xmlhttp.response);
+    return ! report_error(xmlhttp.response, progress);
 }
 
-function report_error(response)
+function report_error(response, progress)
 {
     if (response.toLowerCase().indexOf("failed:") !== -1 ||
         (response.toLowerCase().indexOf("error:") !== -1)){
-        alert (response);
+        show_progress(progress, response);
         return true;
     }
     return false;
@@ -346,10 +390,11 @@ function selectTab(event, selected, tab_class, tab_links_class)
     event.currentTarget.className += " active";
 }
 
-function success_message(xmlhttp)
+function success_message(xmlhttp, obj, progress)
 {
-    if (check_result(xmlhttp))
-        alert("Success");
+    if (check_result(xmlhttp, progress)) {
+        show_progress(progress, "Success");
+    }
 }
 
 function fail_message(xmlhttp)
@@ -449,10 +494,11 @@ function doMoveNextRow()
 
 }
 
-function next_page(xmlhttp, page) {
+function next_page(xmlhttp, page, field) {
+    if (undefined === field) field = 'new';
     if (xmlhttp.response.indexOf("failed") === -1 ) {
-        let new_id = xmlhttp.response;
-        window.location = add_param_to_url(page, 'new', new_id);
+        let new_id = xmlhttp.response; // Got back from server
+        window.location = add_param_to_url(page, field, new_id);
     }  else alert(xmlhttp.response);
 }
 
