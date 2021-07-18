@@ -437,6 +437,7 @@ class Focus {
 //		print "run " . __CLASS__;
 //		$this->loader->run();
 		$this->manager->run();
+		self::install();
 //		self::create_tasks();
 	}
 
