@@ -141,7 +141,7 @@ function pay_credit(post_file)
     let users = get_selected("user_chk");
 
     let request = post_file + '?operation=pay_credit&users='+users;
-    execute_url(request, location_reload);
+    execute_url(request, location_reload, undefined, undefined, "progress");
 }
 
 function pay_credit_client(post_file, user)

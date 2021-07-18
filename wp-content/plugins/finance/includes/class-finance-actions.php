@@ -11,6 +11,8 @@ class Finance_Actions {
 		$loader->AddAction("finance_add_payment", $this);
 		$loader->AddAction("delivery_send_mail", $this);
 		$loader->AddAction("finance_check_card", $this);
+		$loader->AddAction("check_progress", $this);
+//		$loader->AddAction("add_test", $this);
 	}
 
 	function account_add_trans()
@@ -188,4 +190,41 @@ class Finance_Actions {
 		$bl->pay_user_credit_wrap($args);
 	}
 
+	function check_progress()
+	{
+		$key = __FUNCTION__ . "progress";
+//		$prob = GetParam("prob");
+//		if ($prob)
+//		{
+//			print InfoGet($key);
+//			return;
+//		}
+		InfoUpdate($key, "started");
+		$total = 10;
+		for ($i = 0; $i < $total; $i++ ) {
+			InfoUpdate($key, (100 * ($i / $total)) . " percent");
+			sleep(1);
+		}
+		InfoUpdate($key, "done");
+
+	}
+
+	function add_test()
+	{
+		foreach (array(2103, 341) as $exist_order_id) {
+			$order     = new Finance_Order( $exist_order_id );
+
+			// Duplcate the order
+			$new_id    = $order->duplicate();
+			$new_order = new Finance_Order( $new_id );
+
+			// Change to processing status
+			$new_order->update_status( 'wc-processing' );
+
+			// Create delivery.
+			$new_del = new Finance_Delivery($new_id);
+			$new_del->CreateDeliveryFromOrder($new_id, 1);
+			$new_order->update_status("wc-completed");
+		}
+	}
 }

@@ -318,6 +318,10 @@ class Finance_Client_Views {
 
 		$output .= Core_Html::GuiButton( "btn_pay", "Pay", array( "action" => "pay_credit('" . Finance::getPostFile() . "')" ) );
 
+//		Button to create balance for testing
+//$output .= Core_Html::GuiButton( "btn_test", "Test", array( "action" => "add_test('" . Finance::getPostFile() . "')" ) );
+		$output .= Core_Html::gui_div("progress");
+
 		return $output;
 	}
 

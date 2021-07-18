@@ -839,8 +839,9 @@ function payment_list() {
 
 /*-- End payment gateway--*/
 
-function FinanceLog($message)
+function FinanceLog($message, $progress_key = null)
 {
+	if ($progress_key) InfoUpdate($progress_key, $message, true);
 	MyLog($message, '', 'finance.log');
 }
 

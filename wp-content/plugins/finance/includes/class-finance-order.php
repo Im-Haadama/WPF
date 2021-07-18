@@ -1309,4 +1309,13 @@ class Finance_Order {
 		}
 		return ceil($n);
 	}
+
+	public function duplicate()
+	{
+		if (! class_exists('CloneOrder')) {
+			die ("CloneOrder plugin is missing");
+		}
+		$cloner = new CloneOrder();
+		return  $cloner->clone_order($this->order_id); // Add return $order_id in the end of the plugin's function.
+	}
 }

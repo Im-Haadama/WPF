@@ -143,12 +143,14 @@ class Finance_Business_Logic {
 
 	function pay_credit() {
 		FinanceLog(__FUNCTION__);
+		$progress_key = __FUNCTION__ . "_progress";
+
 		$users = explode( ",", GetParam( "users", true, true ) );
 		$payment_number = GetParam("number", false, 1);
 		$amount = GetParam("amount", false, 0);
 
+		InfoUpdate($progress_key, "starting " . __FUNCTION__);
 		foreach ( $users as $user ) {
-			FinanceLog("trying $user");
 			$args = ["user"=>$user,
 			         "amount"=>$amount,
 			         "payment_number"=>$payment_number];
@@ -307,8 +309,10 @@ class Finance_Business_Logic {
 
 	function pay_user_credit(Finance_Client $user, $credit_data, $account_line_ids, $amount, $change = 0, $payment_number = 1, $check_only = false)
 	{
+		$progress_key = "pay_credit_progress";
+
 //		print __FUNCTION__;
-		FinanceLog(__FUNCTION__ . " " . $user->getName() . " " . $amount);
+		FinanceLog(__FUNCTION__ . " " . $user->getName() . " " . $amount, $progress_key);
 
 		if (0 == $amount)
 			return true;
@@ -316,33 +320,32 @@ class Finance_Business_Logic {
 		$token = get_user_meta($user->getUserId(), 'credit_token', true);
 
 		if (!$check_only and $token) {
-			FinanceLog("trying to pay with token user " . $user->getName());
+			FinanceLog("trying to pay with token user " . $user->getName(), $progress_key);
 			$transaction_info = $this->paying->TokenPay( $token, $credit_data, $user->getName(), $user->getUserId(), $amount, self::payment_subject($account_line_ids), $payment_number, $check_only );
 			if  (! $transaction_info) {
-				print "Failed: can't pay. Contact support";
-				FinanceLog("no transaction info");
+				FinanceLog("Failed: can't pay. Contact support (no transaction info)", $progress_key);
 				return false;
 			}
 			$transaction_id = $transaction_info['Id'];
 			if (! $transaction_id or ($transaction_info['CCode'] != 0)) {
 				$message = "Failed: " . $user->getName() . ": Got error " . $this->paying->ErrorMessage($transaction_info['CCode']) . "\n";
-				print $message;
-				FinanceLog($message);
+				FinanceLog($progress_key, $message, $progress_key);
 				return false;
 			}
 
 			$paid = $transaction_info['Amount'];
-			FinanceLog("paid $paid user " . $user->getName());
+			FinanceLog("paid $paid user " . $user->getName(), $progress_key);
+
 			if ($paid) E_Fresh_Payment_Gateway::RemoveRawInfo($credit_data['id']);
 		} else {
-			FinanceLog("trying to pay with credit info " . $user->getName());
+			FinanceLog("trying to pay with credit info " . $user->getName(), $progress_key);
 			// First pay. Use local store credit info, create token and delete local info.
 			$transaction_info = $this->paying->CreditPay($credit_data, $user->getName(), $user->getUserId(), $amount, self::payment_subject($account_line_ids), $payment_number, $check_only);
-			FinanceLog("back");
 			// info: Id, CCode, Amount, ACode, Fild1, Fild2, Fild3
 			if ((($transaction_info['CCode'] != 0) and ($check_only and $transaction_info['CCode'] != 600))) {
 				FinanceLog(__FUNCTION__ . $transaction_info['CCode']);
 				$this->error_message .= "Got error " . $this->paying->ErrorMessage($transaction_info['CCode']) . "\n";
+				FinanceLog($this->error_message, $progress_key);
 				return false;
 			}
 			if ($check_only)  return true;
@@ -366,8 +369,9 @@ class Finance_Business_Logic {
 		}
 		if ($paid) {
 			// Create invoice receipt. Update balance.
-			FinanceLog("b4 create_receipt_from_account_ids");
+			FinanceLog("Creating receipt", $progress_key);
 			Finance_Client_Accounts::create_receipt_from_account_ids( 0, 0, 0, $paid, $user->getUserId(), date('Y-m-d'), $account_line_ids );
+			FinanceLog("Done", $progress_key);
 
 			return true;
 		}

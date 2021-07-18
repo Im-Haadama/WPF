@@ -553,7 +553,7 @@ class Finance_Delivery
 	{
 		$db_prefix = GetTablePrefix("delivery_lines");
 
-		$product_name = $prod_data['product_name'];
+		$product_name = str_replace("'", "", $prod_data['product_name']);
 		$quantity = $prod_data['quantity'];
 		if (! $quantity > 0) $quantity = 0;
 		$quantity_ordered = $prod_data['quantity_ordered'];
