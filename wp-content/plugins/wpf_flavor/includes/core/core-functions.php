@@ -120,6 +120,7 @@ function user_has_role( $user_id, $role ) {
  */
 function unset_by_value(&$array, $del_val)
 	{
+		if (! $array) return;
 		if (($key = array_search($del_val, $array)) !== false) {
 			unset($array[$key]);
 		}
@@ -226,10 +227,11 @@ function GetParams($ignore_list = array())
 		return "";
 	}
 
-	function InfoUpdate( $key, $data ) {
+	function InfoUpdate( $key, $data, $append = false ) {
 		$db_prefix = GetTablePrefix();
 		$data = EscapeString($data);
 		$key = EscapeString($key);
+		if ($append) $data = InfoGet($key) . "<br/>" . $data;
 		$sql = "insert into ${db_prefix}info (info_key, info_data)
 			values('$key', '$data')
 			on duplicate key update info_data='$data'";
