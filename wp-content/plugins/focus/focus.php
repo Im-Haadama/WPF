@@ -20,41 +20,33 @@ if ( ! defined( 'ABSPATH' ) ) {
 if ( ! defined( 'FOCUS_PLUGIN_FILE' ) ) {
 	define( 'FOCUS_PLUGIN_FILE', __FILE__ );
 }
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
 
 require_once(ABSPATH . 'wp-admin/includes/plugin.php');
 
-// Include the main WooCommerce class.
-if ( ! class_exists( 'Focus' ) ) {
-	include_once dirname( __FILE__ ) . '/includes/class-focus.php';
+add_action('plugin_loaded', 'init_focus', 20);
+
+function init_focus() {
+	if ( ( ! class_exists( "Focus" ) ) and class_exists( "WPF_Flavor" )) {
+		run_focus();
+	}
 }
+
+
+// Include the main WooCommerce class.
 /**
  * Main instance of Focus.
  * @return Focus
  */
 
 function run_focus() {
+	if ( ! class_exists( 'Focus' ) ) {
+		include_once dirname( __FILE__ ) . '/includes/class-focus.php';
+	}
+
 	$plugin = Focus::instance();
 	$plugin->run();
 }
 
-register_activation_hook( __FILE__, 'focus_activate' );
-
-function focus_activate()
-{
-	Focus::instance()->install();
-}
 
 add_action('init', 'init_focus', 20);
 
-function init_focus() {
-	if ( ! is_plugin_active( 'wpf_flavor/wpf_flavor.php' ) /* and current_user_can( 'activate_plugins' ) */ ) {
-		// Stop activation redirect and show error
-		deactivate_plugins(__FILE__);
-		return;
-	}
-
-	run_focus();
-}
