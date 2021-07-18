@@ -138,7 +138,7 @@ class WPF_Organization {
 			// $result .= Core_Html::gui_select( $id, "project_name", $projects_list, $events, $project_id, "project_id" );
 			if ( $form_table and $new_row ) { // die(__FUNCTION__ . ":" . " missing form_table");
 				$result .= Core_Html::GuiButton( "add_new_project", "New Project", array(
-					"action" => "add_element('project', '" . $form_table . "', '" . GetUrl() . "')",
+					"action" => "add_element('projects', '" . $form_table . "', '" . GetUrl() . "', 'project_id')",
 					"New Project"
 				) );
 			}

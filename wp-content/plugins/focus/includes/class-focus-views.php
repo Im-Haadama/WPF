@@ -115,6 +115,8 @@ class Focus_Views {
 		if ($operation) {
 			$table_name = self::TableFromOperation( $operation );
 			$args = self::Args( $table_name, $operation,  $narrow );
+			if ($next_page = GetParam("next_page")) $args["next_page"] = $next_page;
+
 //			ob_start();
 			Core_Hook_Handler::instance()->DoAction($operation, $args);
 			return;
@@ -153,15 +155,20 @@ class Focus_Views {
 		return $result;
 	}
 
-	static function Args( $table_name = null, $action = null, $narrow = false ) {
+	static function Args( $table_name = null, $action = null, $narrow = false )
+	{
+		$user_id = get_user_id();
 		$ignore_list = ["st_main", "page_number", "new", "page_id"];
 		$args        = array(
 			"page_number"  => GetParam( "page_number", false, 1 ),
 			"post_file"    => self::getPost(),
 			"selected_tab" => GetParam( "selected_tab", false, null ),
 			"active_only"  => GetParam( "active_only", false, true ),
-			"worker_id" => get_user_id()
+			"worker_id" => $user_id
 		);
+
+		$worker = new Org_Worker($user_id);
+
 		// Filter by status.
 		if ( GetParam( "status", false, false ) ) {
 			$args["status"] = GetParam( "status" );
@@ -292,6 +299,19 @@ class Focus_Views {
 //					);
 					$args["mandatory_fields"] = array( "project_name" );
 					$args["selectors"]        = array( "project_priority" => "Focus_Views::gui_select_priority" );
+					if (! isset($args["values"])) $args["values"] = array();
+					if (! isset($args["hide_cols"])) $args["hide_cols"] = array();
+					$args["values"]["manager"] = $user_id;
+					$args["hide_cols"]["manager"] = 1;
+					$args["values"]["is_active"] = 1;
+					$args["hide_cols"]["is_active"] = 1;
+
+					if (count($worker->GetAllCompanies()) == 1) {
+						$args["values"]["company"] = $worker->GetAllCompanies()[0];
+						$args["hide_cols"]["company"] = 1;
+					} else {
+						$args["selectors"]["company_id"] = __CLASS__ . "::gui_select_company";
+					}
 					//$args["values"] = array("manager" => get_user_id());
 					$args["header_fields"] = array(
 						"project_name"          => "Project name",
@@ -826,6 +846,7 @@ class Focus_Views {
 
 		$args["query"] = " id in (" . CommaImplode( $projects ) . ")";
 		$args["actions"] = array(array("Open tasks", "/project?id=%d"));
+		$args["add_button"] = true;
 
 		$result .= Core_Gem::GemTable( "projects", $args );
 

@@ -51,7 +51,7 @@ function show_project(xmlhttp)
 function add_project(table_name, url)
 {
     let params = get_form_params(table_name, false);
-    let new_loc = "?operation=show_new_project&next_page=" + encodeURIComponent(url + "&params=" + params);
+    let new_loc = "?operation=gem_new_projects&next_page=" + encodeURIComponent(url + "&params=" + params);
     window.location = new_loc;
 }
 
