@@ -49,16 +49,6 @@ function run_flavor() {
 
 run_flavor();
 
-$now         = microtime(true);
-$micro_delta = $now - $prev_time;
-if ( $micro_delta > 0.001 ) {
-	error_log("3 " . $micro_delta, 3, WC_LOG_DIR . "perf.log");
-}
-
-//if (function_exists('get_user_id') and (get_user_id() == 1)) {
-//	show_errors();
-//}
-
 add_action( 'wp_head', 'add_viewport_meta_tag' , '1' );
 
 function add_viewport_meta_tag() {
