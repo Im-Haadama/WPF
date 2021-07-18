@@ -338,7 +338,8 @@ class Core_Gem {
 		// $next_page = GetArg($args, "next_page", null);
 		if (! $post) die(__FUNCTION__ . " :" . $text . "must send post_file " . $table_name);
 
-		$next_page = @apply_filters("gem_next_page_" . $table_name, "");
+		$next_page = GetArg($args, "next_page");
+		$field = GetArg($args, "field", "new");
 
 //		print "np=$next_page<br/>";
 		if ($next_page){
@@ -350,7 +351,7 @@ class Core_Gem {
 //		    }  else alert(xmlhttp.response);
 //		}
 		</script>';
-			$result .= "\n" . Core_Html::GuiButton("add_row", "add", array("action" => "data_save_new('" . $post . "', '$table_name', '$next_page')\n"));
+			$result .= "\n" . Core_Html::GuiButton("add_row", "add", array("action" => "data_save_new('" . $post . "', '$table_name', '$next_page', '$field')\n"));
 		} else {
 			$result .= Core_Html::GuiButton("add_row", "add", array("action" => "data_save_new('" . $post . "', '$table_name', action_back)", "add"));
 		}
