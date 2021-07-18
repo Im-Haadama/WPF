@@ -67,7 +67,7 @@ class Focus_Manager {
 			$this->logger->info("handling freq $freq");
 			$sql = "SELECT id" .
 			       " FROM ${table_prefix}task_templates " .
-			       " where repeat_freq = '" . $freq . "' and ((last_check is null) or (last_check < " . QuoteText(date('Y-m-j')) . ") or repeat_freq like 'c%')";
+			       " where is_active=1 and repeat_freq = '" . $freq . "' and ((last_check is null) or (last_check < " . QuoteText(date('Y-m-j')) . ") or repeat_freq like 'c%')";
 
 			$result = SqlQuery( $sql );
 
