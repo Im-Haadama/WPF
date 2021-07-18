@@ -6,7 +6,20 @@ if ( ! defined( "ABSPATH" ) ) {
 	define( 'ABSPATH', dirname(dirname(dirname( dirname( $_SERVER["SCRIPT_FILENAME"])))). '/');
 }
 
+if (isset($_GET["prob"])) {
+	require_once(ABSPATH . 'wp-db.php');
+	$key = $_GET["operation"];
+	$conn = new mysqli( DB_HOST, DB_USER, DB_PASSWORD, DB_NAME );
+	if (isset($_GET["clean_progress"])) {
+		$result = mysqli_query( $conn, "update im_info set info_data = '' where info_key = '" . $key . "_progress'");
+		return;
+	}
+	$result = mysqli_query( $conn, "select info_data from im_info where info_key = '" . $key . "_progress'");
 
+	$arr = mysqli_fetch_row( $result );
+	print $arr[0];
+	return;
+}
 require_once(ABSPATH . 'wp-config.php');
 
 $operation = GetParam('operation', true);
