@@ -15,10 +15,7 @@
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
-
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+$prev_time         = microtime(true);
 
 if ( ! defined( 'FLAVOR_PLUGIN_FILE' ) ) {
 	define( 'FLAVOR_PLUGIN_FILE', __FILE__ );
@@ -51,6 +48,12 @@ function run_flavor() {
 }
 
 run_flavor();
+
+$now         = microtime(true);
+$micro_delta = $now - $prev_time;
+if ( $micro_delta > 0.001 ) {
+	error_log("3 " . $micro_delta, 3, WC_LOG_DIR . "perf.log");
+}
 
 //if (function_exists('get_user_id') and (get_user_id() == 1)) {
 //	show_errors();
