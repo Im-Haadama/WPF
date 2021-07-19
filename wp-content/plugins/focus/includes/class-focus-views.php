@@ -117,11 +117,8 @@ class Focus_Views {
 			$args = self::Args( $table_name, $operation,  $narrow );
 			if ($next_page = GetParam("next_page")) $args["next_page"] = $next_page;
 
-//			ob_start();
 			Core_Hook_Handler::instance()->DoAction($operation, $args);
 			return;
-//			do_action($operation, $args);
-//			return ob_get_clean();
 		}
 
 		// If no filter yet, handle the old way.
@@ -653,24 +650,33 @@ class Focus_Views {
 		$args   = self::Args( "tasklist", null, $narrow );
 
 		$selected_tab = GetParam( "st_main", false, "my_work" );
-		$tabs = array(
-			array( "my_work", "My tasks", null ),
-			array( "my_team_work", "Team's tasks", null ),
-			array( "i_want", "I want", null ),
-			array( "my_teams", "My Teams", null ),
-			array( "my_projects", "My projects", null ),
-			array( "repeating_tasks", "Repeating tasks", null ),
-			array( "missions", "Missions", null )
-		);
+		$single = true; // $worker->single_worker();
+		if ($single) {
+			$tabs = array(
+				"my_work" => array( "my_work", "Tasks", null ),
+				"my_projects" => array( "my_projects", "Projects", null ),
+				"repeating_tasks" => array( "repeating_tasks", "Repeating tasks", null ));
+		} else {
+
+			$tabs = array(
+				array( "my_work", "My tasks", null ),
+				array( "my_team_work", "Team's tasks", null ),
+				array( "i_want", "I want", null ),
+				array( "my_teams", "My Teams", null ),
+				array( "my_projects", "My projects", null ),
+				array( "repeating_tasks", "Repeating tasks", null ),
+				array( "missions", "Missions", null )
+			);
+		}
 
 		if ( $companies = $worker->GetAllCompanies( ) ) {
 			foreach ( $companies as $company_id ) {
 				$company = new Org_Company( intval($company_id) );
-				array_push( $tabs, array(
+				$tabs["company_settings"] = array(
 					"company_settings&company_id=$company_id",
 					"{$company->getName()} Settings",
 					null
-				) );
+				);
 			}
 		}
 
@@ -678,32 +684,32 @@ class Focus_Views {
 
 		switch ( $selected_tab ) {
 			case "my_work":
-				$tabs[0][2] = self::my_work( $args, "Active tasks assigned to me or my teams", false, $user_id );
-				if (! $this->result_count) $tabs[0][2] = self::my_work( $args, "Active tasks assigned to my teams", true, $user_id );
+				$tabs[$selected_tab][2] = self::my_work( $args, "Active tasks assigned to me or my teams", false, $user_id );
+				if (! $this->result_count and ! $single) $tabs[0][2] = self::my_work( $args, "Active tasks assigned to my teams", true, $user_id );
 				break;
 			case "my_team_work":
-				$tabs[1][2] = self::my_work( $args, "Active tasks assigned to my teams", true, $user_id );
+				$tabs[$selected_tab][2] = self::my_work( $args, "Active tasks assigned to my teams", true, $user_id );
 				break;
 			case "i_want":
-				$tabs[2][2] = self::i_want( $args, $user_id );
+				$tabs[$selected_tab][2] = self::i_want( $args, $user_id );
 				break;
 			case "my_teams":
-				$tabs[3][2] = self::my_teams( $args, $user_id );
+				$tabs[$selected_tab][2] = self::my_teams( $args, $user_id );
 				break;
 			case "my_projects":
-				$tabs[4][2] = self::my_projects( $args, $user_id );
+				$tabs[$selected_tab][2] = self::my_projects( $args, $user_id );
 				break;
 			case "repeating_tasks":
-				$tabs[5][2] = self::show_templates( $args );
+				$tabs[$selected_tab][2] = self::show_templates( $args );
 				break;
 			case "missions":
 				$args["query"] = "mission_id > 0 and status < 2";
-				$tabs[6][2] = self::my_work( $args, "Missions", true, $user_id );
+				$tabs[$selected_tab][2] = self::my_work( $args, "Missions", true, $user_id );
 				break;
 			case "company_settings":
 				$company_id = GetParam( "company_id", true );
 				$company    = new Org_Company( $company_id );
-				$tabs[7][2] = Flavor_Org_Views::CompanySettings( $company );
+				$tabs[$selected_tab][2] = Flavor_Org_Views::CompanySettings( $company );
 				break;
 			default:
 				$result .= "$selected_tab not handled!";
@@ -923,7 +929,7 @@ class Focus_Views {
 		if ( $this->result_count ) {
 			$result .= $table;
 		} else {
-			$result .= "<br/>" . ETranslate( "No active tasks!" );
+			$result .= "<br/>" . ETranslate( "No active tasks!" ) . " ";
 			$result .= ETranslate( "Let's create first one!" ) . " ";
 		}
 

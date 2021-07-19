@@ -384,4 +384,14 @@ class Org_Worker extends Core_users
 		return SqlQuerySingleScalar("select add_break from im_working_rates where user_id = $user_id") == 1;
 	}
 
+	function single_worker()
+	{
+		foreach ($this->GetAllCompanies() as $comapny_id)
+		{
+			$company = new Org_Company($comapny_id);
+			if (count($company->getWorkers()) > 1) return false;
+		}
+
+		return true;
+	}
 }
