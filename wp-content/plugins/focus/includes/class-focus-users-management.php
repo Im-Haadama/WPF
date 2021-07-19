@@ -2,16 +2,16 @@
 
 
 class Focus_Users_Management {
-	function init_hooks()
+	function init_hooks($loader)
 	{
         //FocusLog(__FUNCTION__);
-		AddAction("focus_create_user", array($this, 'add_user'));
+		$loader->AddAction("focus_create_user", __CLASS__, 'add_user');
 	}
 
-	function add_user()
+	static function add_user()
 	{
 		// Input
-		$email = GetParam("email", true);
+		$email = GetParam("email", true); //XndDuirQ
 		$user_name = GetParam("user_name", true);
 		$password = GetParam("password", true);
 

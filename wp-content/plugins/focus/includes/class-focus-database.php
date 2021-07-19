@@ -61,6 +61,17 @@ class Focus_Database extends Core_Database
 				)" );
 			case '1.6.4':
 				SqlQuery( "ALTER TABLE ${db_prefix}task_templates ADD `created` DATE;");
+			case '1.6.5':
+				SqlQuery( "create table im_tasklist_times
+				(
+					id int auto_increment
+						primary key,
+					task_id int,
+					user int,
+					action varchar(200),
+					time datetime
+				)" );
+
 		}
 		return self::UpdateInstalled("tables", $version );
 	}

@@ -16,7 +16,7 @@ class Focus {
 	 *
 	 * @var string
 	 */
-	public $version = '1.6.5';
+	public $version = '1.6.6';
 
 	/**
 	 * @var
@@ -160,7 +160,7 @@ class Focus {
         Core_Pages::CreateIfNeeded("signup", "/signup", "focus_sign_up");
 
         $this->focus_users = new Focus_Users_Management();
-        $this->focus_users->init_hooks();
+        $this->focus_users->init_hooks($this->loader);
 
         $focus_actions = new Focus_Actions();
         $focus_actions->init_hooks($this->loader);

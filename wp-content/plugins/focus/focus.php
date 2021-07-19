@@ -31,7 +31,6 @@ function init_focus() {
 	}
 }
 
-
 // Include the main WooCommerce class.
 /**
  * Main instance of Focus.
@@ -46,7 +45,4 @@ function run_focus() {
 	$plugin = Focus::instance();
 	$plugin->run();
 }
-
-
-add_action('init', 'init_focus', 20);
 

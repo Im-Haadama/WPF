@@ -70,7 +70,7 @@ class Org_Company {
 				$w = new Org_Worker($u->getId());
 			}
 			else
-				dd( $w_id );
+				wpf_dd( $w_id );
 
 		$w->AddCompany($this->id);
 		$w->add_role('staff');
