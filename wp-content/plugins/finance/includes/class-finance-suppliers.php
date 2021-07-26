@@ -97,8 +97,15 @@ class Finance_Suppliers
 		$product_name_idx = array_search( "product_name", $fields );
 		$price_idx = array_search("price", $fields);
 
-		if (false === $price_idx) return false;
-		if (false === $product_name_idx) return false;
+		if (false === $price_idx)
+		{
+			FinanceLog("import: no price");
+			return false;
+		}
+		if (false === $product_name_idx) {
+			FinanceLog("import no product name");
+			return false;
+		}
 
 		$price     = $values[ $price_idx ];
 		$product_name = $values[$product_name_idx];
@@ -293,8 +300,10 @@ class Finance_Suppliers
 
 	static function action_after_import(&$fields)
 	{
-		$supplier_id = GetParam("supplier_id", true);
-		InfoUpdate("import_supplier_$supplier_id", $fields['date']);
+		if ($fields['new_rows']) { // If no new rows, keep the old values.
+			$supplier_id = GetParam( "supplier_id", true );
+			InfoUpdate( "import_supplier_$supplier_id", $fields['date'] );
+		}
 	}
 
 	// Supplier pricelist import

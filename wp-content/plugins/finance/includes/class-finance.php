@@ -34,7 +34,7 @@ class Finance {
 	 *
 	 * @var string
 	 */
-	public $version = '1.7.21';
+	public $version = '1.7.22';
 
 	private $plugin_name;
 

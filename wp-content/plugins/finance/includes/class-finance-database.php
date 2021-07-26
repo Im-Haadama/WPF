@@ -80,7 +80,9 @@ engine=MyISAM;");
 					SqlQuery("alter table ${db_prefix}mission_types add default_price float");
 
 				case '1.17.20':
-					SqlQuery("alter table ${db_prefix}mission_types add start_address varchar(200) charset utf8, add end_address varchar(200) charset utf8;");
+				case '1.17.21':
+
+				SqlQuery("alter table ${db_prefix}mission_types add start_address varchar(200) charset utf8, add end_address varchar(200) charset utf8;");
 
 			}
 
