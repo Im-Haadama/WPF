@@ -220,8 +220,8 @@ class Core_Db_MultiSite extends Core_MultiSite {
 		$html = Core_Db_MultiSite::Execute( $url, $remote, $debug );
 
 		if (! $html) {
-			print "Can't get data from $url ";
-			print Core_Db_MultiSite::Execute( $url, $remote, 1);
+			MyLog("Can't get data from $url ");
+			// print Core_Db_MultiSite::Execute( $url, $remote, 1);
 			return false;
 		}
 

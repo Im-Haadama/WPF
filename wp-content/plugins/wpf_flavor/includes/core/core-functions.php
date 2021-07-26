@@ -899,7 +899,7 @@ function ETranslate( $text, $arg = null ) {
 	}
 }
 
-function dd($var)
+function wpf_dd($var)
 {
 	print_r($var);
 	die(1);

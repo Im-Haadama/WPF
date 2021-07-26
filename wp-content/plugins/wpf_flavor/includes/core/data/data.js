@@ -42,7 +42,7 @@ function active_entity(active, post_operation, table_name, id)
 }
 
 // If we want to add custom action in the server we can send different post action.
-function data_save_new(post_operation, table_name, page)
+function data_save_new(post_operation, table_name, page, field)
 {
     let operation = post_operation;
     let table_id = table_name + "_new";
@@ -61,7 +61,7 @@ function data_save_new(post_operation, table_name, page)
     operation += form_params;
 
     if (typeof(page) === "string"){
-        page_function = function(xmlhttp, obj) { next_page(xmlhttp, page); }
+        page_function = function(xmlhttp, obj) { next_page(xmlhttp, page, field); }
     }  else {
         if (typeof (page) == 'function')
             page_function = page;
@@ -188,11 +188,11 @@ function do_update_list(xmlhttp, obj)
     obj.list.innerHTML = xmlhttp.response;
 }
 
-function add_element(element_name, table_name, url)
+function add_element(element_name, table_name, url, field)
 {
-    let table_id = table_name + "_new";
+    let table_id = table_name;
     let params = get_form_params(table_id, false);
-    let new_loc = "?operation=show_new_" + element_name + "&next_page=" + encodeURIComponent(url + "&params=" + params);
+    let new_loc = "?operation=gem_add_" + element_name + "&next_page=" + encodeURIComponent(url + params) + '&field=' + field; // gem_add_projects
     window.location = new_loc;
 }
 
@@ -209,3 +209,4 @@ function delete_items(collection_name, post_file, action_name)
     let url = post_file + glue + "operation=" + action_name + "&type=" + type + "&ids=" + ids;
     execute_url(url, location_reload);
 }
+

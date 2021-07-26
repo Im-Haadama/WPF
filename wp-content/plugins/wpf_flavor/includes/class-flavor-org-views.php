@@ -28,6 +28,12 @@ class Flavor_Org_Views {
 		$tabs = [];
 
 		array_push( $tabs, array(
+			"general settings",
+			"Settings",
+			self::company( $company, $args )
+		) );
+
+		array_push( $tabs, array(
 			"teams",
 			"Teams",
 			self::company_teams( $company, $args )
@@ -46,6 +52,14 @@ class Flavor_Org_Views {
 
 //		print $t;
 		return $t;
+	}
+
+	static function company(Org_Company $company, $args)
+	{
+//		$company = new Org_Company($company_id);
+		$args["post_file"] = WPF_Flavor::getPost();
+		$result = Core_Gem::GemElement("company", $company->getId(), $args);
+		return $result;
 	}
 
 	static function company_teams( Org_Company $company, $args ) {

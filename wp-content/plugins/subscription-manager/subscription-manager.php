@@ -16,14 +16,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-if (! class_exists("Core_Database")) {
-	print( "<a href='/wp-content/plugins/subscription_manager/subscription_manager.php'>must load flavor before subscription_manager</a>" );
-
-	return;
-}
-
 if ( ! defined( 'SUBSCRIPTION_MANAGER_PLUGIN_FILE' ) ) {
 	define( 'SUBSCRIPTION_MANAGER_PLUGIN_FILE', __FILE__ );
+}
+
+if ( ! defined( 'SUBSCRIPTION_MANAGER_PLUGIN_DIR' ) ) {
+	define( 'SUBSCRIPTION_MANAGER_PLUGIN_DIR', dirname(SUBSCRIPTION_MANAGER_PLUGIN_FILE) );
 }
 
 require_once(ABSPATH . 'wp-admin/includes/plugin.php');
@@ -35,26 +33,22 @@ if ( ! is_plugin_active( 'wpf_flavor/wpf_flavor.php' ) /* and current_user_can( 
 	return;
 }
 
+function run_subscription_manager()
+{
+	if (! class_exists("Subscription_Manager"))
+	{
+		include_once dirname( __FILE__ ) . '/includes/class-subscription-manager.php';
+	}
+	$instance = Subscription_Manager::instance();
 
-// Include the main WooCommerce class.
-if ( ! class_exists( 'Subscription_manager' ) ) {
-	include_once dirname( __FILE__ ) . '/includes/class-subscription-manager.php';
-}
-/**
- * Main instance of Subscription_manager.
- *
- * Returns the main instance of WC to prevent the need to use globals.
- *
- * @return Subscription_manager
- */
-
-function Subscription_Manager() {
-	return Subscription_manager::instance();
+	$instance->run();
 }
 
-function run_subscription_manager() {
-	$plugin = new Subscription_Manager("Subscription_Manager");
-	$plugin->run();
+add_action('plugin_loaded', 'init_subscription_manager', 20);
+
+function init_subscription_manager() {
+	if ( ( ! class_exists( "Subscription_Manager" ) ) and class_exists( "WPF_Flavor" ) ) {
+		run_subscription_manager();
+	}
 }
 
-run_subscription_manager();

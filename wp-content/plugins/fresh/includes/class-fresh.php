@@ -958,7 +958,7 @@ function sm_woocommerce_ajax_add_to_cart() {
 
 function sm_remove_sorting_option_woocommerce_shop( $options ) {
 	unset( $options['rating'] );
-	unset( $options['price'] );
+//	unset( $options['price'] );
 	unset( $options['date'] );
 	unset( $options['price-desc'] );
 	return $options;
@@ -981,6 +981,7 @@ function sm_alphabetical_woocommerce_shop_ordering( $sort_args ) {
 
 function sm_custom_woocommerce_catalog_orderby( $sortby ) {
 	$sortby['alphabetical'] = 'Sort by name';
+
 	return $sortby;
 }
 

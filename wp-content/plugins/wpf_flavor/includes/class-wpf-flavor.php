@@ -168,6 +168,8 @@ class WPF_Flavor {
 		add_action( 'admin_notices', array($this, 'admin_notices' ));
 		add_action('admin_init', array($this, 'blog_settings'));
 
+		// Make sessions longer
+		add_filter( 'auth_cookie_expiration', 'wcs_users_logged_in_longer' );
 
 		Core_Gem::getInstance()->init_hooks($this->loader);
 		Flavor_Org_Views::instance()->init_hooks($this->loader);
@@ -759,7 +761,7 @@ class WPF_Flavor {
 
 	function plugins()
 	{
-		dd("aa");
+		wpf_dd("aa");
 	}
 
 	static function getTextDomain()
@@ -806,4 +808,10 @@ function modify_admin_bar( $wp_admin_bar )
 //	MyLog(__FUNCTION__);
 
 }
+
+function wcs_users_logged_in_longer( $expire ) {
+	// 1 month in seconds
+	return 2628000;
+}
+
 ?>

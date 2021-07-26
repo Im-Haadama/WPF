@@ -345,7 +345,6 @@ class Core_Data
 		$accumulation_row = GetArg($args, "accumulation_row", null);
 		$events = GetArg($args, "events", null);
 
-		$field_events = null;
 		$table_name = GetArg($args, "table_name", null);
 
 		$prepare_plug = GetArg($args, "prepare_plug", null);

@@ -114,14 +114,26 @@ order by 1;");
 		$current = $this->checkInstalled( "tables");
 		$db_prefix = GetTablePrefix();
 
-		if ($current) {
-			switch ( $current ) {
-				case '1.1':
-					return SqlQuery("alter table im_payment_info add user_id integer(11)") and
-					       self::UpdateInstalled("tables", $version);
-			}
+		if (($current == $version) and ! $force) return true;
+
+		switch($current)
+		{
+			case '1.1':
+				return SqlQuery("alter table im_payment_info add user_id integer(11)") and
+				       self::UpdateInstalled("tables", $version);
+
+			case '1.4.4':
+			case '1.4.5':
+			case '1.4.6':
+			case '1.4.7':
+			SqlQuery("alter table ${db_prefix}supplier_price_list 
+    				add origin varchar(100)");
+				SqlQuery("alter table ${db_prefix}supplier_price_list 
+    				add grow_type varchar(100)");
+				SqlQuery("alter table ${db_prefix}supplier_price_list 
+    				add product_type varchar(100)");
+				return self::UpdateInstalled( "tables", $version);
 		}
-		if ($current == $version and ! $force) return true;
 
 		SqlQuery("create table ${db_prefix}supplier_mapping
 (

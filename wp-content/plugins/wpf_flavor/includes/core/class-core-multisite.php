@@ -207,6 +207,7 @@ class Core_MultiSite {
 		curl_setopt($ch, CURLOPT_URL, $file);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+		curl_setopt($ch, CURLOPT_TIMEOUT, 2);
 //		curl_setopt($ch, CURLOPT_USERPWD, "$username:$password");
 		curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
 //		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);

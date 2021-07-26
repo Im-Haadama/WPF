@@ -207,9 +207,11 @@ class Core_Gem {
 //			die(1);
 			return false;
 		}
-		if ($f = GetArg($table_args, 'action_after_import', null)) $f($fields);
 
 		if (is_array($rc)){
+			$fields['new_rows'] = $rc[0];
+			if ($f = GetArg($table_args, 'action_after_import', null)) $f($fields);
+
 			$result .= $rc[0] . " new rows<br/>" .
 			           $rc[1]. " not valid rows (duplicate or not enough data<br/>" .
 			           $rc[2] . " failed rows<br/>";

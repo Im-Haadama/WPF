@@ -213,7 +213,7 @@ class Freight_Mission_Manager
 
 	static function dispatcher_wrap()
 	{
-		dd("AAA");
+		wpf_dd("AAA");
 		$operation = GetParam("operation", false, null);
 		$header = __("Dispatch mission") ;
 		$week = GetParam("week", false, null);

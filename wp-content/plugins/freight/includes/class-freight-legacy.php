@@ -128,8 +128,9 @@ class Freight_Legacy {
 
 	function deliveries()
 	{
-		$table = self::print_deliveries( "`post_status` in ('wc-awaiting-shipment', 'wc-processing') " .
-		                           " and post_excerpt like '%משלוח המכולת%'", true );
+		$sql = "`post_status` in ('wc-awaiting-shipment', 'wc-processing') " .
+		       " and post_excerpt like '%משלוח המכולת%'";
+		$table = self::print_deliveries($sql , true );
 
 		if ( strlen( $table ) > 10 ) {
 			$result = "";
@@ -249,17 +250,18 @@ AND (meta_value = "legacy" or meta_value = 1)';
 		$prev_user = - 1;
 		while ( $order = SqlFetchRow( $orders ) ) {
 			$order_id   = $order[0];
+			FreightLog($order_id);
 			$o          = new Finance_Order( $order_id );
 			$is_group   = $order[1];
 			$order_user = $order[2];
 			if ( ! $is_group ) {
 				$data .= $o->PrintHtml( $selectable );
-				continue;
 			} else {
-				if ( $order_user != $prev_user ) {
+				FreightLog("$order_user $prev_user");
+//				if ( $order_user != $prev_user ) {
 					$data      .= $o->PrintHtml( $selectable );
-					$prev_user = $order_user;
-				}
+//					$prev_user = $order_user;
+//				}
 			}
 		}
 

@@ -125,7 +125,6 @@ class Fresh_Client_Views  extends Finance_Client_Views {
 	static function expand_basket($item_id, $basket_id, $quantity_ordered, $level = 0, $remove_allowed = false) : array
 	{
 		$sql2 = 'SELECT DISTINCT product_id, quantity FROM im_baskets WHERE basket_id = ' . $basket_id;
-		$client_type = "regular";
 		$result2 = SqlQuery( $sql2 );
 		$basket_lines = array();
 		while ( $row2 = mysqli_fetch_assoc( $result2 ) ) {

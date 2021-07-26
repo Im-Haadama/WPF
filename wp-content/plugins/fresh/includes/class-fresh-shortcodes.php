@@ -29,7 +29,8 @@ class Fresh_Shortcodes {
 			'fresh_open_orders'    => __CLASS__ . '::open_orders',
 			'fresh_delivery'       => __CLASS__ . '::delivery',
 			'fresh_client_archive' => __CLASS__ . '::client_archive',
-			'fresh_deliveries'     => __CLASS__ . '::deliveries'
+			'fresh_deliveries'     => __CLASS__ . '::deliveries',
+			'fresh_search' => __CLASS__ . '::search'
 		);
 
 		foreach ( $shortcodes as $shortcode => $function ) {
@@ -198,6 +199,21 @@ class Fresh_Shortcodes {
 		}
 //		$result .= "</div>";
 		return $result;
+	}
+
+	static function search() // [fresh_search]
+	{
+//		$result = '<form name="search" action="' . admin_url('admin-ajax.php') . '" method="post" class="form">';
+//		$result .= Core_Html::GuiInput("search");
+//		$result .= '<input type="submit">';
+//		$result .= '</form>';
+//		return $result;
+		return '<form role="search" method="get" class="woocommerce-product-search">
+	<label class="screen-reader-text" for="woocommerce-product-search-field-0">חיפוש עבור:</label>
+	<input type="search" id="woocommerce-product-search-field-0" class="search-field" placeholder="חיפוש מוצרים&hellip;" name="s" />
+	<button type="submit" value="חיפוש">חיפוש</button>
+	<input type="hidden" name="post_type" value="product" />
+</form>';
 	}
 }
 
