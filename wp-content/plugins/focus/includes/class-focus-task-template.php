@@ -307,31 +307,6 @@ class Focus_Task_Template {
 	public function setTimezone( $timezone ): void {
 		$this->timezone = $timezone;
 	}
-	
-//	public function save()
-//	{
-//		$sql = "update im_task_templates set
-//		task_description = '$this->task_description',
-//		task_url = '$this->task_url',
-//		project_id = $this->project_id,
-//		repeat_days = '$this->repeat_days',
-//		condition_query = '$this->condition_query',
-//		repeat_time = '$this->repeat_time',
-//		repeat_freq = '$this->repeat_freq',
-//		path_code = $this->path_code,
-//		repeat_freq_numbers = '$this->repeat_freq_numbers',
-//		priority = $this->priority,
-//		owner = $this->owner,
-//		creator = $this->creator,
-//		team = $this->team,
-//		last_check = $this->last_check,
-//		working_hours = '$this->working_hours',
-//		is_active = $this->is_active,
-//		last_check = $this->last_check
-//		where id = " . $this->id;
-//		SqlQuery($sql);
-//	}
-
 
 	function create_if_needed()
 	{

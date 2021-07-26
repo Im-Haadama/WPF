@@ -650,7 +650,7 @@ class Focus_Views {
 		$args   = self::Args( "tasklist", null, $narrow );
 
 		$selected_tab = GetParam( "st_main", false, "my_work" );
-		$single = true; // $worker->single_worker();
+		$single = $worker->single_worker();
 		if ($single) {
 			$tabs = array(
 				"my_work" => array( "my_work", "Tasks", null ),
@@ -659,13 +659,13 @@ class Focus_Views {
 		} else {
 
 			$tabs = array(
-				array( "my_work", "My tasks", null ),
-				array( "my_team_work", "Team's tasks", null ),
-				array( "i_want", "I want", null ),
-				array( "my_teams", "My Teams", null ),
-				array( "my_projects", "My projects", null ),
-				array( "repeating_tasks", "Repeating tasks", null ),
-				array( "missions", "Missions", null )
+				"my_work"=>array( "my_work", "My tasks", null ),
+				"my_team_work" => array( "my_team_work", "Team's tasks", null ),
+				"i_want" => array( "i_want", "I want", null ),
+				"my_teams" => array( "my_teams", "My Teams", null ),
+				"my_projects" => array( "my_projects", "My projects", null ),
+				"repeating_tasks" => array( "repeating_tasks", "Repeating tasks", null ),
+				"missions" => array( "missions", "Missions", null )
 			);
 		}
 
@@ -685,7 +685,7 @@ class Focus_Views {
 		switch ( $selected_tab ) {
 			case "my_work":
 				$tabs[$selected_tab][2] = self::my_work( $args, "Active tasks assigned to me or my teams", false, $user_id );
-				if (! $this->result_count and ! $single) $tabs[0][2] = self::my_work( $args, "Active tasks assigned to my teams", true, $user_id );
+				if (! $this->result_count and ! $single) $tabs[$selected_tab][2] = self::my_work( $args, "Active tasks assigned to my teams", true, $user_id );
 				break;
 			case "my_team_work":
 				$tabs[$selected_tab][2] = self::my_work( $args, "Active tasks assigned to my teams", true, $user_id );
@@ -1527,8 +1527,8 @@ class Focus_Views {
 	static function search_by_text( $user_id, $text ) {
 		$result = [];
 		$result = array_merge( $result, self::project_list_search( $user_id, $text ) );
-		$result = array_merge( $result, self::task_list_search( "(status < 2 or status = 6) and (task_description like " . QuotePercent( $text ) . " or task_title like " . QuotePercent( $text ) . ")" ) );
-		$result = array_merge( $result, self::template_list_search( " is_active = 1 and task_description like " . QuotePercent( $text ) ) );
+		$result = array_merge( $result, self::task_list_search( $user_id, "(status < 2 or status = 6) and (task_description like " . QuotePercent( $text ) . " or task_title like " . QuotePercent( $text ) . ")" ) );
+		$result = array_merge( $result, self::template_list_search( $user_id, " is_active = 1 and task_description like " . QuotePercent( $text ) ) );
 
 		if ( count( $result ) < 1 ) {
 			return "No results";
@@ -1537,8 +1537,11 @@ class Focus_Views {
 		return Core_Html::gui_table_args( $result );
 	}
 
-	static function task_list_search( $query ) {
+	static function task_list_search( $user_id, $query ) {
 		$db_prefix = GetTablePrefix();
+		$user = new Org_Worker($user_id);
+		$query .= " and ( " . $user->myWorkQuery(true) . ")";
+
 		$sql = "select id, CONCAT(IFNULL(task_title, substring(task_description, 1, 20))) from ${db_prefix}tasklist where $query";
 		$tasks     = SqlQueryArray($sql);
 
@@ -1551,8 +1554,10 @@ class Focus_Views {
 		return $result;
 	}
 
-	static function template_list_search( $query ) {
+	static function template_list_search( $user_id, $query ) {
 		$db_prefix = GetTablePrefix();
+
+		$query .= " and ( owner = $user_id) ";
 		$tasks     = SqlQueryArray( "select id, task_description from ${db_prefix}task_templates where $query" );
 
 		$result = [];
@@ -1838,9 +1843,7 @@ class Focus_Views {
 		if ( ! $new_user ) {
 			$name        = strtok( $worker_email, "@" );
 			$new_user_id = wp_create_user( $name, $name, $worker_email );
-			if ( ! ( $new_user > 0 ) ) {
-				var_dump( $new_user );
-
+			if ( ! ( $new_user_id > 0 ) ) {
 				return false;
 			}
 		} else {

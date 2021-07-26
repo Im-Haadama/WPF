@@ -294,47 +294,11 @@ class Org_Worker extends Core_users
 		return SqlQuerySingleScalar( "select company from im_projects where id = " . $project_id);
 	}
 
-//	function GetProjects()
-//	{
-//		return get_user_meta($this->id, 'teams'
-//		$worker_id = $this->id;
-//		$worker = new Org_Worker($worker_id);
-//		$result = [];
-//		$companies = $worker->GetAllCompanies($worker_id);
-//		if (!$companies) {
-//			print "Doesn't belong to any company";
-//			print "user= $worker_id<Br/>";
-//			return null;
-//		}
-////		print "companies: "; var_dump($co); print "<br/>";
-//		foreach ($worker->GetAllCompanies($worker_id) as $company){
-////			print "com=$company<br/>";
-//			if ($worker->IsGlobalCompanyWorker($company)){
-//				foreach (sql_query_array_scalar("select id from im_projects where is_active = 1 and company = $company") as $project_id)
-//					$result [$project_id] = self::GetName($project_id);
-//			}
-//			$direct_projects = $worker->GetProjects();
-////			var_dump($direct_projects);
-//			foreach ($direct_projects as $p_id){
-//				print "p_id=$p_id<br/>";
-//				$pr = new Org_Project($p_id);
-//				$result[$p_id] = $pr->getName();
-//			}
-//			else {
-//				foreach (sql_query_array_scalar("select project_id from im_working where is_active = 1 and user_id = $worker_id") as $project_id)
-//					if (self::IsActive($project_id))
-//						$result [$project_id] = self::GetName($project_id);
-//			}
-//		}
-//		return $result;
-//	}
-
-
 	// Team_filter = 0: my work
 	// Team_filter = 1: team's work.
 	// Team_filter = array - selected teams.
 	// status - if not set show by ActiveQuery.
-	function myWorkQuery($teams_filter, $status = null)
+	function myWorkQuery(bool $teams_filter, $status = null)
 		// 1 - ready, 0 - not ready, 2 - both, 3- not finished
 	{
 		$teams         = self::GetAllTeams();
