@@ -110,7 +110,8 @@ class Fresh {
 		$this->define_constants();
 		$this->includes(); // Loads class autoloader
 		$this->loader = Core_Hook_Handler::instance();
-		$this->auto_loader = new Core_Autoloader(FRESH_ABSPATH);
+		$this->auto_loader = Core_Autoloader::instance();
+		$this->auto_loader->add_path(FRESH_INCLUDES);
 		$this->loader = Core_Hook_Handler::instance();
 
 		$this->init_hooks($this->loader);

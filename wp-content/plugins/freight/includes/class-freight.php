@@ -112,7 +112,8 @@ class Freight {
 		$this->plugin_name = $plugin_name;
 		$this->define_constants();
 		$this->includes(); // Loads class autoloader
-		$this->auto_loader = new Core_Autoloader(FREIGHT_ABSPATH);
+		$this->auto_loader = Core_Autoloader::instance();
+		$this->auto_loader->add_path(FREIGHT_INCLUDES);
 		$this->loader = Core_Hook_Handler::instance();
 		$this->settings = new Freight_Settings();
 		$this->views = new Freight_Views();

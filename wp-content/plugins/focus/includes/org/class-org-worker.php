@@ -28,9 +28,13 @@ class Org_Worker extends Core_users
 
 	function GetPersonalTeam()
 	{
-//		$teams =
-//		foreach ($teams as $team)
-//			if (strstr(, "Personal"))
+		$teams = self::GetAllTeams();
+		foreach ($teams as $team_id) {
+			$t = new Org_Team( $team_id );
+			if ( strstr( $t->getName(), "Personal" ) ) {
+				return $team_id;
+			}
+		}
 	}
 
 	function back()
@@ -308,12 +312,13 @@ class Org_Worker extends Core_users
 
 			return 1;
 		}
+		$personal_team = self::getPersonalTeam();
 
 		$user_team_query = ($teams_filter ?
 			// My team's work.
 			" ( team in (" . CommaImplode( $teams ) . "))" :
 			// Just my work.
-			" ( owner = " . $this->id . ")" );
+			" ( owner = " . $this->id . ") or team = $personal_team" );
 		$status_query = " 1 ";
 		$active_query = ((null != $status) ? " status = $status " : "(" . Focus_Views::ActiveQuery() . ")");
 

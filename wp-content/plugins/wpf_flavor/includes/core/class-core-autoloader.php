@@ -1,12 +1,5 @@
 <?php
 
-/**
- * Focus Autoloader.
- *
- * @package Focus/Classes
- * @version 1
- */
-
 defined( 'ABSPATH' ) || die(__FILE__ . ":" . __LINE__);
 
 /**
@@ -20,18 +13,26 @@ if (! class_exists('Core_Autoloader')) {
 		 *
 		 * @var string
 		 */
-		private $include_path = '';
+		private $include_path = [];
+		protected static $_instance = null;
+
+		public static function instance() {
+			if ( is_null( self::$_instance ) ) {
+				self::$_instance = new self(null);
+			}
+			return self::$_instance;
+		}
 
 		/**
 		 * The Constructor.
 		 */
-		public function __construct( $plugin_dir ) {
+		private function __construct( ) {
 			if ( function_exists( '__autoload' ) )
 				spl_autoload_register( '__autoload' );
 
 			spl_autoload_register( array( $this, 'autoload' ) );
 
-			$this->include_path = untrailingslashit( $plugin_dir ) . '/includes/';
+			$this->include_path = array(FLAVOR_INCLUDES_ABSPATH);
 		}
 
 		/**
@@ -69,31 +70,26 @@ if (! class_exists('Core_Autoloader')) {
 		 * @param string $class Class name.
 		 */
 		public function autoload( $class ) {
-			$path = $this->include_path;
 			$class = strtolower( $class );
-			$debug = 0; // (get_user_id() == 1); // and ($class==="Mission"));
-
-			if ($debug) print "loading " . $class . " " . strpos($class, "core_") . "<br/>";
 
 			$file = $this->get_file_name_from_class( $class );
 
+			$path_part = '';
 			if ( 0 === strpos( $class, 'core_' ) ) {
-				$path = $this->include_path . "core/";
+				$path_part = "core/";
 			} elseif ( 0 === strpos( $class, 'core_shortcode_' ) ) {
-				$path = $this->include_path . 'shortcodes/';
+				$path_part = 'shortcodes/';
 			} elseif ( 0 === strpos( $class, 'org' ) ) {
-				$path = $this->include_path . 'org/';
-			} elseif ( 0 === strpos ($class, "fresh"))
-				$path = realpath($this->include_path . '/../../fresh/includes/');
-
-			if (0 and $class == "core_sparse_table") {
-				print "inc=" . $this->include_path . "<br/>";
-				print "path=$path<br/>";
-				print "file=$file" . "<br/>";
+				$path_part = 'org/';
 			}
 
-			if (file_exists($path.'/'.$file))
-				$this->load_file($path.'/'.$file);
+			foreach ($this->include_path as $path) {
+				if (file_exists($path . '/' . $path_part . $file)) {
+					$this->load_file( $path . '/' . $path_part . $file );
+
+					return;
+				}
+			}
 		}
 
 		/**
@@ -102,8 +98,10 @@ if (! class_exists('Core_Autoloader')) {
 		public function getIncludePath(): string {
 			return $this->include_path;
 		}
+
+		function add_path($path)
+		{
+			array_push ($this->include_path, $path);
+		}
 	}
-
-// new Core_Autoloader();
-
 }

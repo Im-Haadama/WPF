@@ -114,7 +114,8 @@ class Finance {
 		if ( ! defined( 'FINANCE_ABSPATH' ) ) {
 			die ( "not defined" );
 		}
-		$this->auto_loader      = new Core_Autoloader( FINANCE_ABSPATH );
+		$this->auto_loader      = Core_Autoloader::instance();
+		$this->auto_loader->add_path(FINANCE_INCLUDES );
 
 		$this->loader = Core_Hook_Handler::instance();
 		$this->post_file   = WPF_Flavor::getPost();

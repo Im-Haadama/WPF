@@ -120,7 +120,8 @@ class WPF_Flavor {
 		$this->plugin_name = $plugin_name;
 		$this->define_constants();
 		$this->includes(); // Loads class autoloader
-		$this->auto_loader = new Core_Autoloader(FLAVOR_ABSPATH);
+		$this->auto_loader = Core_Autoloader::instance();
+		$this->auto_loader->add_path(FLAVOR_ABSPATH);
 		$this->loader = Core_Hook_Handler::instance();
 		$this->init_hooks($this->loader);
 
@@ -384,7 +385,7 @@ class WPF_Flavor {
 		$this->define( 'FLAVOR_VERSION', $this->version );
 		$this->define( 'FLAVOR_URL', plugins_url() . '/' . FLAVOR_FOLDER . '/' ); // For languages
 		$this->define( 'FLAVOR_INCLUDES_URL', FLAVOR_URL . '/includes/' ); // For js
-		$this->define( 'FLAVOR_INCLUDES_ABSPATH', plugin_dir_path(__FILE__) . '../../' . FLAVOR_FOLDER . '/includes/' );  // for php
+		$this->define( 'FLAVOR_INCLUDES_ABSPATH', FLAVOR_ABSPATH . 'includes/' );  // for php
 		$this->define( 'FLAVOR_DELIMITER', '|' );
 		$this->define( 'FLAVOR_LOG_DIR', $upload_dir['basedir'] . '/flavor-logs/' );
 	}

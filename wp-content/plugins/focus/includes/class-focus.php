@@ -1,5 +1,9 @@
 <?php
 
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 /**
  * Class Focus
  */
@@ -153,12 +157,6 @@ class Focus {
 
 //		Focus_Project::init();
 
-		// Create default pages
-        Core_Pages::CreateIfNeeded("focus", "/focus", "focus_main");
-        Core_Pages::CreateIfNeeded("project", "/project", "focus_project");
-        Core_Pages::CreateIfNeeded("task", "/task", "focus_task");
-        Core_Pages::CreateIfNeeded("signup", "/signup", "focus_sign_up");
-		Core_Pages::CreateIfNeeded("template", "/template", "focus_template");
 
         $this->focus_users = new Focus_Users_Management();
         $this->focus_users->init_hooks($this->loader);
@@ -197,17 +195,20 @@ class Focus {
 
 	function install()
 	{
-		FocusLog(__FUNCTION__);
 		$this->database = new Focus_Database("Focus");
 		$this->database->install($this->version, true);
 		// Give the administrator the capability
-		if (is_admin_user()) {
-			FocusLog("Creating role");
-			Flavor_Roles::instance()->addRole("focus_user", array("show_tasks"));
-			FocusLog("Adding role to admin");
-			$u = new Core_Users(get_user_id());
-			$u->add_role("focus_user");
-		}
+		FocusLog("Creating role");
+		Flavor_Roles::instance()->addRole("focus_user", array("show_tasks"));
+		FocusLog("Adding role to admin");
+		$u = new Core_Users(get_user_id());
+		$u->add_role("focus_user");
+		// Create default pages
+		Core_Pages::CreateIfNeeded("focus", "/focus", "focus_main");
+		Core_Pages::CreateIfNeeded("project", "/project", "focus_project");
+		Core_Pages::CreateIfNeeded("task", "/task", "focus_task");
+		Core_Pages::CreateIfNeeded("signup", "/signup", "focus_sign_up");
+		Core_Pages::CreateIfNeeded("template", "/template", "focus_template");
 	}
 	/**
 	 * Define WC Constants.
@@ -312,19 +313,7 @@ class Focus {
 	 * Include required core files used in admin and on the frontend.
 	 */
 	public function includes() {
-		/**
-		 * Class autoload`er.
-		 */
-		require_once FOCUS_INCLUDES . 'class-focus-autoloader.php';
-//		require_once FLAVOR_INCLUDES_ABSPATH . 'core/data/sql.php';
-////		require_once FLAVOR_INCLUDES_ABSPATH . 'core/org_gui.php';
-//		require_once FLAVOR_INCLUDES_ABSPATH . 'core/fund.php';
-//		require_once FLAVOR_INCLUDES_ABSPATH . 'core/wp.php';
 
-		/**
-		 * Core classes.
-		 */
-//		include_once FLAVOR_INCLUDES_ABSPATH . 'core/core-functions.php';
 	}
 
 	/**
@@ -354,7 +343,8 @@ class Focus {
 	public function init()
 	{
 		$this->loader = Core_Hook_Handler::instance();
-		$this->auto_loader = new Core_Autoloader(FOCUS_ABSPATH);
+		$this->auto_loader = Core_Autoloader::instance();
+		$this->auto_loader->add_path(FOCUS_INCLUDES);
 
 		$this->loader->AddAction( 'init', Core_Shortcodes::instance(), 'init' );
 
@@ -438,7 +428,9 @@ class Focus {
 //		print "run " . __CLASS__;
 //		$this->loader->run();
 		$this->manager->run();
-		self::install();
+		if (is_admin()) {
+			self::install();
+		}
 //		self::create_tasks();
 	}
 

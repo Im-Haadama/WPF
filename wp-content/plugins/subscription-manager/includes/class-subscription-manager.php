@@ -14,7 +14,8 @@ class Subscription_Manager {
 	public function __construct( $class ) {
 		$this->version = '1.0';
 		$this->define_constants();
-		$this->loader = new Core_Autoloader( SUBSCRIPTION_MANAGER_ABSPATH );
+		$this->loader = Core_Autoloader::instance();
+		$this->loader->add_path(SUBSCRIPTION_MANAGER_INCLUDES );
 		self::init_hooks();
 	}
 
@@ -86,7 +87,7 @@ class Subscription_Manager {
 		Define_if_needed( 'SUBSCRIPTION_MANAGER_PLUGIN_BASENAME', plugin_basename( SUBSCRIPTION_MANAGER_PLUGIN_FILE ) );
 //		Define( 'SUBSCRIPTION_MANAGER_VERSION', $this->version );
 		Define_if_needed( 'SUBSCRIPTION_MANAGER_INCLUDES_URL', plugins_url() . '/subscription-manager/includes/' ); // For js
-		Define_if_needed( 'SUBSCRIPTION_MANAGER_INCLUDES_ABSPATH', plugin_dir_path( __FILE__ ) . '../../subscription_manager/includes/' );  // for php
+		Define_if_needed( 'SUBSCRIPTION_MANAGER_INCLUDES', SUBSCRIPTION_MANAGER_ABSPATH . 'includes/' );  // for php
 		Define_if_needed( 'SUBSCRIPTION_MANAGER_DELIMITER', '|' );
 		Define_if_needed( 'SUBSCRIPTION_MANAGER_LOG_DIR', $upload_dir['basedir'] . '/subscription_manager-logs/' );
 	}

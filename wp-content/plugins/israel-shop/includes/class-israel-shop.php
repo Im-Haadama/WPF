@@ -46,7 +46,8 @@ class Israel_Shop
 
 		// require_once FLAVOR_INCLUDES_ABSPATH . 'core/core-functions.php';
 		// if (! function_exists("InfoGet")) die(FLAVOR_INCLUDES_ABSPATH . 'core/core-functions.php');
-		$this->auto_loader = new Core_Autoloader(ISRAEL_ZONE_ABSPATH);
+		$this->auto_loader = Core_Autoloader::instance();
+		$this->auto_loader->add_path(ISRAEL_INCLUDES);
 
 		$this->zones = new Israel_Zones();
 		self::$_instance = $this;

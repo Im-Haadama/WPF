@@ -657,7 +657,6 @@ class Focus_Views {
 				"my_projects" => array( "my_projects", "Projects", null ),
 				"repeating_tasks" => array( "repeating_tasks", "Repeating tasks", null ));
 		} else {
-
 			$tabs = array(
 				"my_work"=>array( "my_work", "My tasks", null ),
 				"my_team_work" => array( "my_team_work", "Team's tasks", null ),
@@ -679,8 +678,6 @@ class Focus_Views {
 				);
 			}
 		}
-
-//		print "st=$selected_tab<br/>";
 
 		switch ( $selected_tab ) {
 			case "my_work":

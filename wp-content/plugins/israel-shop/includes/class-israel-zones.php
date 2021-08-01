@@ -3,7 +3,7 @@
 
 class Israel_Zones {
 
-	protected $auto_loader;
+//	protected $auto_loader;
 	protected $table_prefix;
 	protected $shortcodes;
 
@@ -28,7 +28,7 @@ class Israel_Zones {
 	{
 		define( 'ISRAEL_ZONES_ABSPATH', dirname( ISRAEL_ZONES_PLUGIN_FILE ) . '/' );
 
-		$this->auto_loader = new Core_Autoloader(ISRAEL_ZONES_ABSPATH);
+//		$this->auto_loader = new Core_Autoloader(ISRAEL_ZONES_ABSPATH);
 
 		$this->init_hooks();
 
