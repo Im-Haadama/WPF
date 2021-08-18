@@ -322,7 +322,7 @@ class Org_Worker extends Core_users
 		$status_query = " 1 ";
 		$active_query = ((null != $status) ? " status = $status " : "(" . Focus_Views::ActiveQuery() . ")");
 
-		$query = "$user_team_query and $status_query and $active_query";
+		$query = "($user_team_query) and ($status_query) and ($active_query)";
 		return $query;
 	}
 

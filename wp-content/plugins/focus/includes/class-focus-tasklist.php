@@ -166,7 +166,8 @@ class Focus_Tasklist {
 
 		FocusLog($sql);
 		self::add_time($message);
-		// print $sql;
+
+//		print Core_Gem::GemElement("tasklist", $this->id, []);
 		return SqlQuery( $sql );
 	}
 
