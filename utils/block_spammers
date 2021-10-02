@@ -1,5 +1,5 @@
 #!/bin/bash
-IPS="36.72.218.0/24"
+IPS="36.72.218.0/24 196.196.169/24"
 for i in $IPS
 do
     sudo ufw insert 1 deny from "$i" comment "IP and subnet blocked"

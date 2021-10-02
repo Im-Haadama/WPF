@@ -302,7 +302,7 @@ class Org_Worker extends Core_users
 	// Team_filter = 1: team's work.
 	// Team_filter = array - selected teams.
 	// status - if not set show by ActiveQuery.
-	function myWorkQuery(bool $teams_filter, $status = null)
+	function myWorkQuery(bool $teams_filter, $status = null, $additional_query = null)
 		// 1 - ready, 0 - not ready, 2 - both, 3- not finished
 	{
 		$teams         = self::GetAllTeams();
@@ -318,11 +318,12 @@ class Org_Worker extends Core_users
 			// My team's work.
 			" ( team in (" . CommaImplode( $teams ) . "))" :
 			// Just my work.
-			" ( owner = " . $this->id . ") or team = $personal_team" );
+			" ( owner = " . $this->id . ") or (team = $personal_team)" );
 		$status_query = " 1 ";
 		$active_query = ((null != $status) ? " status = $status " : "(" . Focus_Views::ActiveQuery() . ")");
 
-		$query = "($user_team_query) and ($status_query) and ($active_query)";
+		if (! $additional_query) $additional_query = "1";
+		$query = "($additional_query) and ($user_team_query) and ($status_query) and ($active_query)";
 		return $query;
 	}
 

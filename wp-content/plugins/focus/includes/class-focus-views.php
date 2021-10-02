@@ -752,8 +752,7 @@ class Focus_Views {
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Tasks I need to handle (owner = me)                                                                       //
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		if (! isset($args["query"])) $args["query"] = $worker->myWorkQuery( $include_team, $status ); ///self::ActiveQuery( );
-		// DEBUG: echo $args["query"];
+		 $args["query"] = $worker->myWorkQuery( $include_team, $status, $args["query"] );
 		///
 		///
 		FocusLog( $args["query"] );
