@@ -115,3 +115,21 @@ function finance_depend()
 	if (! class_exists(('WC_Customer')))
 		echo '<div class="notice notice-warning">Finance plugin needs Woocommerce. Make sure it\'s running</div>';
 }
+
+add_action('woocommerce_admin_order_totals_after_total', 'add_product_count');
+
+function add_product_count($order_id)
+{
+	$order = wc_get_order($order_id);
+	?>
+                       <tr>
+                                <td class="label label-highlight"><?php esc_html_e( 'Product number', 'woocommerce' ); ?>:</td>
+                                <td width="1%"></td>
+                                <td class="total">
+                                <?php echo count($order->get_items()); ?>
+                                </td>
+                        </tr>
+
+<?php
+
+}

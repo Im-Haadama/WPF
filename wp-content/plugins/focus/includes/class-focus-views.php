@@ -682,7 +682,7 @@ class Focus_Views {
 		switch ( $selected_tab ) {
 			case "my_work":
 				$tabs[$selected_tab][2] = self::my_work( $args, "Active tasks assigned to me or my teams", false, $user_id );
-				if (! $this->result_count and ! $single) $tabs[$selected_tab][2] = self::my_work( $args, "Active tasks assigned to my teams", true, $user_id );
+				if (! ($this->result_count > 1) and ! $single) $tabs[$selected_tab][2] = self::my_work( $args, "Active tasks assigned to my teams", true, $user_id );
 				break;
 			case "my_team_work":
 				$tabs[$selected_tab][2] = self::my_work( $args, "Active tasks assigned to my teams", true, $user_id );
@@ -752,7 +752,9 @@ class Focus_Views {
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Tasks I need to handle (owner = me)                                                                       //
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		 $args["query"] = $worker->myWorkQuery( $include_team, $status, $args["query"] );
+		 $args["query"] = $worker->myWorkQuery( $include_team, $status, $args["query"] ?? null);
+		// DEBUG: echo $args["query"];
+
 		///
 		///
 		FocusLog( $args["query"] );
@@ -785,7 +787,8 @@ class Focus_Views {
 		       Core_Html::GuiHyperlink( "Waiting", AddToUrl( "status", 0 ) ) . " " .
 		       Core_Html::GuiHyperlink( "Started", AddToUrl( "status", 1 ) ) . " " .
 		       Core_Html::GuiHyperlink( "Completed", AddToUrl( "status", 2 ) ) . " " .
-		       Core_Html::GuiHyperlink( "Cancelled", AddToUrl( "status", 3 ) ) .
+		       Core_Html::GuiHyperlink( "Cancelled", AddToUrl( "status", 3 ) ) . " " .
+		       Core_Html::GuiHyperlink( "Not assigned", AddToUrl( "team", '%') ) .
 		       "</div>";
 
 	}
@@ -2093,7 +2096,7 @@ class Focus_Views {
 	static function gui_select_status($id, $value, $args)
 	{
 		global $Tasklist_Status_Names;
-		return $Tasklist_Status_Names[$value];
+		return $Tasklist_Status_Names[$value] ?? "";
 //		$args["values"] = $Tasklist_Status_Names;
 //		return Core_Html::GuiSimpleSelect($id, $value, $args);
 	}

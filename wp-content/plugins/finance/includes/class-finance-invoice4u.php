@@ -184,7 +184,7 @@ class Finance_Invoice4u
 		$cust        = new InvoiceCustomer( $client_name);
 		$cust->ID = $invoice_id;
 		$cust->Email = $client_email;
-		MyLog("iid=$invoice_id email = $client_email<br/>");
+		$this->InvoiceLog("iid=$invoice_id email = $client_email<br/>");
 		$response = $this->requestWS( $wsdl, "GetCustomers", array(
 			'cust' => $cust,
 			'OrgId' => 0,

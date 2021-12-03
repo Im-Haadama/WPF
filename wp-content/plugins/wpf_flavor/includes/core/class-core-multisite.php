@@ -200,22 +200,26 @@ class Core_MultiSite {
 			print phpinfo();
 			die (1);
 		}
-//		print "u=$username p=$password<br/>";
+
 		if ($username) $file .= "&AUTH_USER=" . trim($username) . "&AUTH_PW=" . urlencode(trim($password));
-//		print __FUNCTION__ . "file=$file<br/>";
+
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $file);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-		curl_setopt($ch, CURLOPT_TIMEOUT, 2);
-//		curl_setopt($ch, CURLOPT_USERPWD, "$username:$password");
+		curl_setopt($ch, CURLOPT_TIMEOUT, 3 );
 		curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-//		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
-
 
 		$result_text = curl_exec($ch);
 
 		$http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+		if (curl_errno($ch) == CURLE_OPERATION_TIMEDOUT)
+		{
+			echo "TIMEOUT";
+			die(1);
+		}
+
 		curl_close($ch);
 
 		if ($debug) {

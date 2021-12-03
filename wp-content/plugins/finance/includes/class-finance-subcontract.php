@@ -105,7 +105,7 @@ class Finance_Subcontract {
 			if (! $row[5]) { // TEMP: VAT BUG
 				$row[5] = round(SqlQuerySingleScalar("select sum(vat) from im_delivery_lines where delivery_id = $del_id and product_name != 'משלוח'"), 2);
 			}
-			$internal = $row[9];
+			$internal = true; // $row[9];
 			if ($internal) $row[6] = 0;
 //			if ( $row[6] == 0 ) {
 //				print $row[0] . "<br/>";
@@ -189,9 +189,10 @@ class Finance_Subcontract {
 
 		// print "invoice client id " . $invoice_client_id . "<br/>";
 
-		$client = $invoice->GetCustomerById( 0, '', CLIENT_CUSTOMER_SUB );
+//		$client = $invoice->GetCustomerById( 0, '', CLIENT_CUSTOMER_SUB );
+		$client = $invoice->GetCustomerByName( "המכולת האורגנית" );
 
-		if ( ! ( $client->ID ) > 0 ) {
+		if ( ! ( $client->ID ?? 0 ) > 0 ) {
 			print "Client not found " . CLIENT_CUSTOMER_SUB . "<br>";
 
 			// var_dump( $client );

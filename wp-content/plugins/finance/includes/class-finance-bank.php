@@ -454,7 +454,7 @@ class Finance_Bank
 		$multi_site = Core_Db_MultiSite::getInstance();
 
 		$url = self::getPost() . "?operation=get_supplier_open_account";
-		$values  = Core_Html::html2array( $multi_site->GetAll( $url ) );
+		$values  = Core_Html::html2array( $multi_site->GetAll( $url));
 
 		if (! $values) 	return "nothing found " . $url;
 		$open    = array();

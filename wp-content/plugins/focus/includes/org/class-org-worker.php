@@ -314,11 +314,16 @@ class Org_Worker extends Core_users
 		}
 		$personal_team = self::getPersonalTeam();
 
-		$user_team_query = ($teams_filter ?
-			// My team's work.
-			" ( team in (" . CommaImplode( $teams ) . "))" :
-			// Just my work.
-			" ( owner = " . $this->id . ") or (team = $personal_team)" );
+		if (! $additional_query or ! strstr($additional_query, "team"))
+			$user_team_query = ($teams_filter ?
+				// My team's work.
+				" ( team in (" . CommaImplode( $teams ) . "))" :
+				// Just my work.
+				" ( owner = " . $this->id . ") or (team = $personal_team)" );
+		else {
+			$user_team_query = " 1 ";
+			if (strpos($additional_query, "team='%'")) $additional_query = str_replace("team='%'", "1", $additional_query);
+		}
 		$status_query = " 1 ";
 		$active_query = ((null != $status) ? " status = $status " : "(" . Focus_Views::ActiveQuery() . ")");
 
