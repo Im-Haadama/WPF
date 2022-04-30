@@ -702,16 +702,6 @@ function br2nl($html)
 }
 
 /**
- *
- */
-function my_show_errors()
-{
-	ini_set('display_errors', 1);
-	ini_set('display_startup_errors', 1);
-	error_reporting(E_ALL);
-}
-
-/**
  * @param $from
  * @param $to
  * @param $subject

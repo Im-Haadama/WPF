@@ -1,6 +1,5 @@
 <?php
 
-my_show_errors();
 class Finance_Order_Management {
 	static private $_instance;
 	private $orders;
