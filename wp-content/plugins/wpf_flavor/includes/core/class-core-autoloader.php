@@ -31,8 +31,16 @@ if (! class_exists('Core_Autoloader')) {
 				spl_autoload_register( '__autoload' );
 
 			spl_autoload_register( array( $this, 'autoload' ) );
+			$this->include_path = array(dirname(dirname(__DIR__)) . '/includes',
+				dirname(dirname(__DIR__)) . '/includes/core/');
 
-			$this->include_path = array(FLAVOR_INCLUDES_ABSPATH);
+			if (! function_exists('InfoGet')) {
+				require_once( ABSPATH . 'wp-content/plugins/wpf_flavor/includes/core/core-functions.php' );
+				require_once(ABSPATH . 'wp-content/plugins/wpf_flavor/includes/core/data/sql.php');
+				require_once(ABSPATH . 'wp-content/plugins/wpf_flavor/includes/core/fund.php');
+				require_once(ABSPATH . 'wp-content/plugins/wpf_flavor/includes/core/wp.php');
+			}
+
 		}
 
 		/**

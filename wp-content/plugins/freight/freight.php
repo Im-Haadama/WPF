@@ -21,6 +21,12 @@ if ( ! defined( 'FREIGHT_PLUGIN_FILE' ) ) {
 
 require_once(ABSPATH . 'wp-admin/includes/plugin.php');
 
+if (! class_exists('Core_Autoloader'))
+	require_once(ABSPATH . 'wp-content/plugins/wpf_flavor/includes/core/class-core-autoloader.php');
+
+Core_Autoloader::instance()->add_path(ABSPATH . 'wpf_flavor/includes');
+
+
 // Require parent plugin
 if ( ! is_plugin_active( 'wpf_flavor/wpf_flavor.php' ) /* and current_user_can( 'activate_plugins' ) */ ) {
 	// Deactivate this plugin
@@ -37,16 +43,12 @@ if ( ! is_plugin_active( 'wpf_flavor/wpf_flavor.php' ) /* and current_user_can( 
  * @return Freight
   */
 
-function freight() {
-	return Freight::instance();
-}
-
 function run_freight() {
 	if ( ! class_exists( 'Freight' ) ) {
 		include_once dirname( __FILE__ ) . '/includes/class-freight.php';
 	}
 
-	$plugin = new Freight("Freight");
+	$plugin = Freight::instance();
 	$plugin->run();
 }
 

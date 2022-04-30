@@ -1,9 +1,5 @@
 <?php
 
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
 class Fresh extends WPF_Plugin {
 	/**
 	 * The loader that's responsible for maintaining and registering all hooks that power
@@ -392,7 +388,7 @@ class Fresh extends WPF_Plugin {
 		/**
 		 * Class autoloader.
 		 */
-		require_once FLAVOR_INCLUDES_ABSPATH . 'core/core-functions.php';
+//		require_once FLAVOR_INCLUDES_ABSPATH . 'core/core-functions.php';
 
 		/**
 		 * Interfaces.
@@ -648,7 +644,7 @@ class Fresh extends WPF_Plugin {
 
 	public function install($version, $force = false)
 	{
-        if ($this->CheckInstalled($this->version) == $version and ! $force) return;
+//        if ($this->CheckInstalled($this->version) == $version and ! $force) return;
 
         // Install common tables
 		$this->database = new Fresh_Database();

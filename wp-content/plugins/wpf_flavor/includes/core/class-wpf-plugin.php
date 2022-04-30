@@ -18,7 +18,7 @@ class WPF_Plugin {
 	public function run()
 	{
 		// Install tables
-		$this->register_activation(dirname(__FILE__) . '/class-fresh-database.php', [$this, 'install']);
+		$this->register_activation(__FILE__, [$this, 'install']);
 
 		// Temp migration. run once on each installation
 		// Fresh_Database::convert_supplier_name_to_id();

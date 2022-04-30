@@ -1,7 +1,7 @@
 <?php
 
 
-class Freight {
+class Freight extends WPF_Plugin {
 	/**
 	 * The loader that's responsible for maintaining and registering all hooks that power
 	 * the plugin.
@@ -10,9 +10,6 @@ class Freight {
 	 * @access   protected
 	 * @var      Delivery_Drivers_Loader    $loader    Maintains and registers all hooks for the plugin.
 	 */
-	protected $auto_loader;
-	protected $settings;
-	protected $loader;
 
 	/**
 	 * @return Freight_Legacy
@@ -21,7 +18,6 @@ class Freight {
 		return $this->legacy;
 	}
 
-	protected $database;
 	protected $legacy;
 	protected $views;
 
@@ -30,9 +26,6 @@ class Freight {
 	 *
 	 * @var string
 	 */
-	public $version = '1.4.6';
-
-	private $plugin_name;
 
 	/**
 	 * The single instance of the class.
@@ -474,31 +467,6 @@ class Freight {
 
 	public function template_path() {
 		return apply_filters( 'freight_template_path', 'freight/' );
-	}
-
-	public function run()
-	{
-		// Install tables
-		self::register_activation(dirname(__FILE__) . '/class-freight-database.php', array('Freight_Database', 'install'));
-
-		// Temp migration. run once on each installation
-        // Freight_Database::convert_supplier_name_to_id();
-
-		// Create functions, tables, etc.
-	}
-
-	static function register_activation($file, $function)
-	{
-		if (! file_exists($file)){
-			print "file $file not exists";
-			return;
-		}
-		if (! is_callable($function)){
-			print __FUNCTION__ . ": function is not callable";
-//			print debug_trace();
-			return;
-		}
-		register_activation_hook($file, $function);
 	}
 
 	static public function SettingPage()

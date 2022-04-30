@@ -499,5 +499,4 @@ BEGIN
 			          " where meta_key = 'supplier_name' and meta_value = '" . $supplier_name . "'");
 		}
 	}
-
 }

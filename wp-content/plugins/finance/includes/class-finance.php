@@ -433,11 +433,11 @@ class Finance {
 			require_once $f;
 
 		}
-		require_once FLAVOR_INCLUDES_ABSPATH . 'core/fund.php';
-		require_once FLAVOR_INCLUDES_ABSPATH . 'core/core-functions.php';
-//	collides with old pages.	require_once FLAVOR_INCLUDES_ABSPATH . 'core/fund.php';
-		require_once FLAVOR_INCLUDES_ABSPATH . 'core/data/sql.php';
-		require_once FLAVOR_INCLUDES_ABSPATH . 'core/wp.php';
+//		require_once FLAVOR_INCLUDES_ABSPATH . 'core/fund.php';
+//		require_once FLAVOR_INCLUDES_ABSPATH . 'core/core-functions.php';
+////	collides with old pages.	require_once FLAVOR_INCLUDES_ABSPATH . 'core/fund.php';
+//		require_once FLAVOR_INCLUDES_ABSPATH . 'core/data/sql.php';
+//		require_once FLAVOR_INCLUDES_ABSPATH . 'core/wp.php';
 
 		/**
 		 * Interfaces.
