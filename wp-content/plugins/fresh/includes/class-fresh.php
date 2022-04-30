@@ -1,6 +1,10 @@
 <?php
 
-class Fresh {
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+class Fresh extends WPF_Plugin {
 	/**
 	 * The loader that's responsible for maintaining and registering all hooks that power
 	 * the plugin.
@@ -23,9 +27,6 @@ class Fresh {
 	 *
 	 * @var string
 	 */
-	public $version = '1.4.8';
-
-	private $plugin_name;
 
 	/**
 	 * The single instance of the class.
@@ -58,7 +59,7 @@ class Fresh {
 	 * @static
 	 * @return Fresh - Main instance.
 	 */
-	public static function instance() {
+	public static function instance(): Fresh {
 		if ( is_null( self::$_instance ) ) {
 			self::$_instance = new self("Fresh");
 		}
@@ -103,7 +104,7 @@ class Fresh {
 	/**
 	 * WooCommerce Constructor.
 	 */
-	public function __construct($plugin_name)
+	private function __construct($plugin_name)
 	{
 	    self::$_instance = $this;
 		$this->plugin_name = $plugin_name;
@@ -536,30 +537,6 @@ class Fresh {
 		return apply_filters( 'fresh_template_path', 'fresh/' );
 	}
 
-	public function run()
-	{
-		// Install tables
-		self::register_activation(dirname(__FILE__) . '/class-fresh-database.php', array('Fresh_Database', 'install'));
-
-		// Temp migration. run once on each installation
-        // Fresh_Database::convert_supplier_name_to_id();
-
-		// Create functions, tables, etc.
-	}
-
-	static function register_activation($file, $function)
-	{
-		if (! file_exists($file)){
-			print "file $file not exists";
-			return;
-		}
-		if (! is_callable($function)){
-			print __FUNCTION__ . ": function is not callable. file=$file";
-			return;
-		}
-		register_activation_hook($file, $function);
-	}
-
 	static public function SettingPage()
 	{
 		$result = "";
@@ -669,9 +646,9 @@ class Fresh {
 	}
 	/*-- End product quantity +/- on listing -- */
 
-	function install($version, $force = false)
+	public function install($version, $force = false)
 	{
-//        if ($this->CheckInstalled($this->version) == $version and ! $force) return;
+        if ($this->CheckInstalled($this->version) == $version and ! $force) return;
 
         // Install common tables
 		$this->database = new Fresh_Database();

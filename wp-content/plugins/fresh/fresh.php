@@ -39,7 +39,7 @@ function run_fresh() {
 	if ( ! class_exists( 'Fresh' ) ) {
 		include_once dirname( __FILE__ ) . '/includes/class-fresh.php';
 	}
-	$plugin = new Fresh("Fresh");
+	$plugin =  Fresh::instance();
 	$plugin->run();
 }
 
@@ -98,4 +98,27 @@ function init_fresh() {
 //	}
 
 //	run_fresh();
+}
+
+
+add_action('elementor/page_templates/header-footer/before_content', 'setQuery');
+
+function setQuery()
+{
+	global $the_query;
+	if (get_option( 'page_on_front' ) == get_the_ID()){
+		$args = array(
+			'featured' => true,
+		);
+		$the_query = new WC_Product_Query( $args );
+	}
+}
+
+add_filter('get_the_terms', 'remove_front', 10, 3);
+function remove_front($terms, $post_id, $tax)
+{
+	foreach ($terms as $id => $term){
+		if ($term->name == 'front_page') unset ($terms[$id]);
+	}
+	return $terms;
 }
