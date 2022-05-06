@@ -33,8 +33,8 @@ class Finance_Invoice4u
 	 * Invoice4u constructor.
 	 */
 	public function __construct( $user, $password ) {
-		if (! defined('WSDL_CACHE_NONE')) { // Setup error
-			$message = "Invoice Setup Error - WSDL is missing";
+		if (! class_exists('SoapClient')) { // Setup error
+			$message = "Invoice Setup Error - SoapClient is missing<br/>Install soap with the same php version running";
 			print $message;
 			FinanceLog($message);
 			$this->token = null;
