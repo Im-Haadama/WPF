@@ -28,8 +28,10 @@ class Freight_Zones {
 		$args["id_field"] = "zone_id";
 		$args["multiple"] = false;
 		$args["edit"] = $isMaster;
+		$args["add_checkbox"] = false; // Don't allow delete
 
 		$result .= Core_Gem::GemTable("woocommerce_shipping_zones", $args);
+		$result .= "<br/><h></h>Add/Remove shipping zones in woocommerce page</h2>";
 		return $result;
 	}
 

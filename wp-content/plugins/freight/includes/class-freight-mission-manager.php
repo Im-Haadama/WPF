@@ -1196,12 +1196,14 @@ group by pm.meta_value, p.post_status");
 
 	static function update_shipping_methods($result = null)
 	{
+		echo "Updating shipping methods<br/>";
 		FreightLog(__FUNCTION__);
 		// Otherwise - master - update.
 		$sql = "select * from wp_woocommerce_shipping_zone_methods";
 		$sql_result = SqlQuery($sql);
 		while ($row = SqlFetchAssoc($sql_result)) {
 			$instance_id = $row['instance_id'];
+			echo "updating shipping id " . $instance_id . "<br/>";
 			self::update_shipping_method($instance_id);
 		}
 	}
@@ -1218,7 +1220,8 @@ group by pm.meta_value, p.post_status");
 		else
 			$week_day = 2;
 
-		if (! $week_day) return false;
+		if (! strlen($week_day)) return false;
+		echo "Week day: $week_day<br/>";
 		$start = "13";
 		$end = "18";
 		$date = next_weekday($week_day);

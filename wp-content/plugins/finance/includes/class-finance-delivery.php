@@ -312,9 +312,6 @@ class Finance_Delivery
 			$html .= Core_Html::GuiLabel( "order_id", $this->order_id, array( "hidden" => true ) );
 			if ( $edit ) {
 				$html .= Core_Html::GuiButton("btn_add_line", "Add Line", "delivery_add_line('" . WPF_Flavor::getPost() . "', $user_id, $vat, 1)");
-//				$html .= Core_Html::GuiButton( "btn_delete", "Delete Lines", "delete_items('delivery_lines', '" . $post_file . "', 'delivery_delete_lines')" );
-//				$html .= Core_Html::GuiButton("btn_delete", "Delete lines", array("action"=> 'hide_lines(\'del_table\')'));
-
 
 				$html .= "<div>" . Core_html::GuiCheckbox("chk_send_email", true) . ETranslate("Send email") .
 				         Core_Html::GuiButton( "btn_do", "Save", "delivery_save_or_edit('" . WPF_Flavor::getPost() . "', 'delivery_edit')" ) . "</div>";

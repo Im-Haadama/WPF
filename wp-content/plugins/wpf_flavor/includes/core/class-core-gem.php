@@ -455,6 +455,7 @@ class Core_Gem {
 		$title = GetArg($args, "title", null) . " ";
 		if ( $only_active != 2) $title .= ($only_active ? __("Active") : __("All"));
 		$edit = GetArg($args, "edit", false);
+		if ($edit and !isset($args["add_checkbox"])) $args["add_checkbox"] = true;
 		$enable_import = GetArg($args, "enable_import", false);
 
 		$post_action = null;

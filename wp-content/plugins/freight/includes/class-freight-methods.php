@@ -54,7 +54,7 @@ class Freight_Methods {
 	{
 		$result = "";
 		$header_row = array("id", "Zone name", "Shipping name", "mission code");
-		for ($day = 1; $day <=4; $day ++)
+		for ($day = 0; $day <=4; $day ++)
 			array_push($header_row, DayName($day));
 
 		$table_name = "wp_woocommerce_shipping_zone_methods";
@@ -85,7 +85,7 @@ class Freight_Methods {
 				$week_day = 3;
 
 			$enabled = $method_info['is_enabled'];
-			for ($day = 1; $day <=4; $day ++) {
+			for ($day = 0; $day <=4; $day ++) {
 				if (! $week_day and strstr($data['title'], DayName($day))) {
 					$week_day = $day;
 //					SqlQuery("update wp_woocommerce_shipping_zone_methods set week_day = $week_day where instance_id = $instance_id");
@@ -153,6 +153,7 @@ class Freight_Methods {
 		$args["operation"] = $operation;
 		$args["edit"] = true;
 		$args["add_checkbox"] = true;
+		$args["order"] = "week_day";
 		if ($operation)
 			$result = apply_filters( $operation, $result, "", $args, null );
 
