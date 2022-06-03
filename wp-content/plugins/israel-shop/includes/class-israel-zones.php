@@ -1,5 +1,8 @@
 <?php
 
+//ini_set('display_errors', 1);
+//ini_set('display_startup_errors', 1);
+//error_reporting(E_ALL);
 
 class Israel_Zones {
 
@@ -28,16 +31,15 @@ class Israel_Zones {
 	{
 		define( 'ISRAEL_ZONES_ABSPATH', dirname( ISRAEL_ZONES_PLUGIN_FILE ) . '/' );
 
-//		$this->auto_loader = new Core_Autoloader(ISRAEL_ZONES_ABSPATH);
-
 		$this->init_hooks();
 
 		// Todo: move to admin page
 		$this->shortcodes = Core_Shortcodes::instance();
-		$this->shortcodes->add(array("israel_zones" => array("Israel_Zones::main", null),
-			                          "israel_zone"=>array("Israel_Zones::zone", null)));
+		$this->shortcodes->add(["israel_zones" => [[$this,'main']],
+		                        "israel_zone"=>[[$this, 'zone']]]);
 		$this->shortcodes->do_init();
 		$this->table_prefix = GetTablePrefix();
+//		if (get_current_user_id() == 2) $this->run(1);
 	}
 
 	private function init_hooks() {
@@ -45,7 +47,6 @@ class Israel_Zones {
 		add_action('import_cities', array(__CLASS__, 'import_wrapper'));
 		Core_Gem::getInstance()->AddTable("cities");
 		add_filter('wpf_freight_cities', array($this, 'freight_cities'));
-
 	}
 
 	static function Args($type = null)
@@ -57,7 +58,7 @@ class Israel_Zones {
 		return $args;
 	}
 
-	static function zone_wrapper()
+	static function zone() : string
 	{
 		$id = GetParam("id", true);
 		$zone = WC_Shipping_Zones::get_zone_by( 'zone_id', $id );
@@ -77,10 +78,14 @@ class Israel_Zones {
 
 		$result = "";
 		$result .= Core_Html::GuiHeader(1, $zone->get_zone_name());
-		$zone_info = SqlQueryArray("select city_name, zipcode from im_cities where zone = $id");
-		$result .= Core_Html::gui_table_args($zone_info);
+		$zone_info = SqlQueryArray("select id, city_name, zipcode from im_cities where zone = $id");
+
+		$args = [];
+		$args["links"] = array(0 => "/wp-admin/admin.php?page=freight_settings&tab=cities&id=%d");
+
+		$result .= Core_Html::gui_table_args($zone_info, 'cities_in_zone', $args);
 		$result .= Core_Html::GuiHeader(2, "Common prefixes");
-		$prefixes = self::CommonPrefix(array_column($zone_info, 1), $id);
+		$prefixes = self::CommonPrefix(array_column($zone_info, 2), $id);
 		foreach ($prefixes as $prefix)
 			$result .= $prefix . "*<br>";
 		$zone = new WC_Shipping_Zone($id);
@@ -196,13 +201,13 @@ class Israel_Zones {
 	function run($limit){
 		if (! TableExists("cities")) return;
 
-		$sql = "select id from im_cities where zipcode is null limit $limit";
+		$sql = "select id from im_cities where (zipcode is null or zipcode = -3) limit $limit";
 		$cities = SqlQueryArrayScalar($sql);
 		foreach ($cities as $city_id) {
 			$city_name = SqlQuerySingleScalar("select city_name from im_cities where id = $city_id");
 			$code = self::israelpost_get_city_postcode($city_name);
-			if (! strlen($code)) $code = "-3";
-//			print "city: $city_name code: $code";
+			if (! strlen($code)) $code = "-4";
+			print "city: $city_name code: $code<br/>";
 			SqlQuery("update im_cities set zipcode = $code where id = $city_id");
 		}
 	}

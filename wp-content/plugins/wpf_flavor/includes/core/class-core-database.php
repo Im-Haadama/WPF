@@ -32,6 +32,7 @@ class Core_Database
 		$this->CreateTables($version, $force);
 		$this->CreateFunctions($version, $force);
 		$this->CreateViews($version, $force);
+		$this->runMigrations();
 	}
 
 	private function CreateInfo()
@@ -74,5 +75,32 @@ class Core_Database
 	function CreateViews($version, $force)
 	{
 
+	}
+
+	function runMigrations()
+	{
+		$class = $this->my_class;
+		$db_prefix = GetTablePrefix();
+		if (!TableExists("migrations")) {
+			SqlQuery( "create table ${db_prefix}migrations ( 
+    id bigint auto_increment
+		primary key,
+	plugin_name varchar(20) not null,
+    migration_file varchar(40) not null)" );
+		}
+
+		$path = ABSPATH . 'wp-content/plugins/' . strtolower($class) . '/migrations';
+		if (! file_exists($path)) return;
+		$content = scandir($path);
+		foreach ($content as $migration){
+			if (($migration == ".") || ($migration == "..")) continue;
+			$found = SqlQuerySingleScalar("select count(*) from ${db_prefix}migrations where plugin_name = '${class}' and migration_file = '$migration'");
+			if ($found) continue;
+
+			$up = require_once ($path . '/' . $migration);
+			if ($up()) {
+				SqlQuery("insert into ${db_prefix}migrations (plugin_name, migration_file) values('${class}', '${migration}')");
+			};
+		}
 	}
 }

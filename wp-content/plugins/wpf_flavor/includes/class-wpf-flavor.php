@@ -814,5 +814,3 @@ function wcs_users_logged_in_longer( $expire ) {
 	// 1 month in seconds
 	return 2628000;
 }
-
-?>

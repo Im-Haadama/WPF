@@ -399,7 +399,6 @@ class Core_Data
 						$selected = $selector_name( $input_name, $orig_data, $field_args ); //, 'onchange="update_' . $key . '(' . $row_id . ')"' );
 					} else $selected = $value;
 
-//					print $links[$key] . "<br/>";
 					$value = Core_Html::GuiHyperlink($selected, sprintf( urldecode($links[ $key ]), $data ), $args );
 					break;
 				}

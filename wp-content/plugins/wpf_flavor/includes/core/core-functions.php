@@ -325,7 +325,7 @@ function AppendUrl( $url, $addition ) {
 	 * @return bool|string
 	 */
 	function GetContent( $url_or_file ) {
-		if (strstr($url_or_file, 'http')) {
+		if (strstr($url_or_file, 'http') and function_exists('curl_init')) {
 			$handle = curl_init();
 			curl_setopt( $handle, CURLOPT_URL, $url_or_file );
 			curl_setopt( $handle, CURLOPT_RETURNTRANSFER, true );

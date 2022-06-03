@@ -30,12 +30,11 @@ class Core_Shortcodes {
 	 *
 	 * @param $shortcodes
 	 */
-	protected function __construct( ) {
+	private function __construct( ) {
 //		 var_dump($shortcodes);
 //		$this->shortcodes = $shortcodes;
 		self::$_instance = $this;
 	}
-
 
 	public function add($new_shortcodes) {
 		if ($new_shortcodes)
@@ -52,38 +51,53 @@ class Core_Shortcodes {
 
 	function do_init()
 	{
-		$debug = false; // (get_user_id() == 1);
-		if ($this->shortcodes)
+		if ($this->shortcodes) {
 			foreach ( $this->shortcodes as $shortcode => $function_couple ) {
-				$debug = false; // ($shortcode == 'fvideo_player');
-				if ($debug and ($shortcode  == 'finance_bank')) print $shortcode . "<br/>";
-				if (! is_array($function_couple)) print $function_couple . " is not array";
+				$debug = false; // ( $shortcode == 'israel_zone' );
+				if ( ! is_array( $function_couple ) ) {
+					print $function_couple . " is not array";
+				}
 //				if (count($function_couple) < 2) print $function_couple[0] . " not a couple";
-				$function = $function_couple[0];
-				$capability = isset($function_couple[1]) ? $function_couple[1] : null;
-                //$debug = ($shortcode == 'focus_sign_up');;
-				if ($debug) print "<br/>handling $shortcode $capability<br/>";
-				if ($capability and strlen($capability) and ! im_user_can($capability)) {
+				$function   = $function_couple[0];
+				$capability = $function_couple[1] ?? null;
+				if ( $debug ) {
+					print "<br/>handling $shortcode $capability<br/>";
+				}
+				if ( $capability and strlen( $capability ) and ! im_user_can( $capability ) ) {
 //					print "<br/>" . $capability;
-					if ($debug >= 1) print "capability '" . $capability . "' is missing";
+					if ( $debug >= 1 ) {
+						print "capability '" . $capability . "' is missing";
+					}
 					add_shortcode( apply_filters( "{$shortcode}_shortcode_tag", $shortcode ), 'Core_Shortcodes::missing_capability' );
 					continue;
 				}
-				if ($debug == 2) print " going to add";
-				if (is_string($function) and is_callable($function . "_wrapper")) {
-					if ($debug == 2) print "adding $shortcode => wrapper: " . $function . "_wrapper<br/>";
-					add_shortcode( apply_filters( "{$shortcode}_shortcode_tag", $shortcode ), $function. "_wrapper" );
+				if ( $debug == 2 ) {
+					print " going to add";
+				}
+				if ( is_string( $function ) and is_callable( $function . "_wrapper" ) ) {
+					if ( $debug == 2 ) {
+						print "adding $shortcode => wrapper: " . $function . "_wrapper<br/>";
+					}
+					add_shortcode( apply_filters( "{$shortcode}_shortcode_tag", $shortcode ), $function . "_wrapper" );
 					continue;
 				}
-				if (is_callable($function)) {
-					if ($debug == 2)	print "adding function $function<br/>";
+				if ( is_callable( $function ) ) {
+					if ( $debug == 2 ) {
+						print "adding function $function<br/>";
+					}
 					add_shortcode( apply_filters( "{$shortcode}_shortcode_tag", $shortcode ), $function );
 					continue;
 				}
-				if ($debug == 2) print " no wrapper ";
+				if ( $debug == 2 ) {
+					print " no wrapper ";
+				}
 
-				if ($debug >= 1) print __FUNCTION__ . " $function not callable.<br/>";
+				if ( $debug >= 1 ) {
+					print __FUNCTION__ . " $function not callable.<br/>";
+				}
 			}
+			unset($this->shortcodes);
+		}
 	}
 
 	/**
