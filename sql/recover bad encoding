@@ -1,0 +1,32 @@
+drop table wp_posts_1;
+create table wp_posts_2 as
+select ID,
+       post_author,
+       post_date,
+       post_date_gmt,
+       convert(convert(post_content using binary) using utf8) as post_content,
+       convert(convert(post_title using binary) using utf8) as post_title,
+       convert(convert(post_excerpt using binary) using utf8) as post_excerpt,
+       post_status,
+       comment_status,
+       ping_status,
+       post_password,
+       post_name,
+       to_ping,
+       pinged,
+       post_modified,
+       post_modified_gmt,
+       post_content_filtered,
+       post_parent,
+       convert(convert(guid using binary) using utf8),
+       menu_order,
+       post_type,
+       post_mime_type,
+       comment_count
+from wp_posts_old where id > 3300;
+
+from wp_posts_old where id < 3300;
+
+insert into wp_posts select * from wp_posts_2;
+
+select count (*) from wp_posts;

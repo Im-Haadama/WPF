@@ -97,7 +97,7 @@ class Finance_Settings {
 				      'menu_slug' => 'missions',
 				      'function' => 'Flavor_Mission_Views::install_woocommerce'));
 
-		WPF_Flavor::AddTop("client_accounts", "Client accounts", "/wp-admin/users.php?page=client-accounts");
+		WPF_Flavor::AddTop("client_accounts", "Client accounts", get_admin_url() . "users.php?page=client-accounts");
 
 		$menu->AddSubMenu( "users.php", "edit_shop_orders",
 			array( 'page_title' => 'Payment methods', 'function' => array( "Finance_Payments", 'payment_methods' ) ) );

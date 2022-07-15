@@ -23,7 +23,8 @@ class Core_Database
 		if (! $conn) ReconnectDb();
 
 		$user = new Core_Users(get_user_id());
-		if (!$user->hasRole('administrator')) {
+
+		if (!is_super_admin() && !$user->hasRole('administrator')) {
 			return;
 		}
 

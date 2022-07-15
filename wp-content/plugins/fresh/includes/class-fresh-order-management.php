@@ -30,7 +30,7 @@ class Fresh_Order_Management {
 		FreshLog(__FUNCTION__);
 		$debug = 0;
 		$result = "Marking orders of yesterday delivered:\n";
-		$ids    = SqlQueryArrayScalar( "SELECT * FROM `wp_posts` 
+		$ids    = SqlQueryArrayScalar( "SELECT * FROM wp_posts
 WHERE (post_status = 'wc-awaiting-shipment' or post_status = 'wc-processing') 
 and curdate() > order_mission_date(id)" );
 

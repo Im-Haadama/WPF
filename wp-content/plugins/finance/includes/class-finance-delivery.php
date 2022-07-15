@@ -479,12 +479,8 @@ class Finance_Delivery
 	{
 		FinanceLog(__FUNCTION__ . " e=$edit");
 		$json_params = file_get_contents("php://input");
-		$data =null;
-//		if (! $json_params) $json_params = '[["18669","322",0],["%D7%A1%D7%9C%20%D7%A4%D7%99%D7%A8%D7%95%D7%AA","1","100",0,"1121","1",0],["%D7%A1%D7%9C%20%D7%99%D7%A8%D7%A7%D7%95%D7%AA%20%D7%9E%D7%A9%D7%A4%D7%97%D7%AA%D7%99","1","140",0,"1118","1",0],["%D7%91%D7%99%D7%99%D7%92%D7%9C%D7%94%20%D7%9B%D7%95%D7%A1%D7%9E%D7%99%D7%9F%20-%20%D7%9E%D7%90%D7%A4%D7%99%D7%99%D7%AA%20%D7%94%D7%A8%D7%9E%D7%9F","4","14",8.14,"448","4",1],["%D7%9E%D7%A9%D7%9C%D7%95%D7%97","1","10.00",1.45,"0","1",1],["%D7%93%D7%91%D7%A9%20%D7%94%D7%91%D7%A9%D7%9F%20(250%20%D7%92%D7%A8%D7%9D)%20-%20%D7%90%D7%91%D7%95%D7%A7%D7%93%D7%95","1","16",2.32,"17465","1",1]]';
 		$data = json_decode( $json_params );
 		if (! $data) {
-//			FinanceLog("no post data");
-//			$data = array(array(12110, 15.9, 0, 0), array("בננה", 1, 0, 0, 1606, 1, 0));
 			print "no post data";
 			return false;
 		}
@@ -557,7 +553,7 @@ class Finance_Delivery
 		$vat = $prod_data['vat'];
 		$price = $prod_data['price'];
 		$line_price = $prod_data['line_price'];
-		$prod_id = $prod_data['prod_id'];
+		$prod_id = intval($prod_data['prod_id']);
 		$has_vat = $prod_data['has_vat'];
 
 		if (null === $has_vat) $has_vat = 'NULL';
@@ -629,7 +625,6 @@ class Finance_Delivery
 			$user->add_transaction( $date, $total, $delivery_id, "משלוח" );
 			Finance::add_transaction( $this->getUserId(), $date, $total, $fee, $delivery_id, 3 );
 		}
-		// $order = new WC_Order( $order_id );
 
 		// Return the new delivery id!
 		$this->delivery_id = $delivery_id;

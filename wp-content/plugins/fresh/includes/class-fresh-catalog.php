@@ -585,7 +585,7 @@ class Fresh_Catalog {
 		if ( $pos = strpos( $product_name, " " ) ) {
 			$product_name_prf = substr( $product_name, 0, $pos );
 		}
-		$sql1 = 'SELECT DISTINCT id, post_title FROM `wp_posts` WHERE '
+		$sql1 = 'SELECT DISTINCT id, post_title FROM wp_posts WHERE '
 		        . ' post_type IN (\'product\', \'product_variation\')'
 		        . ' AND (post_status = \'publish\' OR post_status = \'draft\')'
 		        . ' AND (post_title LIKE \'%' . addslashes( $product_name_prf ) . '%\' '

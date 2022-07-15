@@ -233,19 +233,24 @@ class Finance_Client_Views {
 	}
 
 	static function AllClients( $include_zero = false ) {
+		global $wpdb;
+
+		$dbPrefix = $wpdb->get_blog_prefix();
+
 		$output = "<center><h1>יתרת לקוחות לתשלום</h1></center>";
-		if (! Finance_Business_Logic::Invoice4uConnect()) {
+		if (defined('INVOICE_USER') && ! Finance_Business_Logic::Invoice4uConnect()) {
 			$output .= "תקלה במנוי. יש ליצור קשר עם תמיכה של invoice4u. " . Core_Html::GuiHyperlink("תמיכה", "http://messenger.providesupport.com/messenger/invoice4u.html");
 		}
 
 		$output .= Core_Html::GuiHyperlink( __( "include paid" ), AddToUrl( "include_zero", 1 ) ) . "<br/>";
 
-		$sql = 'select round(sum(ia.transaction_amount),2), ia.client_id, wu.display_name, client_payment_method(ia.client_id), max(date) '
-		       . ' from im_client_accounts ia'
+		// client_payment_method(ia.client_id)
+		$sql = 'select round(sum(ia.transaction_amount),2), ia.client_id, wu.display_name, max(date) '
+		       . " from ${dbPrefix}client_accounts ia"
 		       . ' join wp_users wu'
 		       . ' where wu.id=ia.client_id'
 		       . ' group by client_id '
-		       . ' order by 5 desc';
+		       . ' order by 4 desc';
 
 		$result = SqlQuery( $sql );
 
@@ -272,7 +277,7 @@ class Finance_Client_Views {
 			// print $accountants . " " . get_user_id() . "<br/>";
 //			if (!strstr($accountants, (string) get_user_id())) continue;
 
-			$line .= "<td>" . $row[4] . "</td>";
+//			$line .= "<td>" . $row[4] . "</td>";
 			$line .= "<td>" . Finance_Payment_Methods::get_payment_method_name( $payment_method ) . "</td>";
 			$has_credit_info = self::getTokenStatus($C);
 			$has_token = (get_user_meta($customer_id, 'credit_token', true) ? 'T' : '');
@@ -354,7 +359,7 @@ class Finance_Client_Views {
 	}
 
 	static function getLink($client_id) {
-		return "/wp-admin/users.php?page=client-accounts&id=$client_id";
+		return get_admin_url() . "/users.php?page=client-accounts&id=$client_id";
 	}
 
 	static function getTokenStatus($C)
