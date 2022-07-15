@@ -1,7 +1,0 @@
-create user admin@localhost identified by "ZtW8ghzXbgQUE";
-GRANT ALL PRIVILEGES ON swimwear.* TO "admin"@"localhost";
-
-FLUSH PRIVILEGES;
-
-
-jKMDL!*IOgUWYHvNwo
