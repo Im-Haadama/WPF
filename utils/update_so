@@ -6,5 +6,5 @@ cd $TARGET
 echo Backuping to "$BACKUP" 
 tar cfz "$BACKUP" . 
 echo Copying from git
-cp -R ~git/WPF/wp-content/plugins $TARGET
+cp -R ~git/WPF/wp-content/plugins/* $TARGET
 
