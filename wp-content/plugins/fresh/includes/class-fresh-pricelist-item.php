@@ -5,17 +5,7 @@
  * Date: 06/12/15
  * Time: 10:16
  */
-// require_once( '../im-tools.php' );
-//
-//
 
-if ( ! defined( "TOOLS_DIR" ) ) {
-	define( 'TOOLS_DIR', dirname( dirname( __FILE__ ) ) );
-}
-
-if ( ! defined( "FRESH_INCLUDES" ) ) {
-	define( 'FRESH_INCLUDES', dirname(dirname( dirname( __FILE__ ) ) ));
-}
 
 class Fresh_Pricelist_Item {
 	private $id;
@@ -30,10 +20,8 @@ class Fresh_Pricelist_Item {
 	private $supplier_id;
 	public $message;
 
-	function __construct( $pricelist_id ) {
-		if ($pricelist_id == 0) return;
-
-		$sql = " SELECT product_name, supplier_id, date, price, supplier_product_code, sale_price, category, picture_path FROM im_supplier_price_list " .
+	function __construct(int $pricelist_id) {
+		$sql = " SELECT product_name, supplier_id, date, price, supplier_product_code, sale_price, category, picture_path, 1 FROM im_supplier_price_list " .
 		       " WHERE id = " . $pricelist_id;
 
 		$result = SqlQuerySingleAssoc( $sql );
@@ -147,7 +135,7 @@ class Fresh_Pricelist_Item {
 		$edit = GetArg($args, "edit", false);
 		$show_draft = GetArg($args, "show_draft", false);
 
-		$pl_id = $row["id"];
+		$pl_id = intval($row["id"]);
 		if (! ($pl_id > 0)) return $row; // New row
 
 		$item = new Fresh_Pricelist_Item( $pl_id );
@@ -171,7 +159,7 @@ class Fresh_Pricelist_Item {
 		$link_data = $catalog->GetProdID( $this->id, false, true);
 		array_push($row, Core_Html::GuiButton("del_" . $this->id, "X", "pricelist_delete('$post_file', $this->id)"));
 		$price = $row['price'];
-		if ($color = self::get_prod_color()) $args['style'] = 'background-color: ' . $color;
+		if ($color = $this->get_prod_color()) $args['style'] = 'background-color: ' . $color;
 		$args['size'] = 3;
 		$args["events"] = "onchange = \"pricelist_update_price('" . WPF_Flavor::getPost() . "', " . $this->id . ")\"";
 			// Core_Gem::UpdateTableFieldEvent(Flavor::getPost(), "supplier_price_list", $this->id, "price");

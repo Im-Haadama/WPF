@@ -365,7 +365,7 @@ class Finance_Suppliers
 		return $result;
 	}
 
-	static function pricelist_header($args)
+	function pricelist_header($args)
 	{
 		$result = "";
 		$supplier_id = GetParam("supplier_id");

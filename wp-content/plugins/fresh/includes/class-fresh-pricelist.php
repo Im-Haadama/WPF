@@ -10,7 +10,7 @@ class Fresh_Pricelist {
 
 	static function DeleteMapping( $pricelist_id ) {
 		// Get product id
-		$prod_ids    = Catalog::GetProdID( $pricelist_id );
+		$prod_ids    = Fresh_Catalog::GetProdID( $pricelist_id );
 		$supplier_id = SqlQuerySingleScalar( "SELECT supplier_id FROM im_supplier_price_list WHERE ID = " . $pricelist_id );
 //		print "supplier id: " . $supplier_id . "<br/>";
 
@@ -21,7 +21,7 @@ class Fresh_Pricelist {
 			SqlQuery( $sql );
 
 			$line = "";
-			Catalog::UpdateProduct( $prod_id, $line );
+			Fresh_Catalog::UpdateProduct( $prod_id, $line );
 //			print header_text(false, true, false);
 //			print $line;
 		}
@@ -32,11 +32,9 @@ class Fresh_Pricelist {
 	function Refresh() {
 		$priceslist_items = SqlQueryArrayScalar( "SELECT id FROM im_supplier_price_list WHERE supplier_id = " . $this->SupplierID );
 		foreach ( $priceslist_items as $pricelist_id ) {
-			$prod_ids = Catalog::GetProdID( $pricelist_id );
+			$prod_ids = Fresh_Catalog::GetProdID( $pricelist_id );
 			foreach ( $prod_ids as $prod_id ) {
-//				print "update " . $prod_id . get_product_name( $prod_id ) . "<br>";
-
-				Catalog::UpdateProduct( $prod_id, $line );
+				Fresh_Catalog::UpdateProduct( $prod_id, $line );
 			}
 		}
 	}
@@ -64,7 +62,7 @@ class Fresh_Pricelist {
 		$create_option = false;
 		if (isset($args) and isset($args["create_products"])){
 			print Core_Html::GuiHeader(1, "יצירת מוצרים");
-			print gui_datalist( "category", "im_categories", "name", 0 );
+			print Core_Html::GuiDatalist( "category", "im_categories", "name", 0 );
 			$create_option = true;
 		}
 		// print "nso=" . $need_supply_only . "oo=" . $ordered_only . "<br/>";
@@ -423,10 +421,8 @@ class Fresh_Pricelist {
 	}
 
 	// Also called when mapping is deleted
-
-	static function Get( $pricelist_id ) {
-		// my_log("Pricelist::Get" . $pricelist_id);
-		$sql = " SELECT product_name, supplier_id, date, price, supplier_product_code, sale_price, category, picture_path FROM im_supplier_price_list " .
+	static function Get(int $pricelist_id ) {
+		$sql = " SELECT product_name, supplier_id, date, price, supplier_product_code, sale_price, category, picture_path,2  FROM im_supplier_price_list " .
 		       " WHERE id = " . $pricelist_id;
 
 		$result = SqlQuerySingleAssoc( $sql );
