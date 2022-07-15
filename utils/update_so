@@ -1,0 +1,10 @@
+TARGET=/var/www/html/wp-content/plugins/
+echo target is $TARGET
+mkdir -p ~/backups
+BACKUP=~/backups/`date +%F\ %H:%M`.tar.gz
+cd $TARGET
+echo Backuping to "$BACKUP" 
+tar cfz "$BACKUP" . 
+echo Copying from git
+cp -R ~git/WPF/wp-content/plugins $TARGET
+
